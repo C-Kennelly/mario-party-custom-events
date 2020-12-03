@@ -7,7 +7,7 @@
 #define TOAD_PICTURE 3  
 
 //How many questions are defined at the bottom of the file?
-#define QUESTION_COUNT 1
+#define QUESTION_COUNT 2
 
 //How many answers does each question have?
 //AI requires every question to have the same number of options
@@ -19,61 +19,69 @@
 
 void main() 
 {
-    DisplayReadyMessage();    
+    DisplayGreetingMessage();
+
     int correctAnswer = AskTheQuestion();
-    int randomOptionForCPUToPick = GetChoiceForCPU();
-    int answerChosen = GetAnswerAndTeardownMessageBox(randomOptionForCPUToPick);
-    CompareAnswer(answerChosen, correctAnswer);
+    int answerChosen = GetAnswerAndTeardownMessageBox();
+    
+    if(answerChosen == correctAnswer)
+    {
+        RewardPlayerForCorrectAnswer();
+    }
+    else
+    {
+        PunishPlayerForIncorrectAnswer();
+    }
     
     return;
 }
 
-void DisplayReadyMessage()
+void DisplayGreetingMessage()
 {
    //Display the ready message...
-    char* ready_msg = GetMessageForReadyLine();
-    ShowMessageWithConfirmationAndTeardown(TOAD_PICTURE, ready_msg);
-
-//    ShowMessage(TOAD_PICTURE, ready_msg, 0, 0, 0, 0, 0);
-//	func_800EC9DC(); // Wait for confirmation
-//    CloseMessage();  //Close message
-    
+    char* greeting_msg = GetGreetingMessage();
+    ez_ShowMessageWithConfirmation(TOAD_PICTURE, greeting_msg);
 }
+
 
 int AskTheQuestion()
 {
+    int index = PickRandomQuestionIndex();
 
-    int index = 0;
-    //load all the questions into an array
-    //load correct answer array
-    //questionIndex = random integer between 0 and length of array
-    //switch case on the index
-    //if choice == answer[questionIndex]
-    char *questions[1];
-    int answers[1];
-
-    questions[index] = GetFirstQuestion();
-    answers[index] = GetAnswerToFirstQuestion();        
+    char *question_msg = GetQuestionMessageByNumber(index);
+    char *right_msg = GetMessageForRightAnswer();
 
 
-    ShowMessage(TOAD_PICTURE, questions[0], 0, 0, 0, 0, 0);
+    ShowMessage(TOAD_PICTURE, question_msg, 0, 0, 0, 0, 0);
 
-    return answers[index];
+    int answer = GetCorrectAnswerToQuestionByNumber(index);
+
+    return answer;
 }
 
-void ShowMessageWithConfirmationAndTeardown(int characterIndex, char* message)
-{
-    // Helper function that shows a message and tears the message box down
-    // after the player confirms the last box.  Don't use for prompt selection.
-    
-    // This function assumes you aren't using the additional arguments
-    // of ShowMessage() and hardcodes them to 0.  If you want to use them,
-    // add them to the wrapper function and pass through.
 
-    ShowMessage(characterIndex, message, 0, 0, 0, 0, 0);
-    func_800EC9DC();    //Wait for confirmation
-    CloseMessage();     //Close the message
-    func_800EC6EC();    //Message box teardown
+int PickRandomQuestionIndex()
+{
+    return GetRandomByte() % QUESTION_COUNT;
+}
+
+
+int GetAnswerAndTeardownMessageBox()
+{
+    int cpuChoice = GetChoiceForCPU();
+
+    // Get the selection, either from the player or CPU.
+    // MP3 built-in function: GetBasicPromptSelection(int strategy, int index)
+    // Strategy argument takes an int and behaves as follows:
+    //   0 -> If CPU, always pick first (0th) option
+    //   1 -> If CPU, always pick second (1th) option
+    //   2 -> If CPU, pick the option that is passed in the second argument.
+    // Here, we're using 2, and then passing in the cpuChoice.
+    // Thus, the AI will always choose a random option for the question.
+    int choice = GetBasicPromptSelection(2, cpuChoice);
+    ez_TeardownMessageBox();
+
+    return choice;
 }
 
 int GetChoiceForCPU()
@@ -85,46 +93,29 @@ int GetChoiceForCPU()
     return GetRandomByte() % ANSWERS_FOR_EACH_QUESTION;
 }
 
-int GetAnswerAndTeardownMessageBox(int optionForCPUToPick)
-{
-    // Get the selection, either from the player or CPU.
-    // GetBasicPromptSelection(int strategy, int index)
-    // Strategy options:
-    //   0 -> If CPU, always pick first (0th) option
-    //   1 -> If CPU, always pick second (1th) option
-    //   2 -> If CPU, pick the option that is passed in the second argument.
-    // Here, we're using 2, and then passing in the random index from above.
-    // Thus, the AI will always choose a random option for the question.
-    s32 choice = GetBasicPromptSelection(2, optionForCPUToPick);
-    CloseMessage();         //Close the message
-    func_800EC6EC();        //Message box teardown
 
-    return choice;
+void RewardPlayerForCorrectAnswer()
+{
+        char *right_msg = GetMessageForRightAnswer();
+        ez_ShowMessageWithConfirmation(TOAD_PICTURE, right_msg);
+        return;
 }
 
-void CompareAnswer(int choice, int answer)
+void PunishPlayerForIncorrectAnswer()
 {
-    //If the answer matches what we defined at the bottom of the file...
-    if(choice == answer)
-    {
-        char *right_msg = GetMessageForRightAnswer();
-        ShowMessageWithConfirmationAndTeardown(TOAD_PICTURE, right_msg);
-    }
-    //If the answer doesn't match, it's wrong)
-    else 
-    {
-        char *wrong_msg = GetMessageforWrongAnswer();
-        ShowMessageWithConfirmationAndTeardown(TOAD_PICTURE, wrong_msg);       
-    }
+    char *wrong_msg = GetMessageforWrongAnswer();
+    ez_ShowMessageWithConfirmation(TOAD_PICTURE, wrong_msg);       
 
     return;
 }
+
+
 
 //***************************************************************************//
 //*******Functions that determine every message that isn't a question.*******//
 //***************************************************************************//
 
-char* GetMessageForReadyLine()
+char* GetGreetingMessage()
 {
     char *result = 
     "\x0B" // Start the message
@@ -164,12 +155,65 @@ char* GetMessageForRightAnswer()
     return result;
 }
 
-char* GetFirstQuestion()
+//***************************************************************************//
+//*******Question definitions ***********************************************//
+//***************************************************************************//
+
+char* GetQuestionMessageByNumber(int question)
+{
+    char *result;
+
+    switch (question)
+    {
+        case (0):
+            result = GetFirstQuestionMessage();
+            break;
+        case (1):
+            result = GetSecondQuestionMessage();
+            break;
+        default:
+           result = GetFirstQuestionMessage();
+           return result;
+    }
+
+
+
+
+    return result;
+
+}
+
+int GetCorrectAnswerToQuestionByNumber(int question)
+{
+    int *result;
+
+    switch (question)
+    {
+        case (0):
+            result = GetAnswerToFirstQuestion();
+            break;
+        case (1):
+            result = GetAnswerToSecondQuestion();
+            break;
+        default:
+           result = GetAnswerToFirstQuestion();
+           return result;
+    }
+
+
+    return result;
+}
+
+
+//***************************************************************************//
+//****************************Question***************************************//
+//***************************************************************************//
+char* GetFirstQuestionMessage()
 {
     char *result =
     "\x0B"                          // Start the message
     "\x1A\x1A\x1A\x1A"  		    // Standard padding
-    "Who has the biggest dick"
+    "Who has the biggest heart"
     "\xC3" 						    // ?
     "\x0A" 						    //Newline
     "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent    
@@ -195,9 +239,84 @@ char* GetFirstQuestion()
 
     return result;
 }
-
 int GetAnswerToFirstQuestion()
 {
     return 1;
 }
-    
+
+//***************************************************************************//
+//****************************Question***************************************//
+//***************************************************************************//
+
+char* GetSecondQuestionMessage()
+{
+    char *result =
+    "\x0B"                          // Start the message
+    "\x1A\x1A\x1A\x1A"  		    // Standard padding
+    "Who has the biggest smile"
+    "\xC3" 						    // ?
+    "\x0A" 						    //Newline
+    "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent    
+    "\x0C"                          // Start option
+    "Connor"
+    "\x0D"                          // End option
+    "\x0A"                          // Newline
+    "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent 
+    "\x0C"                          // Start option
+    "Chad"
+    "\x0D"                          // End option
+    "\x0A"                          // Newline
+    "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent    
+    "\x0C"                          // Start option
+    "Randy"
+    "\x0D"                          // End option
+    "\x0A"                          // Newline
+    "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent 
+    "\x0C"                          // Start option
+    "Eric"
+    "\x0D"                          // End option
+    "\xFF";						    //Show prompt to continue
+
+    return result;
+}
+int GetAnswerToSecondQuestion()
+{
+    return 0;
+}
+
+
+
+
+
+
+/*****************************************************************************
+**** Helper functions to hide basic Mario Party commands/help readability.****
+******************************************************************************/
+
+
+// Helper function that shows a message and tears the message box down
+// after the player confirms the last box.  Don't use for prompt selection.
+void ez_ShowMessageWithConfirmation(int characterIndex, char* message)
+{
+    // This function assumes you aren't using the additional arguments
+    // of ShowMessage() and hardcodes them to 0.  If you want to use them,
+    // add them to the wrapper function and pass through.
+
+    ShowMessage(characterIndex, message, 0, 0, 0, 0, 0);
+    ez_WaitForPlayerConfirmation();
+    ez_TeardownMessageBox();
+
+}
+
+//just a wrapper
+void ez_WaitForPlayerConfirmation()
+{
+    func_800EC9DC();    //Wait for confirmation
+}
+
+//Helper function that just does teardown.  
+void ez_TeardownMessageBox()
+{
+    CloseMessage();     //Close the message
+    func_800EC6EC();    //Message box teardown
+}
