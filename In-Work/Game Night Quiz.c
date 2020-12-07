@@ -9,22 +9,22 @@
 //*********************** Description** *************************************//
 //***************************************************************************//
 // This event challenges a player to a quiz and asks them a random question
-// from the question bank.  
+// from the question bank.  By default, the question bank has 6 questions in it
+// but it is very simple to use up to 20 questions.
+//
 // If the player gets the question right, a coin reward is given.
 // If the player gets the question wrong, nothing happens.
 //
-// By default, the quiz uses 6 questions, but it is very easy to
-// customize and activate up to 20 questions with a little reading.
 //
 // The functionality is similar to Airsola's "Trivia Quiz" event, but written
 // in C to make it easier to customize.  You can find that original quiz at
 // www.mariopartylegacy.com/forum/index.php?action=downloads;sa=view;down=305
 //
 //
-// Finally, this file is commented to make it as easy as customize for 
-// non-programmers to edit.  If you have a working knowledge of C, 
-// hopefully the verbose commentary isn't too annoying =)
-
+// Finally, this file is commented to make it as easy for non-programmers 
+// to edit, so I've leaned on the verbose side for comments.  If you've a
+// working knowledge of C, feel free to just jump to main() and see what's
+// going on. 
 
 
 
@@ -313,7 +313,7 @@ void ez_TeardownMessageBox()
 // 4. To customize one of the 20 questions, simply edit the
 //    corresponding message and ensure the answer index is
 //    defined correctly.  You don't have to do anything else.
-//    Remember:
+//
 //    
 // 5. If 20 questions aren't enough for you, you're a monster.
 //    But it can be done.  You'll have to edit the switch(case)'s
