@@ -1,4 +1,4 @@
-// NAME: Game Night Quiz
+// NAME: Big Trivia Quiz
 // GAMES: MP3_USA
 // EXECUTION: Direct
 // PARAM: +Number|COIN_REWARD
@@ -8,24 +8,44 @@
 //***************************************************************************//
 //*********************** Description** *************************************//
 //***************************************************************************//
-// This event challenges the player to answer a question correctly. 
-//
+// This event challenges a player to a quiz and asks them a random question
+// from the question bank.  
 // If the player gets the question right, a coin reward is given.
 // If the player gets the question wrong, nothing happens.
 //
-// You can, of course, customize this behavior as well as the messages
-// used through the quiz.
-//
-//
 // By default, the quiz uses 6 questions, but it is very easy to
-// customize and activate up to 20 questions.
-// Jump down the file to the "Question definitions" block (line ~250)
-// to read more about how to customize the questions.
+// customize and activate up to 20 questions with a little reading.
+//
+// The functionality is similar to Airsola's "Trivia Quiz" event, but written
+// in C to make it easier to customize.  You can find that original quiz at
+// www.mariopartylegacy.com/forum/index.php?action=downloads;sa=view;down=305
 //
 //
-// This file is commented to make it as easy as customize for non-programmers
-// to edit.  If you have a working knowledge of C, hopefully the verbose
-// commentary isn't too annoying =)
+// Finally, this file is commented to make it as easy as customize for 
+// non-programmers to edit.  If you have a working knowledge of C, 
+// hopefully the verbose commentary isn't too annoying =)
+
+
+
+
+//***************************************************************************//
+//******************** Where to Customize ***********************************//
+//***************************************************************************//
+//
+// Jump to "Quiz Configuration" to change the number of active questions in the
+// quiz bank, the number of answers to each question, or the character who is
+// asking the questions.
+//
+// Jump to "Message Configuration" to customize messages such as the greeting
+// or when a player gets a correct/incorrect answer.
+//
+// Jump to "RewardPlayerForCorrectAnswer()" to change behavior when the player
+// gets the answer right, or "PunishPlayerForIncorrectAnswer()" to change
+// what happens when the player gets the answer wrong.
+//
+// Finally, jump to "Question definitions" to customize the question bank.
+
+
 
 //***************************************************************************//
 //******************** Quiz Configuration ***********************************//
@@ -178,7 +198,7 @@ void GraduallyAdjustPlayerCoins(int adjustmentAmount)
 
 
 //***************************************************************************//
-//*******Functions that determine every message that isn't a question.*******//
+//******************** Message Configuration ********************************//
 //***************************************************************************//
 
 // Defines the message the Quiz Giver displays first.
