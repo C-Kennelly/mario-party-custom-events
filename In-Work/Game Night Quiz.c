@@ -57,11 +57,13 @@
 // the bottom of the file for more info on how this works.
 #define ACTIVE_QUESTIONS 6
 
+
 // How many answer options does each quiz question have?
 //
 // Unless you modify it, AI selection depends on every question having 
 // the same number of choices.  Human players unaffected by this.
 #define ANSWERS_PER_QUESTION 4
+
 
 // Index for the character portrait of the character who is giving the quiz.
 // Defaults to 3, which is Toad.
@@ -69,7 +71,7 @@
 // Want to change the picture?  Find more on the PartyPlanner64 wiki:
 // https://github.com/PartyPlanner64/PartyPlanner64/wiki/Displaying-Messages
 
-
+#include "ultra64.h"
 
 //***************************************************************************//
 //******************** Quiz Logic *******************************************//
@@ -77,6 +79,7 @@
 
 void main() 
 {
+    mp3_play_idle_animation();
     DisplayGreetingMessage();
 
     int correctAnswer = AskTheQuestion();
@@ -99,7 +102,7 @@ void DisplayGreetingMessage()
 {
    // Display the ready message...
     char* greeting_msg = GetGreetingMessage();
-    ez_ShowMessageWithConfirmation(QUIZ_GIVER_PORTRAIT, greeting_msg);
+    mp3_ShowMessageWithConfirmation(QUIZ_GIVER_PORTRAIT, greeting_msg);
 }
 
 
@@ -138,7 +141,7 @@ int GetAnswerAndTeardownMessageBox()
     // Here, we're using 2, and then passing in the cpuChoice.
     // Thus, the AI will always choose a random option for the question.
     int choice = GetBasicPromptSelection(2, cpuChoice);
-    ez_TeardownMessageBox();
+    mp3_TeardownMessageBox();
 
     return choice;
 }
@@ -158,8 +161,8 @@ int GetChoiceForCPU()
 void RewardPlayerForCorrectAnswer()
 {
         char *right_msg = GetMessageForRightAnswer();
-        ez_ShowMessageWithConfirmation(QUIZ_GIVER_PORTRAIT, right_msg);
-
+        mp3_ShowMessageWithConfirmation(QUIZ_GIVER_PORTRAIT, right_msg);
+        mp3_play_joy_animation();
         GraduallyAdjustPlayerCoins(COIN_REWARD);
 
         return;
@@ -171,8 +174,12 @@ void PunishPlayerForIncorrectAnswer()
     // We just punish them with disappointment by default
     // but feel free to add your own dastardly deed.
     char *wrong_msg = GetMessageforWrongAnswer();
-    ez_ShowMessageWithConfirmation(QUIZ_GIVER_PORTRAIT, wrong_msg);       
- 
+    mp3_ShowMessageWithConfirmation(QUIZ_GIVER_PORTRAIT, wrong_msg);
+    
+    // Play the sad animation and wait 70 frames for it to complete
+
+    mp3_play_sad_animation();
+    SleepProcess(70);
     // If you want to give a coin penalty add a:
     // [+Number|COIN_PENALTY] parameter to the
     // PartyPlanner64 header at the top fo the file
@@ -192,6 +199,7 @@ void GraduallyAdjustPlayerCoins(int adjustmentAmount)
     ShowPlayerCoinChange(currentPlayerIndex, adjustmentAmount);
 
     // Sleep for 30 frames to let the coin change take effect.
+    // Also syncs up nicely with the joy animation.
     SleepProcess(30);
 }
 
@@ -217,7 +225,7 @@ char* GetGreetingMessage()
     "\x1A\x1A\x1A\x1A" 			//Standard padding for portrait
     "you can earn some coins"   //
     "\xC2"                      // !
-    "\xFF";						//Show prompt to continue
+    "\xFF";						//Show prompt to continue arrow
 
     return result;
 }
@@ -232,7 +240,7 @@ char* GetMessageForRightAnswer()
     "\x82"                          // ,
     " that\x5Cs right"               //  \x5C ->  '
     "\xC2"                          // !
-    "\xFF";						    //Show prompt to continue
+    "\xFF";						    //Show prompt to continue arrow
 
     return result;
 }
@@ -247,7 +255,7 @@ char* GetMessageforWrongAnswer()
     "\x82"                          // ,
     " that\x5Cs not correct"        //  \x5C ->  ' 
     "\x85\x85\x85"                  //...
-    "\xFF";						    //Show prompt to continue
+    "\xFF";						    //Show prompt to continue arrow
     
     return result;
 }
@@ -261,20 +269,20 @@ char* GetMessageforWrongAnswer()
 
 // Helper function that shows a message and then tears the message box down
 // after the player confirms the last box.  Don't use for prompt selection.
-void ez_ShowMessageWithConfirmation(int characterPortraitIndex, char* message)
+void mp3_ShowMessageWithConfirmation(int characterPortraitIndex, char* message)
 {
     // This function assumes you aren't using the additional arguments
     // of ShowMessage() and hardcodes them to 0.  If you want to use them,
     // add them to the wrapper function and pass through.
 
     ShowMessage(characterPortraitIndex, message, 0, 0, 0, 0, 0);
-    ez_WaitForPlayerConfirmation();
-    ez_TeardownMessageBox();
+    mp3_WaitForPlayerConfirmation();
+    mp3_TeardownMessageBox();
 
 }
 
 // A wrapper for the "wait for confimration" command in MP3
-void ez_WaitForPlayerConfirmation()
+void mp3_WaitForPlayerConfirmation()
 {
     func_800EC9DC();    //Wait for confirmation
 }
@@ -282,12 +290,42 @@ void ez_WaitForPlayerConfirmation()
 // Helper function that just does teardown of a message box.
 // Split out so it can be used after waiting for confirmation 
 // or getting a selection choice.
-void ez_TeardownMessageBox()
+void mp3_TeardownMessageBox()
 {
     CloseMessage();     //Close the message
     func_800EC6EC();    //Message box teardown
 }
 
+/*
+  -1 - idle, stop immediately
+  0 - idle, finish last animation (doesn't look good)
+  1 - Sprint/run animation
+  2 - "Get Ready" pose
+  3 - Sad/disappointed animation
+  4 - Fall over dizzy with sorrow (Bowser stole a star bad)
+  5 - Jump for joy (full joy)
+  6 - Do a dance
+*/
+
+//(-1, 3, 0)
+//Plays the sad animation, with no loop
+void mp3_play_sad_animation() 
+{
+    func_800F2304(-1, 3, 0); // Sad animation, no loop
+}
+
+//(-1, 5, 0)
+//Plays the joy animation, with no loop
+void mp3_play_joy_animation() 
+{
+    func_800F2304(-1, 5, 0); // joy animation, no loop
+}
+
+//(-1, -1, 0)
+void mp3_play_idle_animation() 
+{
+    func_800F2304(-1, -1, 0);
+}
 
 //***************************************************************************//
 //***************************************************************************//
@@ -301,7 +339,7 @@ void ez_TeardownMessageBox()
 
 
 /******** How to Configure Questions ***********/
-// 1. This quiz has 20 questions slots;  
+// 1. This quiz has 30 questions slots;  
 //    6 of them are active by default.
 //   
 // 2. Questions get used in order, up to whatever number is
@@ -315,7 +353,7 @@ void ez_TeardownMessageBox()
 //    defined correctly.  You don't have to do anything else.
 //
 //    
-// 5. If 20 questions aren't enough for you, you're a monster.
+// 5. If 30 questions aren't enough for you, you're a monster.
 //    But it can be done.  You'll have to edit the switch(case)'s
 //    below to make sure the question finder can randomly pick your
 //    question.  Follow the pattern for BOTH the question and answer picker
@@ -396,6 +434,7 @@ char* GetQuestionMessageByNumber(int question)
             break;
         case (19):
             result = GetTwentiethQuestionMessage();
+            break;
         default:
            result = GetFirstQuestionMessage();
            return result;
@@ -403,8 +442,10 @@ char* GetQuestionMessageByNumber(int question)
 
     // Want to test a sepcific question?  Edit and uncomment 
     // the following line to ensure it always picks a specifc question.
+    // Don't forget to override the answer selection in the next 
+    //function as well!
     
-    //result = GetFirstQuestionMessage();
+    result = GetFirstQuestionMessage();
 
     return result;
 
@@ -478,6 +519,7 @@ int GetCorrectAnswerToQuestionByNumber(int question)
             break;
         case (19):
             result = GetAnswerToTwentiethQuestion();
+            break;
         default:
            result = GetAnswerToFirstQuestion();
            return result;
@@ -486,47 +528,137 @@ int GetCorrectAnswerToQuestionByNumber(int question)
     // Want to test a sepcific question?  Edit and uncomment 
     // the following line to ensure it always picks a specifc answer.
     
-    //result = GetAnswerToFirstQuestion();
+    result = GetAnswerToFirstQuestion();
 
     return result;
 }
 
+// Long-form implementation from:
+// https://www.techiedelight.com/implement-strcpy-function-c/
 
+// Function to implement strcpy() function
+char* my_strcpy(char* destination, const char* source)
+{
+    // return if no memory is allocated to the destination
+    if (destination == NULL)
+        return NULL;
+ 
+    // take a pointer pointing to the beginning of destination string
+    char *ptr = destination;
+ 
+    // copy the C-string pointed by source into the array
+    // pointed by destination
+    while (*source != '\0')
+    {
+        *destination = *source;
+        destination++;
+        source++;
+    }
+ 
+    // include the terminating null character
+    *destination = '\0';
+ 
+    // destination is returned by standard strcpy()
+    return ptr;
+}
+
+// Second implementation from this site:
+// https://www.techiedelight.com/implement-strncat-function-c/#:~:text=The%20strncat()%20function%20appends,pointer%20to%20the%20destination%20string
+// Stripped out the "num" prototype so that strncat always appends the full string passed, instead of a defined subset.
+
+// Function to implement strncat() function in C
+char* my_strncat(char* destination, const char* source)
+{
+    int i, j;
+ 
+    // move to the end of destination string
+    for (i = 0; destination[i] != '\0'; i++);
+ 
+    // i now points to terminating null character in destination
+ 
+    // Appends num characters of source to the destination string
+    for (j = 0; source[j] != '\0'; j++)
+        destination[i + j] = source[j];
+ 
+    // null terminate destination string
+    destination[i + j] = '\0';
+ 
+    // destination is returned by standard strncat()
+    return destination;
+}
+
+
+char* GenerateMessageForQuestionWithFourOptions(char* question, char* randomizedOption0, char* randomizedOption1, char* randomizedOption2, char* randomizedOption3)
+{
+    if(randomizedOption4 = ""), then generate a 4 answer question
+
+    char result[1024];
+
+    my_strcpy(result, "\x0B");                              //start the message
+    my_strncat(result, question);
+    my_strncat(result, "\x0A");                             // Newline
+    my_strncat(result, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
+    my_strncat(result, "\x0C");                             // Start option
+    my_strncat(result, randomizedOption0);
+    my_strncat(result, "\x0D");                             // End option
+    my_strncat(result, "\x0A");                             // Newline
+    my_strncat(result, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
+    my_strncat(result, "\x0C");                             // Start option
+    my_strncat(result, randomizedOption1);
+    my_strncat(result, "\x0D");                             // End option
+    my_strncat(result, "\x0A");                             // Newline
+    my_strncat(result, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
+    my_strncat(result, "\x0C");                             // Start option
+    my_strncat(result, randomizedOption2);
+    my_strncat(result, "\x0D");                             // End option
+    my_strncat(result, "\x0A");                             // Newline
+    my_strncat(result, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
+    my_strncat(result, "\x0C");                             // Start option
+    my_strncat(result, randomizedOption3);
+    my_strncat(result, "\x0D");                             // End option
+    my_strncat(result, "\xFF");                             //Show prompt to continue
+
+    return result;
+}
 
 //***************************************************************************//
 //****************************Question***************************************//
 //***************************************************************************//
 
+
+
+
+
 // Question for index 0
 char* GetFirstQuestionMessage()
 {
-    char *result =
-    "\x0B"                          // Start the message
-    "\x1A\x1A\x1A\x1A"  		    // Standard padding
-    "Who wears a red hat"          // **** Question text**** //
-    "\xC3" 						    // ?
-    "\x0A" 						    //Newline
-    "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent    
-    "\x0C"                          // Start option
-    "Mario"                        // **** First option**** //
-    "\x0D"                          // End option
-    "\x0A"                          // Newline
-    "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent 
-    "\x0C"                          // Start option
-    "Luigi"                          // **** Second option**** //
-    "\x0D"                          // End option
-    "\x0A"                          // Newline
-    "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent    
-    "\x0C"                          // Start option
-    "Wario"                         //// **** Third option**** //
-    "\x0D"                          // End option
-    "\x0A"                          // Newline
-    "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent 
-    "\x0C"                          // Start option
-    "Waluigi"                          // **** First option**** //
-    "\x0D"                          // End option
-    "\xFF";						    //Show prompt to continue
+    // Mario Party 3 special characters documented at:
+    // https://github.com/PartyPlanner64/PartyPlanner64/wiki/String-Encoding
+    char* question =
+    "\x1A\x1A\x1A\x1A"                  // Standard padding for portrait
+    "Which items is"                        
+    "\x03"                              // Red Font
+    " NOT"                              
+    "\x08"                              // White Font
+    " used in the Biggoron\x5Cs Sword"
+    "\x0A"                              // Newline
+    "\x1A\x1A\x1A\x1A"                  // Standard padding for portrait
+    "Quest in The Legend of Zelda\x7B Ocarina of Time"
+    "\xC3";                             // ?
 
+    //Implement these wrappers next
+    char* question = CreateSimpleOneLineQuestion("Who wears a red hat");
+    char* question = CreateSimpleTwoLineQuestion("Who wears a red hat", "and has a moustache");
+    char* question = CreateSimpleThreeLineQuestion("Who wears a red hat", "and has a moustache", "and likes cake");
+
+
+    char* correctAnswer = "Weird Egg";
+    char* wrongAnswer1 = "Odd Mushroom";
+    char* wrongAnswer2 = "Prescription";
+    char* wrongAnswer3 = "Eyeball Frog";
+
+    //when ready to do answers, have the same function that returns the correct answer display the question 
+    char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3);
     return result;
 }
 // Answer to the question at index 0.
