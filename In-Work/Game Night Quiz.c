@@ -10,7 +10,7 @@
 //***************************************************************************//
 // This event challenges a player to a quiz and asks them a random question
 // from the question bank.  By default, the question bank has 6 questions in it
-// but it is very simple to use up to 20 questions.
+// but it is very simple to use up to 30 questions.
 //
 // If the player gets the question right, a coin reward is given.
 // If the player gets the question wrong, nothing happens.
@@ -55,7 +55,7 @@
 //
 // Read the comments in the question config section at
 // the bottom of the file for more info on how this works.
-#define ACTIVE_QUESTIONS 6
+#define ACTIVE_QUESTIONS 4
 
 
 // How many answer options does each quiz question have?
@@ -122,7 +122,7 @@ int AskTheQuestion()
 // Generate a random number to pick an Active Question.
 int PickRandomQuestionIndex()
 {
-    return GetRandomByte() % ACTIVE_QUESTIONS;
+    return mp3_PickARandomNumberBetween0AndN(ACTIVE_QUESTIONS);
 }
 
 
@@ -153,7 +153,7 @@ int GetChoiceForCPU()
     //Generate a random integer that between 0 and Number_of_Answers-1
     //Google "zero-based arrays" and "modulo operation" if this is confusing.
     //Make sure the # of answers at top of file is correctly defined!
-    return GetRandomByte() % ANSWERS_PER_QUESTION;
+    int result = mp3_PickARandomNumberBetween0AndN(ANSWERS_PER_QUESTION);
 }
 
 
@@ -180,6 +180,7 @@ void PunishPlayerForIncorrectAnswer()
 
     mp3_play_sad_animation();
     SleepProcess(70);
+
     // If you want to give a coin penalty add a:
     // [+Number|COIN_PENALTY] parameter to the
     // PartyPlanner64 header at the top fo the file
@@ -262,10 +263,24 @@ char* GetMessageforWrongAnswer()
 
 
 
-/*****************************************************************************
-**** Helper functions to hide basic Mario Party commands/help readability.****
-******************************************************************************/
 
+//***************************************************************************//
+//***************************************************************************//
+//*************************                  ********************************//
+//**********************         mplib        *******************************//
+//************************                  *********************************//
+//***************************************************************************//
+//***************************************************************************//
+
+// Picks a random number between 0 and N, avoiding modulo bias
+// More on modulo bias, how this function solves it, and why it might 
+// produce not-truly-random numbers here:
+// https://research.kudelskisecurity.com/2020/07/28/the-definitive-guide-to-modulo-bias-and-how-to-avoid-it/
+int mp3_PickARandomNumberBetween0AndN(int n)
+{
+    //TODO - actually implement
+    return GetRandomByte() % n;
+}
 
 // Helper function that shows a message and then tears the message box down
 // after the player confirms the last box.  Don't use for prompt selection.
@@ -326,6 +341,72 @@ void mp3_play_idle_animation()
 {
     func_800F2304(-1, -1, 0);
 }
+
+
+// Long-form implementation from:
+// https://www.techiedelight.com/implement-strcpy-function-c/
+
+// Function to implement strcpy() function
+char* my_strcpy(char* destination, const char* source)
+{
+    // return if no memory is allocated to the destination
+    if (destination == NULL)
+        return NULL;
+ 
+    // take a pointer pointing to the beginning of destination string
+    char *ptr = destination;
+ 
+    // copy the C-string pointed by source into the array
+    // pointed by destination
+    while (*source != '\0')
+    {
+        *destination = *source;
+        destination++;
+        source++;
+    }
+ 
+    // include the terminating null character
+    *destination = '\0';
+ 
+    // destination is returned by standard strcpy()
+    return ptr;
+}
+
+// Second implementation from this site:
+// https://www.techiedelight.com/implement-strncat-function-c/#:~:text=The%20strncat()%20function%20appends,pointer%20to%20the%20destination%20string
+// Stripped out the "num" prototype so that strncat always appends the full string passed, instead of a defined subset.
+
+// Function to implement strncat() function in C
+char* my_strncat(char* destination, const char* source)
+{
+    int i, j;
+ 
+    // move to the end of destination string
+    for (i = 0; destination[i] != '\0'; i++);
+ 
+    // i now points to terminating null character in destination
+ 
+    // Appends num characters of source to the destination string
+    for (j = 0; source[j] != '\0'; j++)
+        destination[i + j] = source[j];
+ 
+    // null terminate destination string
+    destination[i + j] = '\0';
+ 
+    // destination is returned by standard strncat()
+    return destination;
+}
+
+//***************************************************************************//
+//***************************************************************************//
+//*************************                  ********************************//
+//**********************         mplib        *******************************//
+//************************                  *********************************//
+//***************************************************************************//
+//***************************************************************************//
+
+
+
 
 //***************************************************************************//
 //***************************************************************************//
@@ -533,62 +614,8 @@ int GetCorrectAnswerToQuestionByNumber(int question)
     return result;
 }
 
-// Long-form implementation from:
-// https://www.techiedelight.com/implement-strcpy-function-c/
 
-// Function to implement strcpy() function
-char* my_strcpy(char* destination, const char* source)
-{
-    // return if no memory is allocated to the destination
-    if (destination == NULL)
-        return NULL;
- 
-    // take a pointer pointing to the beginning of destination string
-    char *ptr = destination;
- 
-    // copy the C-string pointed by source into the array
-    // pointed by destination
-    while (*source != '\0')
-    {
-        *destination = *source;
-        destination++;
-        source++;
-    }
- 
-    // include the terminating null character
-    *destination = '\0';
- 
-    // destination is returned by standard strcpy()
-    return ptr;
-}
-
-// Second implementation from this site:
-// https://www.techiedelight.com/implement-strncat-function-c/#:~:text=The%20strncat()%20function%20appends,pointer%20to%20the%20destination%20string
-// Stripped out the "num" prototype so that strncat always appends the full string passed, instead of a defined subset.
-
-// Function to implement strncat() function in C
-char* my_strncat(char* destination, const char* source)
-{
-    int i, j;
- 
-    // move to the end of destination string
-    for (i = 0; destination[i] != '\0'; i++);
- 
-    // i now points to terminating null character in destination
- 
-    // Appends num characters of source to the destination string
-    for (j = 0; source[j] != '\0'; j++)
-        destination[i + j] = source[j];
- 
-    // null terminate destination string
-    destination[i + j] = '\0';
- 
-    // destination is returned by standard strncat()
-    return destination;
-}
-
-
-char* CreateSimpleOneLineQuestion(char* questionLineOne)
+char* CreateSimpleOneLineQuestionMessage(char* questionLineOne)
 {
     char* result =
     my_strcpy(result, "\x1A\x1A\x1A\x1A");  // Standard padding for portrait
@@ -598,7 +625,7 @@ char* CreateSimpleOneLineQuestion(char* questionLineOne)
     return result;
 }
 
-char* CreateSimpleTwoLineQuestion(char* questionLineOne, char* questionLineTwo)
+char* CreateSimpleTwoLineQuestionMessage(char* questionLineOne, char* questionLineTwo)
 {
     char* result =
     my_strcpy(result, "\x1A\x1A\x1A\x1A");      // Standard padding for portrait
@@ -611,7 +638,7 @@ char* CreateSimpleTwoLineQuestion(char* questionLineOne, char* questionLineTwo)
     return result;
 }
 
-char* CreateSimpleThreeLineQuestion(char* questionLineOne, char* questionLineTwo, char* questionLineThree)
+char* CreateSimpleThreeLineQuestionMessage(char* questionLineOne, char* questionLineTwo, char* questionLineThree)
 {
     char* result =
     my_strcpy(result, "\x1A\x1A\x1A\x1A");      // Standard padding for portrait
@@ -714,7 +741,7 @@ int GetAnswerToFirstQuestion()
 // Question for index 1
 char* GetSecondQuestionMessage()
 {
-    char* question = CreateSimpleOneLineQuestion("Who wears a green hat");
+    char* question = CreateSimpleOneLineQuestionMessage("Who wears a green hat");
 
     char* correctAnswer = "Luigi";
     char* wrongAnswer1 = "Mario";
@@ -744,7 +771,7 @@ int GetAnswerToSecondQuestion()
 // Question for index 2
 char* GetThirdQuestionMessage()
 {
-    char* question = CreateSimpleTwoLineQuestion("Who wears a yellow hat", "and has a moustache");
+    char* question = CreateSimpleTwoLineQuestionMessage("Who wears a yellow hat", "and has a moustache");
 
     char* correctAnswer = "Wario";
     char* wrongAnswer1 = "Mario";
@@ -773,7 +800,7 @@ int GetAnswerToThirdQuestion()
 // Question for index 3
 char* GetFourthQuestionMessage()
 {
-    char* question = CreateSimpleThreeLineQuestion("Who wears a purple hat", "and has a moustache", "and likes power");
+    char* question = CreateSimpleThreeLineQuestionMessage("Who wears a purple hat", "and has a moustache", "and likes power");
     char* correctAnswer = "Walugi";
     char* wrongAnswer1 = "Mario";
     char* wrongAnswer2 = "Luigi";
