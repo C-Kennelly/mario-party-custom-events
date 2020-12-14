@@ -445,7 +445,7 @@ char* GetQuestionMessageByNumber(int question)
     // Don't forget to override the answer selection in the next 
     //function as well!
     
-    result = GetFirstQuestionMessage();
+    //result = GetFirstQuestionMessage();
 
     return result;
 
@@ -528,7 +528,7 @@ int GetCorrectAnswerToQuestionByNumber(int question)
     // Want to test a sepcific question?  Edit and uncomment 
     // the following line to ensure it always picks a specifc answer.
     
-    result = GetAnswerToFirstQuestion();
+    //result = GetAnswerToFirstQuestion();
 
     return result;
 }
@@ -588,10 +588,47 @@ char* my_strncat(char* destination, const char* source)
 }
 
 
+char* CreateSimpleOneLineQuestion(char* questionLineOne)
+{
+    char* result =
+    my_strcpy(result, "\x1A\x1A\x1A\x1A");  // Standard padding for portrait
+    my_strncat(result, questionLineOne);
+    my_strncat(result, "\xC3");             // ?   
+
+    return result;
+}
+
+char* CreateSimpleTwoLineQuestion(char* questionLineOne, char* questionLineTwo)
+{
+    char* result =
+    my_strcpy(result, "\x1A\x1A\x1A\x1A");      // Standard padding for portrait
+    my_strncat(result, questionLineOne);
+    my_strncat(result, "\x0A");                 // Newline
+    my_strncat(result, "\x1A\x1A\x1A\x1A");     // Standard padding for portrait
+    my_strncat(result, questionLineTwo);
+    my_strncat(result, "\xC3");                 // ?   
+
+    return result;
+}
+
+char* CreateSimpleThreeLineQuestion(char* questionLineOne, char* questionLineTwo, char* questionLineThree)
+{
+    char* result =
+    my_strcpy(result, "\x1A\x1A\x1A\x1A");      // Standard padding for portrait
+    my_strncat(result, questionLineOne);
+    my_strncat(result, "\x0A");                 // Newline
+    my_strncat(result, "\x1A\x1A\x1A\x1A");     // Standard padding for portrait
+    my_strncat(result, questionLineTwo);
+    my_strncat(result, "\x0A");                 // Newline
+    my_strncat(result, "\x1A\x1A\x1A\x1A");     // Standard padding for portrait
+    my_strncat(result, questionLineThree);
+    my_strncat(result, "\xC3");                 // ?   
+
+    return result;
+}
+
 char* GenerateMessageForQuestionWithFourOptions(char* question, char* randomizedOption0, char* randomizedOption1, char* randomizedOption2, char* randomizedOption3)
 {
-    if(randomizedOption4 = ""), then generate a 4 answer question
-
     char result[1024];
 
     my_strcpy(result, "\x0B");                              //start the message
@@ -621,6 +658,8 @@ char* GenerateMessageForQuestionWithFourOptions(char* question, char* randomized
     return result;
 }
 
+
+
 //***************************************************************************//
 //****************************Question***************************************//
 //***************************************************************************//
@@ -645,11 +684,6 @@ char* GetFirstQuestionMessage()
     "\x1A\x1A\x1A\x1A"                  // Standard padding for portrait
     "Quest in The Legend of Zelda\x7B Ocarina of Time"
     "\xC3";                             // ?
-
-    //Implement these wrappers next
-    char* question = CreateSimpleOneLineQuestion("Who wears a red hat");
-    char* question = CreateSimpleTwoLineQuestion("Who wears a red hat", "and has a moustache");
-    char* question = CreateSimpleThreeLineQuestion("Who wears a red hat", "and has a moustache", "and likes cake");
 
 
     char* correctAnswer = "Weird Egg";
@@ -680,34 +714,16 @@ int GetAnswerToFirstQuestion()
 // Question for index 1
 char* GetSecondQuestionMessage()
 {
-    char *result =
-    "\x0B"                          // Start the message
-    "\x1A\x1A\x1A\x1A"  		    // Standard padding
-    "Who wears a green hat"          // **** Question text**** //
-    "\xC3" 						    // ?
-    "\x0A" 						    //Newline
-    "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent    
-    "\x0C"                          // Start option
-    "Mario"                        // **** First option**** //
-    "\x0D"                          // End option
-    "\x0A"                          // Newline
-    "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent 
-    "\x0C"                          // Start option
-    "Luigi"                          // **** Second option**** //
-    "\x0D"                          // End option
-    "\x0A"                          // Newline
-    "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent    
-    "\x0C"                          // Start option
-    "Wario"                         //// **** Third option**** //
-    "\x0D"                          // End option
-    "\x0A"                          // Newline
-    "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent 
-    "\x0C"                          // Start option
-    "Waluigi"                       // **** Fourth option**** //
-    "\x0D"                          // End option
-    "\xFF";						    //Show prompt to continue
+    char* question = CreateSimpleOneLineQuestion("Who wears a green hat");
 
+    char* correctAnswer = "Luigi";
+    char* wrongAnswer1 = "Mario";
+    char* wrongAnswer2 = "Wario";
+    char* wrongAnswer3 = "Waluigi";
+
+    char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3);
     return result;
+
 }
 // Answer to the question at index 1.
 int GetAnswerToSecondQuestion()
@@ -718,7 +734,7 @@ int GetAnswerToSecondQuestion()
     //    return 2 = Third option is correct
     //    return 3 = Fourth option is correct
 
-    return 1;
+    return 0;
 }
 
 //***************************************************************************//
@@ -728,33 +744,14 @@ int GetAnswerToSecondQuestion()
 // Question for index 2
 char* GetThirdQuestionMessage()
 {
-    char *result =
-    "\x0B"                          // Start the message
-    "\x1A\x1A\x1A\x1A"  		    // Standard padding
-    "Who wears a yellow hat"          // **** Question text**** //
-    "\xC3" 						    // ?
-    "\x0A" 						    //Newline
-    "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent    
-    "\x0C"                          // Start option
-    "Mario"                        // **** First option**** //
-    "\x0D"                          // End option
-    "\x0A"                          // Newline
-    "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent 
-    "\x0C"                          // Start option
-    "Luigi"                          // **** Second option**** //
-    "\x0D"                          // End option
-    "\x0A"                          // Newline
-    "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent    
-    "\x0C"                          // Start option
-    "Wario"                         //// **** Third option**** //
-    "\x0D"                          // End option
-    "\x0A"                          // Newline
-    "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent 
-    "\x0C"                          // Start option
-    "Waluigi"                       // **** Fourth option**** //
-    "\x0D"                          // End option
-    "\xFF";						    //Show prompt to continue
+    char* question = CreateSimpleTwoLineQuestion("Who wears a yellow hat", "and has a moustache");
 
+    char* correctAnswer = "Wario";
+    char* wrongAnswer1 = "Mario";
+    char* wrongAnswer2 = "Luigi";
+    char* wrongAnswer3 = "Waluigi";
+
+    char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3);
     return result;
 }
 // Answer to the question at index 2.
@@ -766,7 +763,7 @@ int GetAnswerToThirdQuestion()
     //    return 2 = Third option is correct
     //    return 3 = Fourth option is correct
 
-    return 2;
+    return 0;
 }
 
 //***************************************************************************//
@@ -776,33 +773,13 @@ int GetAnswerToThirdQuestion()
 // Question for index 3
 char* GetFourthQuestionMessage()
 {
-    char *result =
-    "\x0B"                          // Start the message
-    "\x1A\x1A\x1A\x1A"  		    // Standard padding
-    "Who wears a purple hat"          // **** Question text**** //
-    "\xC3" 						    // ?
-    "\x0A" 						    //Newline
-    "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent    
-    "\x0C"                          // Start option
-    "Mario"                        // **** First option**** //
-    "\x0D"                          // End option
-    "\x0A"                          // Newline
-    "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent 
-    "\x0C"                          // Start option
-    "Luigi"                          // **** Second option**** //
-    "\x0D"                          // End option
-    "\x0A"                          // Newline
-    "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent    
-    "\x0C"                          // Start option
-    "Wario"                         //// **** Third option**** //
-    "\x0D"                          // End option
-    "\x0A"                          // Newline
-    "\x1A\x1A\x1A\x1A\x1A\x1A"      // Little more for option indent 
-    "\x0C"                          // Start option
-    "Waluigi"                       // **** Fourth option**** //
-    "\x0D"                          // End option
-    "\xFF";						    //Show prompt to continue
+    char* question = CreateSimpleThreeLineQuestion("Who wears a purple hat", "and has a moustache", "and likes power");
+    char* correctAnswer = "Walugi";
+    char* wrongAnswer1 = "Mario";
+    char* wrongAnswer2 = "Luigi";
+    char* wrongAnswer3 = "Wario";
 
+    char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3);
     return result;
 }
 // Answer to the question at index 3.
@@ -814,7 +791,7 @@ int GetAnswerToFourthQuestion()
     //    return 2 = Third option is correct
     //    return 3 = Fourth option is correct
 
-    return 3;
+    return 0;
 }
 
 //***************************************************************************//
