@@ -110,12 +110,14 @@ void DisplayGreetingMessage()
 int AskTheQuestion()
 {
     int index = PickARandomQuestionIndex();
+    
+    int correctAnswer = 0;
 
-    char *question_msg = GetQuestionMessageByNumber(index);
+    // function will return the message and set the correct answer because we passed by 
+    char *question_msg = GetQuestionMessageByNumber(index, &correctAnswer);
+
 
     ShowMessage(QUIZ_GIVER_PORTRAIT, question_msg, 0, 0, 0, 0, 0);
-
-    int correctAnswer = GetCorrectAnswerToQuestionByNumber(index);
 
     return correctAnswer;
 }
@@ -158,13 +160,11 @@ int GetChoiceForCPU()
     int result = mp3_PickARandomNumberBetween0AndN(ANSWERS_PER_QUESTION);
 }
 
-
 // When the player gets a correct answer, run this logic.
 void RewardPlayerForCorrectAnswer()
 {
         char *right_msg = GetMessageForRightAnswer();
         mp3_ShowMessageWithConfirmation(QUIZ_GIVER_PORTRAIT, right_msg);
-        mp3_play_joy_animation();
         GraduallyAdjustPlayerCoins(COIN_REWARD);
 
         return;
@@ -197,7 +197,8 @@ void PunishPlayerForIncorrectAnswer()
 void GraduallyAdjustPlayerCoins(int adjustmentAmount)
 {
     int currentPlayerIndex = GetCurrentPlayerIndex();
-
+    mp3_play_joy_animation();
+    
     AdjustPlayerCoinsGradual(currentPlayerIndex, adjustmentAmount);
     ShowPlayerCoinChange(currentPlayerIndex, adjustmentAmount);
 
@@ -264,8 +265,6 @@ char* GetMessageforWrongAnswer()
 }
 
 
-
-
 //***************************************************************************//
 //***************************************************************************//
 //*************************                  ********************************//
@@ -274,21 +273,25 @@ char* GetMessageforWrongAnswer()
 //***************************************************************************//
 //***************************************************************************//
 
+void mp3_DebugMessage(char* message)
+{
+    mp3_ShowMessageWithConfirmation(0x16, message);
+}
+
 // Picks a random number between 0 and N, avoiding modulo bias via rejection sampling
 // Edge case: 1/256 chance this gives a biased result, so fine for mp3 terms.
 // Don't use this!!! -->  { return GetRandomByte() % n; } 
 // https://zuttobenkyou.wordpress.com/2012/10/18/generating-random-numbers-without-modulo-bias/
 int mp3_PickARandomNumberBetween0AndN(int n)
 {
-    int result = 0;
-
-    //Using consts for a little bit of optimization.
-    const int randMax = 255;                            // 255 is the maximum value of a random byte, which is how mp3 gets random numbers
-    const int randExcess = (randMax + 1) % n;           // Caluclate the biased remainder
-    const int randLimit = randMax - randExcess;         // Anything above randLimit would create modulo bias, so...
-    while (result = GetRandomByte() > randLimit) {};    // Reject any random bytes with values above randLimit, and roll again.
-    
-    return result % n;                                  //Since we rejected the excess samples, we've guaranteed an unbiased result.
+    //todo - why does this always produce ?
+    //int result;
+    //int randMax = 255;                            // 255 is the maximum value of a random byte, which is how mp3 gets random numbers
+    //int randExcess = (randMax + 1) % n;           // Caluclate the biased remainder
+    //int randLimit = randMax - randExcess;         // Anything above randLimit would create modulo bias, so...
+    //while (result = GetRandomByte() > randLimit) {};    // Reject any random bytes with values above randLimit, and roll again.
+    //return result % n;                                  //Since we rejected the excess samples, we've guaranteed an unbiased result.
+    return GetRandomByte() % n;
 }
 
 // Helper function that shows a message and then tears the message box down
@@ -331,21 +334,19 @@ void mp3_TeardownMessageBox()
   6 - Do a dance
 */
 
-//(-1, 3, 0)
 //Plays the sad animation, with no loop
 void mp3_play_sad_animation() 
 {
     func_800F2304(-1, 3, 0); // Sad animation, no loop
 }
 
-//(-1, 5, 0)
 //Plays the joy animation, with no loop
 void mp3_play_joy_animation() 
 {
     func_800F2304(-1, 5, 0); // joy animation, no loop
 }
 
-//(-1, -1, 0)
+// Plays the idle animation with no loop.
 void mp3_play_idle_animation() 
 {
     func_800F2304(-1, -1, 0);
@@ -406,10 +407,41 @@ char* my_strncat(char* destination, const char* source)
     return destination;
 }
 
+// Returns the largest of two numbers.  Ties go to the first argument.
+int my_max(int a1, int a2)
+{
+    if (a1 >= a2) { return a1; }
+    else { return a2; }
+}
+
+
+// Returns the largest of three numbers
+// C doesn't support overloading, don't hate me
+int my_max3(int a1, int a2, int a3)
+{
+    int result = a1;
+    result = my_max(result, a2);
+    result = my_max(result, a3);
+
+    return result;
+}
+
+// Returns the largest of four numbers
+// C doesn't support overloading, don't hate me
+int my_max4(int a1, int a2, int a3, int a4)
+{
+    int result = a1;
+    result = my_max(result, a2);
+    result = my_max(result, a3);
+    result = my_max(result, a3);
+    
+    return result;
+}
+
 //***************************************************************************//
 //***************************************************************************//
 //*************************                  ********************************//
-//**********************         mplib        *******************************//
+//**********************         /mplib       *******************************//
 //************************                  *********************************//
 //***************************************************************************//
 //***************************************************************************//
@@ -458,75 +490,76 @@ char* my_strncat(char* destination, const char* source)
 // 
 // If the number doesn't have a question assigned, it will default
 // to the first question.
-char* GetQuestionMessageByNumber(int question)
+char* GetQuestionMessageByNumber(int question, int* correctAnswerPtr)
 {
     char *result;
 
-    
     switch (question)
     {
         case (0):
-            result = GetFirstQuestionMessage();
+            result = GetFirstQuestionMessage(correctAnswerPtr);
             break;
         case (1):
-            result = GetSecondQuestionMessage();
+            result = GetSecondQuestionMessage(correctAnswerPtr);
             break;
         case (2):
-            result = GetThirdQuestionMessage();
+            result = GetThirdQuestionMessage(correctAnswerPtr);
             break;
         case (3):
-            result = GetFourthQuestionMessage();
+            result = GetFourthQuestionMessage(correctAnswerPtr);
             break;
+    /*
         case (4):
-            result = GetFifthQuestionMessage();
+            result = GetFifthQuestionMessage(&correctAnswer);
             break;
         case (5):
-            result = GetSixthQuestionMessage();
+            result = GetSixthQuestionMessage(&correctAnswer);
             break;
         case (6):
-            result = GetSeventhQuestionMessage();
+            result = GetSeventhQuestionMessage(&correctAnswer);
             break;
         case (7):
-            result = GetEigthQuestionMessage();
+            result = GetEigthQuestionMessage(&correctAnswer);
             break;
         case (8):
-            result = GetNinthQuestionMessage();
+            result = GetNinthQuestionMessage(&correctAnswer);
             break;
         case (9):
-            result = GetTenthQuestionMessage();
+            result = GetTenthQuestionMessage(&correctAnswer);
             break;
         case (10):
-            result = GetEleventhQuestionMessage();
+            result = GetEleventhQuestionMessage(&correctAnswer);
             break;
         case (11):
-            result = GetTwelfthQuestionMessage();
+            result = GetTwelfthQuestionMessage(&correctAnswer();
             break;
         case (12):
-            result = GetThirteenthQuestionMessage();
+            result = GetThirteenthQuestionMessage(&correctAnswer);
             break;
         case (13):
-            result = GetFourteenthQuestionMessage();
+            result = GetFourteenthQuestionMessage(&correctAnswer);
             break;
         case (14):
-            result = GetFifteenthQuestionMessage();
+            result = GetFifteenthQuestionMessage(&correctAnswer);
             break;
         case (15):
-            result = GetSixteenthQuestionMessage();
+            result = GetSixteenthQuestionMessage(&correctAnswer);
             break;
         case (16):
-            result = GetSeventeenthQuestionMessage();
+            result = GetSeventeenthQuestionMessage(&correctAnswer);
             break;
         case (17):
-            result = GetEighteenthQuestionMessage();
+            result = GetEighteenthQuestionMessage(&correctAnswer);
             break;
         case (18):
-            result = GetNinteenthQuestionMessage();
+            result = GetNinteenthQuestionMessage(&correctAnswer);
             break;
         case (19):
-            result = GetTwentiethQuestionMessage();
+            result = GetTwentiethQuestionMessage(&correctAnswer);
             break;
+    */
         default:
-           result = GetFirstQuestionMessage();
+           result = GetFirstQuestionMessage(correctAnswerPtr);
            return result;
     }
 
@@ -540,89 +573,6 @@ char* GetQuestionMessageByNumber(int question)
     return result;
 
 }
-// Returns a answer that corresponds to the number passed in.
-//
-// If the number doesn't have a question assigned, it will default
-// to the first question.
-int GetCorrectAnswerToQuestionByNumber(int question)
-{
-    int *result;
-
-    switch (question)
-    {
-        case (0):
-            result = GetAnswerToFirstQuestion();
-            break;
-        case (1):
-            result = GetAnswerToSecondQuestion();
-            break;
-        case (2):
-            result = GetAnswerToThirdQuestion();
-            break;
-        case (3):
-            result = GetAnswerToFourthQuestion();
-            break;
-        case (4):
-            result = GetAnswerToFifthQuestion();
-            break;
-        case (5):
-            result = GetAnswerToSixthQuestion();
-            break;
-        case (6):
-            result = GetAnswerToSeventhQuestion();
-            break;
-        case (7):
-            result = GetAnswerToEigthQuestion();
-            break;
-        case (8):
-            result = GetAnswerToNinthQuestion();
-            break;
-        case (9):
-            result = GetAnswerToTenthQuestion();
-            break;
-        case (10):
-            result = GetAnswerToEleventhQuestion();
-            break;
-        case (11):
-            result = GetAnswerToTwelfthQuestion();
-            break;
-        case (12):
-            result = GetAnswerToThirteenthQuestion();
-            break;
-        case (13):
-            result = GetAnswerToFourteenthQuestion();
-            break;
-        case (14):
-            result = GetAnswerToFifteenthQuestion();
-            break;
-        case (15):
-            result = GetAnswerToSixteenthQuestion();
-            break;
-        case (16):
-            result = GetAnswerToSeventeenthQuestion();
-            break;
-        case (17):
-            result = GetAnswerToEighteenthQuestion();
-            break;
-        case (18):
-            result = GetAnswerToNinteenthQuestion();
-            break;
-        case (19):
-            result = GetAnswerToTwentiethQuestion();
-            break;
-        default:
-           result = GetAnswerToFirstQuestion();
-           return result;
-    }
-
-    // Want to test a sepcific question?  Edit and uncomment 
-    // the following line to ensure it always picks a specifc answer.
-    
-    //result = GetAnswerToFirstQuestion();
-
-    return result;
-}
-
 
 char* CreateSimpleOneLineQuestionMessage(char* questionLineOne)
 {
@@ -663,35 +613,192 @@ char* CreateSimpleThreeLineQuestionMessage(char* questionLineOne, char* question
     return result;
 }
 
-char* GenerateMessageForQuestionWithFourOptions(char* question, char* randomizedOption0, char* randomizedOption1, char* randomizedOption2, char* randomizedOption3)
+
+
+char* GenerateMessageForQuestionWithFourOptions(char* question, char* correctAnswer, char* wrongAnswer1, char* wrongAnswer2, char* wrongAnswer3, int* correctAnswerIndexPtr)
 {
     char result[1024];
+
+    char* randomizedOptions[4];
+
+
+    //*correctAnswerIndexPtr = RandomizeOptionOrder(&randomizedOptions, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3);
+    *correctAnswerIndexPtr = RandomizedOptionOrderTest(&randomizedOptions, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3);
 
     my_strcpy(result, "\x0B");                              //start the message
     my_strncat(result, question);
     my_strncat(result, "\x0A");                             // Newline
     my_strncat(result, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
     my_strncat(result, "\x0C");                             // Start option
-    my_strncat(result, randomizedOption0);
+    my_strncat(result, randomizedOptions[0]);
     my_strncat(result, "\x0D");                             // End option
     my_strncat(result, "\x0A");                             // Newline
     my_strncat(result, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
     my_strncat(result, "\x0C");                             // Start option
-    my_strncat(result, randomizedOption1);
+    my_strncat(result, randomizedOptions[1]);
     my_strncat(result, "\x0D");                             // End option
     my_strncat(result, "\x0A");                             // Newline
     my_strncat(result, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
     my_strncat(result, "\x0C");                             // Start option
-    my_strncat(result, randomizedOption2);
+    my_strncat(result, randomizedOptions[2]);
     my_strncat(result, "\x0D");                             // End option
     my_strncat(result, "\x0A");                             // Newline
     my_strncat(result, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
     my_strncat(result, "\x0C");                             // Start option
-    my_strncat(result, randomizedOption3);
+    my_strncat(result, randomizedOptions[3]);
     my_strncat(result, "\x0D");                             // End option
     my_strncat(result, "\xFF");                             //Show prompt to continue
 
     return result;
+}
+
+int RandomizedOptionOrderTest(char* randomizedOptions[], char* correctAnswer, char* wrongAnswer1, char* wrongAnswer2, char* wrongAnswer3)
+{
+    int result = 0;
+
+    randomizedOptions[0] = wrongAnswer1;
+    randomizedOptions[1] = correctAnswer;
+    result = 1;
+    randomizedOptions[2] = wrongAnswer2;
+    randomizedOptions[3] = wrongAnswer3;
+
+    return result;
+}
+
+// Generate a random number for each option.  Sort the numbers in ascending order.
+// When the correct answer gets assigned, keep track of the index it was set to.
+// randomizedOptions is being modified and will have the 4 options randomized for the calling function.
+int RandomizeOptionOrder(char* randomizedOptions[], char* correctAnswer, char* wrongAnswer1, char* wrongAnswer2, char* wrongAnswer3)
+{
+    int correctAnswerSortingNumber = GetRandomByte();
+    int wrongAnswer1SortingNumber = GetRandomByte();
+    int wrongAnswer2SortingNumber = GetRandomByte();
+    int wrongAnswer3SortingNumber = GetRandomByte();
+
+    int biggestSortingNumber = my_max4(correctAnswerSortingNumber, wrongAnswer1SortingNumber, wrongAnswer2SortingNumber, wrongAnswer3SortingNumber);
+    int correctAnswerIndex;
+
+    //switch(case) must have constant expression =/
+    if( biggestSortingNumber == correctAnswerSortingNumber)
+    {
+        randomizedOptions[0] = correctAnswer;
+        correctAnswerIndex = 0;
+        RandomizeRemainingThreeIncorrectOptions(&randomizedOptions, wrongAnswer1, wrongAnswer2, wrongAnswer3);
+    } 
+    else if (biggestSortingNumber == wrongAnswer1SortingNumber)
+    {
+        randomizedOptions[0] = wrongAnswer1;
+        correctAnswerIndex = RandomizeRemainingThreeOptions(&randomizedOptions, correctAnswer, wrongAnswer2, wrongAnswer3);
+    } 
+    else if (biggestSortingNumber == wrongAnswer2SortingNumber)
+    {
+        randomizedOptions[0] = wrongAnswer2;
+        correctAnswerIndex = RandomizeRemainingThreeOptions(&randomizedOptions, correctAnswer, wrongAnswer1, wrongAnswer3);
+    }
+    else //biggestSortingNumber == wrongAnswer3SortingNumber
+    {
+        randomizedOptions[0] = wrongAnswer3;
+        correctAnswerIndex = RandomizeRemainingThreeOptions(&randomizedOptions, correctAnswer, wrongAnswer1, wrongAnswer2);
+    }
+
+
+    return correctAnswerIndex;
+}
+
+void RandomizeRemainingThreeIncorrectOptions(char* randomizedOptions[], char* wrongAnswer1, char* wrongAnswer2, char* wrongAnswer3)
+{
+    int wrongAnswer1SortingNumber = GetRandomByte();
+    int wrongAnswer2SortingNumber = GetRandomByte();
+    int wrongAnswer3SortingNumber = GetRandomByte();
+
+    int biggestSortingNumber = my_max3(wrongAnswer1SortingNumber, wrongAnswer2SortingNumber, wrongAnswer3SortingNumber);
+
+    if(biggestSortingNumber == wrongAnswer1SortingNumber)
+    {
+        randomizedOptions[1] = wrongAnswer1;
+        if(wrongAnswer2SortingNumber > wrongAnswer3SortingNumber) {
+            randomizedOptions[2] = wrongAnswer2;
+            randomizedOptions[3] = wrongAnswer3;
+        } else { 
+            randomizedOptions[2] = wrongAnswer3;
+            randomizedOptions[3] = wrongAnswer2;
+        }
+    }
+    else if (biggestSortingNumber == wrongAnswer2SortingNumber)
+    {
+        randomizedOptions[1] = wrongAnswer2;
+        if(wrongAnswer1SortingNumber > wrongAnswer3SortingNumber) {
+            randomizedOptions[2] = wrongAnswer1;
+            randomizedOptions[3] = wrongAnswer3;
+        } else { 
+            randomizedOptions[2] = wrongAnswer3;
+            randomizedOptions[3] = wrongAnswer1;
+        }
+    }
+    else // biggestSortingNumber == wrongAnswer3SortingNumber
+    {
+        randomizedOptions[1] = wrongAnswer3;
+        if(wrongAnswer1SortingNumber > wrongAnswer2SortingNumber) {
+            randomizedOptions[2] = wrongAnswer1;
+            randomizedOptions[3] = wrongAnswer2;
+        } else { 
+            randomizedOptions[2] = wrongAnswer2;
+            randomizedOptions[3] = wrongAnswer1;
+        }
+    }
+
+    return;
+}
+
+int RandomizeRemainingThreeOptions(char* randomizedOptions[], char* correctAnswer, char* wrongAnswer1, char* wrongAnswer2)
+{
+    int correctAnswerSortingNumber = GetRandomByte();
+    int wrongAnswer1SortingNumber = GetRandomByte();
+    int wrongAnswer2SortingNumber = GetRandomByte();
+
+    int biggestSortingNumber = my_max3(correctAnswerSortingNumber, wrongAnswer1SortingNumber, wrongAnswer2SortingNumber);
+    int correctAnswerIndex;
+
+    if(biggestSortingNumber == correctAnswerSortingNumber)
+    {
+        randomizedOptions[1] = correctAnswer;
+        correctAnswerIndex = 1;
+        if(wrongAnswer1SortingNumber > wrongAnswer2SortingNumber) {
+            randomizedOptions[2] = wrongAnswer1;
+            randomizedOptions[3] = wrongAnswer2;
+        } else { 
+            randomizedOptions[2] = wrongAnswer2;
+            randomizedOptions[3] = wrongAnswer1;
+        }
+    }
+    else if(biggestSortingNumber == wrongAnswer1SortingNumber)
+    {
+        randomizedOptions[1] = wrongAnswer1;
+        if(correctAnswerSortingNumber > wrongAnswer2SortingNumber) {
+            randomizedOptions[2] = correctAnswer;
+            randomizedOptions[3] = wrongAnswer2;
+            correctAnswerIndex = 2;
+        } else { 
+            randomizedOptions[2] = wrongAnswer2;
+            randomizedOptions[3] = correctAnswer;
+            correctAnswerIndex = 3;
+        }
+    }
+    else // biggestSortingNumber == wrongAnswer2SortingNumber
+    {
+        randomizedOptions[1] = wrongAnswer2;
+        if(correctAnswerIndex > wrongAnswer1SortingNumber) {
+            randomizedOptions[2] = correctAnswer;
+            randomizedOptions[3] = wrongAnswer1;
+            correctAnswerIndex = 2;
+        } else { 
+            randomizedOptions[2] = wrongAnswer1;
+            randomizedOptions[3] = correctAnswer;
+            correctAnswerIndex = 3;
+        }
+    }
+    
+    return correctAnswerIndex;
 }
 
 
@@ -700,12 +807,8 @@ char* GenerateMessageForQuestionWithFourOptions(char* question, char* randomized
 //****************************Question***************************************//
 //***************************************************************************//
 
-
-
-
-
 // Question for index 0
-char* GetFirstQuestionMessage()
+char* GetFirstQuestionMessage(int* correctAnswerIndexPtr)
 {
     // Mario Party 3 special characters documented at:
     // https://github.com/PartyPlanner64/PartyPlanner64/wiki/String-Encoding
@@ -728,19 +831,9 @@ char* GetFirstQuestionMessage()
     char* wrongAnswer3 = "Eyeball Frog";
 
     //when ready to do answers, have the same function that returns the correct answer display the question 
-    char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3);
+    char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+    
     return result;
-}
-// Answer to the question at index 0.
-int GetAnswerToFirstQuestion()
-{
-    // Remember, the answer choice is 0-based:
-    //    return 0 = First option is correct
-    //    return 1 = Second option is correct
-    //    return 2 = Third option is correct
-    //    return 3 = Fourth option is correct
-
-    return 0;
 }
 
 //***************************************************************************//
@@ -748,7 +841,7 @@ int GetAnswerToFirstQuestion()
 //***************************************************************************//
 
 // Question for index 1
-char* GetSecondQuestionMessage()
+char* GetSecondQuestionMessage(int* correctAnswerIndexPtr)
 {
     char* question = CreateSimpleOneLineQuestionMessage("Who wears a green hat");
 
@@ -757,20 +850,9 @@ char* GetSecondQuestionMessage()
     char* wrongAnswer2 = "Wario";
     char* wrongAnswer3 = "Waluigi";
 
-    char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3);
+    char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
     return result;
-
-}
-// Answer to the question at index 1.
-int GetAnswerToSecondQuestion()
-{
-    // Remember, the answer choice is 0-based:
-    //    return 0 = First option is correct
-    //    return 1 = Second option is correct
-    //    return 2 = Third option is correct
-    //    return 3 = Fourth option is correct
-
-    return 0;
 }
 
 //***************************************************************************//
@@ -778,7 +860,7 @@ int GetAnswerToSecondQuestion()
 //***************************************************************************//
 
 // Question for index 2
-char* GetThirdQuestionMessage()
+char* GetThirdQuestionMessage(int* correctAnswerIndexPtr)
 {
     char* question = CreateSimpleTwoLineQuestionMessage("Who wears a yellow hat", "and has a moustache");
 
@@ -787,19 +869,9 @@ char* GetThirdQuestionMessage()
     char* wrongAnswer2 = "Luigi";
     char* wrongAnswer3 = "Waluigi";
 
-    char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3);
+    char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+   
     return result;
-}
-// Answer to the question at index 2.
-int GetAnswerToThirdQuestion()
-{
-    // Remember, the answer choice is 0-based:
-    //    return 0 = First option is correct
-    //    return 1 = Second option is correct
-    //    return 2 = Third option is correct
-    //    return 3 = Fourth option is correct
-
-    return 0;
 }
 
 //***************************************************************************//
@@ -807,7 +879,7 @@ int GetAnswerToThirdQuestion()
 //***************************************************************************//
 
 // Question for index 3
-char* GetFourthQuestionMessage()
+char* GetFourthQuestionMessage(int* correctAnswerIndexPtr)
 {
     char* question = CreateSimpleThreeLineQuestionMessage("Who wears a purple hat", "and has a moustache", "and likes power");
     char* correctAnswer = "Walugi";
@@ -815,20 +887,13 @@ char* GetFourthQuestionMessage()
     char* wrongAnswer2 = "Luigi";
     char* wrongAnswer3 = "Wario";
 
-    char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3);
+    char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
     return result;
-}
-// Answer to the question at index 3.
-int GetAnswerToFourthQuestion()
-{
-    // Remember, the answer choice is 0-based:
-    //    return 0 = First option is correct
-    //    return 1 = Second option is correct
-    //    return 2 = Third option is correct
-    //    return 3 = Fourth option is correct
 
-    return 0;
 }
+
+
+
 
 //***************************************************************************//
 //****************************Question***************************************//
