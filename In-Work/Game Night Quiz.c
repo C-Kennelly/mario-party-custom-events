@@ -109,7 +109,7 @@ void DisplayGreetingMessage()
 // Ask a random quiz question and return the correct answer for that question
 int AskTheQuestion()
 {
-    int index = PickRandomQuestionIndex();
+    int index = PickARandomQuestionIndex();
 
     char *question_msg = GetQuestionMessageByNumber(index);
 
@@ -119,8 +119,10 @@ int AskTheQuestion()
 
     return correctAnswer;
 }
-// Generate a random number to pick an Active Question.
-int PickRandomQuestionIndex()
+
+// Pick a random question from the beginning of the bank
+// all the way up to the 
+int PickARandomQuestionIndex()
 {
     return mp3_PickARandomNumberBetween0AndN(ACTIVE_QUESTIONS);
 }
@@ -272,14 +274,21 @@ char* GetMessageforWrongAnswer()
 //***************************************************************************//
 //***************************************************************************//
 
-// Picks a random number between 0 and N, avoiding modulo bias
-// More on modulo bias, how this function solves it, and why it might 
-// produce not-truly-random numbers here:
-// https://research.kudelskisecurity.com/2020/07/28/the-definitive-guide-to-modulo-bias-and-how-to-avoid-it/
+// Picks a random number between 0 and N, avoiding modulo bias via rejection sampling
+// Edge case: 1/256 chance this gives a biased result, so fine for mp3 terms.
+// Don't use this!!! -->  { return GetRandomByte() % n; } 
+// https://zuttobenkyou.wordpress.com/2012/10/18/generating-random-numbers-without-modulo-bias/
 int mp3_PickARandomNumberBetween0AndN(int n)
 {
-    //TODO - actually implement
-    return GetRandomByte() % n;
+    int result = 0;
+
+    //Using consts for a little bit of optimization.
+    const int randMax = 255;                            // 255 is the maximum value of a random byte, which is how mp3 gets random numbers
+    const int randExcess = (randMax + 1) % n;           // Caluclate the biased remainder
+    const int randLimit = randMax - randExcess;         // Anything above randLimit would create modulo bias, so...
+    while (result = GetRandomByte() > randLimit) {};    // Reject any random bytes with values above randLimit, and roll again.
+    
+    return result % n;                                  //Since we rejected the excess samples, we've guaranteed an unbiased result.
 }
 
 // Helper function that shows a message and then tears the message box down
