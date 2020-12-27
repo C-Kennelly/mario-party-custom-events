@@ -1206,20 +1206,23 @@ void mp3_DebugMessage(char* message)
     mp3_ShowMessageWithConfirmation(0x16, message);
 }
 
-// Picks a random number between 0 and N, avoiding modulo bias via rejection sampling
-// Edge case: 1/256 chance this gives a biased result, so fine for mp3 terms.
-// Don't use this!!! -->  { return GetRandomByte() % n; } 
+// Picks a random number between 0 and N, using rejection sampling to avoid modulo bias.
+// IMPORTANT.  Maximum random number we could generate here would be 255 (max value of a byte).
+// Don't use this!!! -->  { return GetRandomByte() % n; } or you may bias your random generation!
 // https://zuttobenkyou.wordpress.com/2012/10/18/generating-random-numbers-without-modulo-bias/
 int mp3_PickARandomNumberBetween0AndN(int n)
 {
-    //todo - why does this always produce ?
-    //int result;
-    //int randMax = 255;                            // 255 is the maximum value of a random byte, which is how mp3 gets random numbers
-    //int randExcess = (randMax + 1) % n;           // Caluclate the biased remainder
-    //int randLimit = randMax - randExcess;         // Anything above randLimit would create modulo bias, so...
-    //while (result = GetRandomByte() > randLimit) {};    // Reject any random bytes with values above randLimit, and roll again.
-    //return result % n;                                  //Since we rejected the excess samples, we've guaranteed an unbiased result.
-    return GetRandomByte() % n;
+    int result = GetRandomByte();                   //Get a random number by picking a random byte.
+    
+    int randMax = 255;                              // 255 is the maximum value of a byte.
+    int randExcess = (randMax % n) + 1;             // Caluclate the biased remainder.  1/256 edge case when (randMax == n) but the result is just some wasted cycles, so acceptable.
+    int randLimit = randMax - randExcess;           // Anything above randLimit would create modulo bias, so...
+    while (result > randLimit)                      // Reject any random bytes with values above randLimit...
+    {
+        result = GetRandomByte();                   // and roll again by selecting a new byte.
+    }    
+
+    return result % n;                              //Since we rejected the excess samples, we've guaranteed an unbiased result.
 }
 
 // Helper function that shows a message and then tears the message box down
@@ -1268,6 +1271,7 @@ void mp3_play_idle_animation()
 {
     func_800F2304(-1, -1, 0);
 }
+
 
 
 
