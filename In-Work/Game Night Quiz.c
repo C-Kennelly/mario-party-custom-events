@@ -151,7 +151,7 @@ int GetChoiceForCPU()
     // are 4 answers to every qeustion.
     int result = mp3_PickARandomNumberBetween0AndN(3);
 
-    //return result;
+    return result;
 }
 
 // When the player gets a correct answer, run this logic.
