@@ -3,38 +3,65 @@
 // EXECUTION: Direct
 // PARAM: +Number|COIN_REWARD
 
+#include "ultra64.h"
+
+// This is version 1.0
+//
+// There may be an update available at:
+// https://github.com/c-kennelly/mario-party-custom-events
+// You can also report a bug as an iusse (and maybe a PR that fixes it?)
+
+//***************************************************************************//
+//******************** Quiz Configuration ***********************************//
+//***************************************************************************//
+
+// How many questions should the quiz use?
+#define ACTIVE_QUESTIONS 6
+
+// The character portrait of the character who is giving the quiz.
+#define QUIZ_GIVER_PORTRAIT 3
+// Want to change the picture?  Find options the PartyPlanner64 wiki:
+// https://github.com/PartyPlanner64/PartyPlanner64/wiki/Displaying-Messages
 
 
 //***************************************************************************//
 //*********************** Description** *************************************//
 //***************************************************************************//
 // This event challenges a player to a quiz and asks them a random question
-// from the question bank.  By default, the question bank has 6 questions in it
-// but it is very simple to use up to 30 questions.
+// from the question bank.  Each time a question appears, the choices will
+// appear in a different order.  
 //
-// If the player gets the question right, a coin reward is given.
+// By default, the question bank has 6 questions active,
+// but it is very simple to use up to 50 questions.
+//
+// By default, if the player gets the question right, a coin reward is given.
 // If the player gets the question wrong, nothing happens.
+// 
 //
 //
-// The functionality is similar to Airsola's "Trivia Quiz" event, but written
-// in C to make it easier to customize.  You can find that original quiz at
+// The functionality is very similar to Airsola's "Trivia Quiz" event, 
+// but written in C. You can find that original quiz at
 // www.mariopartylegacy.com/forum/index.php?action=downloads;sa=view;down=305
 //
 //
-// Finally, this file is commented to make it as easy for non-programmers 
-// to edit, so I've leaned on the verbose side for comments.  If you've a
-// working knowledge of C, feel free to just jump to main() and see what's
-// going on. 
+//
+// Finally, this file is commented to make it as easy as possible for 
+// non-programmers to edit and beginners to pull code samples, so I've 
+// leaned on the verbose side for comments.  If you've a working knowledge 
+// of C, feel free to just jump to main() and see what's going on. 
 
+
+//***************************************************************************//
+//***********************     Changelist      *******************************//
+//***************************************************************************//
+//   Version 1.0 - First version of the event!
 
 
 //***************************************************************************//
 //******************** Where to Customize ***********************************//
 //***************************************************************************//
-//
 // Jump to "Quiz Configuration" to change the number of active questions in the
-// quiz bank, the number of answers to each question, or the character who is
-// asking the questions.
+// quiz bank, or the character who is giving the quiz the questions.
 //
 // Jump to "Message Configuration" to customize messages such as the greeting
 // or when a player gets a correct/incorrect answer.
@@ -43,32 +70,12 @@
 // gets the answer right, or "PunishPlayerForIncorrectAnswer()" to change
 // what happens when the player gets the answer wrong.
 //
-// Finally, jump to "Question definitions" to customize the question bank.
+// Finally, jump to "Question Definitions" to customize the question bank.
 
 
 
 //***************************************************************************//
-//******************** Quiz Configuration ***********************************//
-//***************************************************************************//
-
-// How many questions should the quiz use?
-//
-// Read the comments in the question config section at
-// the bottom of the file for more info on how this works.
-#define ACTIVE_QUESTIONS 4
-
-
-
-// Index for the character portrait of the character who is giving the quiz.
-// Defaults to 3, which is Toad.
-#define QUIZ_GIVER_PORTRAIT 3
-// Want to change the picture?  Find more on the PartyPlanner64 wiki:
-// https://github.com/PartyPlanner64/PartyPlanner64/wiki/Displaying-Messages
-
-#include "ultra64.h"
-
-//***************************************************************************//
-//******************** Quiz Logic *******************************************//
+//*************************** Quiz Logic ************************************//
 //***************************************************************************//
 
 void main() 
@@ -80,12 +87,14 @@ void main()
     int answerChosen = GetAnswerAndTeardownMessageBox();
     
     if(answerChosen == correctAnswer)
-    {   RewardPlayerForCorrectAnswer(); }
+    {   
+        RewardPlayerForCorrectAnswer(); 
+    }
     else
-    {   PunishPlayerForIncorrectAnswer(); }
+    {   
+        PunishPlayerForIncorrectAnswer(); 
+    }
     
-
-    mp3_DebugMessage("Done");
     return;
 }
 
@@ -115,7 +124,7 @@ int AskTheQuestion()
 }
 
 // Pick a random question from the beginning of the bank
-// all the way up to the 
+// to the number defined by ACTIVE_QUESTIONS
 int PickARandomQuestionIndex()
 {
     return mp3_PickARandomNumberBetween0AndN(ACTIVE_QUESTIONS);
@@ -167,22 +176,24 @@ void RewardPlayerForCorrectAnswer()
 // When the player gets an answer wrong, run this logic.
 void PunishPlayerForIncorrectAnswer()
 {
-    // We just punish them with disappointment by default
+    // By default we just punish them with disappointment,
     // but feel free to add your own dastardly deed.
     char *wrong_msg = GetMessageforWrongAnswer();
     mp3_ShowMessageWithConfirmation(QUIZ_GIVER_PORTRAIT, wrong_msg);
     
-    // Play the sad animation and wait 70 frames for it to complete
-    mp3_play_sad_animation();
-    SleepProcess(70);
 
     // If you want to give a coin penalty add a:
     // [+Number|COIN_PENALTY] parameter to the
     // PartyPlanner64 header at the top of the file
-    // and then uncomment the following two lines:
-
+    // and then uncomment the following two lines below.
+    // You'll also want to change the SleepProcess line to
+    // SleepProcess(40) since adjust will wait 30 on its own.
+    
+    // Play the sad animation and wait 70 frames for it to complete
+    mp3_play_sad_animation();
     //int coinPenalty = -1 * COIN_PENALTY;
     //GraduallyAdjustPlayerCoins(coinPenalty);
+    SleepProcess(70);
 
     return;
 }
@@ -206,28 +217,34 @@ void GraduallyAdjustPlayerCoins(int adjustmentAmount)
 }
 
 
-
 //***************************************************************************//
-//******************** Message Configuration ********************************//
+//***************************************************************************//
+//***************************************************************************//
+//***********************   Message Configuration   *************************//
+//***************************************************************************//
+//***************************************************************************//
 //***************************************************************************//
 
 // Defines the message the Quiz Giver displays first.
 char* GetGreetingMessage()
 {
-    char *result = 
-    "\x0B"                      // Start the message
-    "\x1A\x1A\x1A\x1A" 			//Standard padding for portrait
-    "Ready for a quiz"          //
-    "\xC3" 						// ?
-    "\x0A" 						//Newline
-    "\x1A\x1A\x1A\x1A" 			//Standard padding for portrait
-    "If you get the question right"
-    "\x82"                      // ,
-    "\x0A" 						//Newline
-    "\x1A\x1A\x1A\x1A" 			//Standard padding for portrait
-    "you can earn some coins"   //
-    "\xC2"                      // !
-    "\xFF";						//Show prompt to continue arrow
+    char* result = func_80035934(256);      // malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 256);                     // Thenm zero out the memory allocated above so we don't get unexpected behavior.
+
+    my_strcpy(result, "\x0B");                              // Start the message
+    my_strncat(result, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
+    my_strncat(result, "Ready for a quiz");                 
+    my_strncat(result, "\xC3");                             // ?
+    my_strncat(result, "\x0A");                             // Newline
+    my_strncat(result, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait
+    my_strncat(result, "If you get the question right");    
+    my_strncat(result, "\x82");                             // ,
+    my_strncat(result, "\x0A");                             // Newline
+    my_strncat(result, "\x1A\x1A\x1A\x1A");                 //Standard padding for portrait
+    my_strncat(result, "you can earn some coins");          
+    my_strncat(result, "\xC2");                             // !
+    my_strncat(result, "\xFF");                             //Show prompt to continue arrow
 
     return result;
 }
@@ -235,14 +252,19 @@ char* GetGreetingMessage()
 // Defines the message shown if the player gives the correct answer.
 char* GetMessageForRightAnswer()
 {
-    char *result =
-    "\x0B"                          // Start the message
-    "\x1A\x1A\x1A\x1A"  		    //Standard padding
-    "Yes"
-    "\x82"                          // ,
-    " that\x5Cs right"               //  \x5C ->  '
-    "\xC2"                          // !
-    "\xFF";						    //Show prompt to continue arrow
+    char* result = func_80035934(256);      // malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 256);                     // Zero out the memory allocated above so we don't get unexpected behavior.
+    
+    my_strcpy(result, "\x0B");                              // Start the message
+    my_strncat(result, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
+    my_strncat(result, "Yes");                 
+    my_strncat(result, "\x82");                             // ,
+    my_strncat(result, " that");
+    my_strncat(result, "\x5C");                             // ' 
+    my_strncat(result, "s right");
+    my_strncat(result, "\xC2");                             // !
+    my_strncat(result, "\xFF");                             //Show prompt to continue arrows
 
     return result;
 }
@@ -250,15 +272,22 @@ char* GetMessageForRightAnswer()
 // Defines the message shown if the player gets the answer wrong.
 char* GetMessageforWrongAnswer()
 {
-    char *result =
-    "\x0B"                          // Start the message
-    "\x1A\x1A\x1A\x1A"  		    //Standard padding
-    "I\x5Cm so sorry"
-    "\x82"                          // ,
-    " that\x5Cs not correct"        //  \x5C ->  ' 
-    "\x85\x85\x85"                  //...
-    "\xFF";						    //Show prompt to continue arrow
+    char* result = func_80035934(256);      // malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 256);                     // Zero out the memory allocated above so we don't get unexpected behavior.
     
+    my_strcpy(result, "\x0B");                              // Start the message
+    my_strncat(result, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
+    my_strncat(result, "I");                 
+    my_strncat(result, "\x5C");                             // ' 
+    my_strncat(result, "m so sorry");
+    my_strncat(result, "\x82");                             // ,
+    my_strncat(result, " that");
+    my_strncat(result, "\x5C");                             // ' 
+    my_strncat(result, "s not correct");
+    my_strncat(result, "\x85\x85\x85");                     //...
+    my_strncat(result, "\xFF");                             //Show prompt to continue arrows
+
     return result;
 }
 
@@ -266,16 +295,14 @@ char* GetMessageforWrongAnswer()
 //***************************************************************************//
 //***************************************************************************//
 //*************************                  ********************************//
-//********************** Question definitions *******************************//
+//********************** Question Definitions *******************************//
 //************************                  *********************************//
 //***************************************************************************//
 //***************************************************************************//
 
 
-
-
 /******** How to Configure Questions ***********/
-// 1. This quiz has 30 questions slots;  
+// 1. This quiz has 50 questions slots;  
 //    6 of them are active by default.
 //   
 // 2. Questions get used in order, up to whatever number is
@@ -284,15 +311,15 @@ char* GetMessageforWrongAnswer()
 // 3. You can control how many questions are active by editing
 //    the definition "ACTIVE QUESTIONS" at the top of the file.
 // 
-// 4. To customize one of the 20 questions, simply edit the
+// 4. To customize one of the 50 questions, simply edit the
 //    corresponding message and ensure the answer index is
 //    defined correctly.  You don't have to do anything else.
 //    
-// 5. If 30 questions aren't enough for you, you're a monster.
+// 5. If 50 questions aren't enough for you, you're a monster.
 //    But it can be done.  You'll have to define the new question 
 //    AND edit the switch(case) below to make sure the question 
 //    finder can randomly pick your  question.  Follow the pattern 
-//    and you'll be fine..
+//    and you'll be fine...
 
 
 
@@ -303,8 +330,10 @@ char* GetMessageforWrongAnswer()
 // to the first question.
 char* GetQuestionByNumber(int question, int* correctAnswerPtr)
 {
-    char *result;
- /*
+    char* result = func_80035934(1024);         // malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                                // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 1024);                        // Zero out the memory allocated above so we don't get unexpected behavior.
+
     switch (question)
     {
         case (0):
@@ -371,18 +400,23 @@ char* GetQuestionByNumber(int question, int* correctAnswerPtr)
            result = GetFirstQuestion(correctAnswerPtr);
            return result;
     }
-*/
+
     // Want to test a sepcific question?  Edit and uncomment 
-    // the following line to ensure it always picks a specifc question.
+    // the following line to ensure it always gets picked.
     // Don't forget to recomment when you are done testing!
     
-    result = GetFirstQuestion(correctAnswerPtr);
+    //result = GetFirstQuestion(correctAnswerPtr);
 
     return result;
 }
 
-
-
+//***************************************************************************//
+//***************************************************************************//
+//*************************                  ********************************//
+//**********************     Question Bank    *******************************//
+//************************                  *********************************//
+//***************************************************************************//
+//***************************************************************************//
 
 //***************************************************************************//
 //****************************Question***************************************//
@@ -404,20 +438,21 @@ char* GetFirstQuestion(int* correctAnswerIndexPtr)
     
     char* question = CreateSimpleOneLineQuestionMessage("Who wears a red hat");
 
-    // Answers are defined here:
-    // Correct answer gets defined first.  Then the three wrong answers.  
+    // Answers are defined here.
+    // Correct answer gets defined first, followed by the the three wrong answers.  
     // Order here doesn't matter; They will be displayed in a 
     // random order each time the question is selected.
 
-    char* correctAnswer = "Mario";
-    char* wrongAnswer1 = "Luigi";
-    char* wrongAnswer2 = "Wario";
-    char* wrongAnswer3 = "Waluigi";
+    char correctAnswer[16] = "Mario";
+    char wrongAnswer1[16] = "Luigi";
+    char wrongAnswer2[16] = "Wario";
+    char wrongAnswer3[16] = "Waluigi";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
     return result;
 }
+
 
 //***************************************************************************//
 //****************************Question***************************************//
@@ -437,15 +472,16 @@ char* GetSecondQuestion(int* correctAnswerIndexPtr)
     
     char* question = CreateSimpleTwoLineQuestionMessage("Who wears a yellow hat", "and has a moustache");
 
-    char* correctAnswer = "Wario";
-    char* wrongAnswer1 = "Mario";
-    char* wrongAnswer2 = "Luigi";
-    char* wrongAnswer3 = "Waluigi";
+    char correctAnswer[16] = "Wario";
+    char wrongAnswer1[16] = "Mario";
+    char wrongAnswer2[16] = "Luigi";
+    char wrongAnswer3[16] = "Waluigi";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
     return result;
 }
+
 
 //***************************************************************************//
 //****************************Question***************************************//
@@ -466,14 +502,15 @@ char* GetThirdQuestion(int* correctAnswerIndexPtr)
 
     char* question = CreateSimpleThreeLineQuestionMessage("Who wears a purple hat", "and has a moustache", "and likes power");
     
-    char* correctAnswer = "Walugi";
-    char* wrongAnswer1 = "Mario";
-    char* wrongAnswer2 = "Luigi";
-    char* wrongAnswer3 = "Wario";
+    char correctAnswer[16] = "Walugi";
+    char wrongAnswer1[16] = "Mario";
+    char wrongAnswer2[16] = "Luigi";
+    char wrongAnswer3[16] = "Wario";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
     return result;
 }
+
 
 //***************************************************************************//
 //****************************Question***************************************//
@@ -482,37 +519,43 @@ char* GetThirdQuestion(int* correctAnswerIndexPtr)
 // Question for index 3
 char* GetFourthQuestion(int* correctAnswerIndexPtr)
 {
-    // This sample question demonstrates how to make a question that uses special characters.
+    // This sample question demonstrates how to make a complex question that uses special characters.
+    // You need to add your own question mark to close.
+    // However, a newline before the answers is automatically inserted.
     //
     // Mario Party 3 special characters documented at:
     // https://github.com/PartyPlanner64/PartyPlanner64/wiki/String-Encoding
-    //
-    // By default, questions have a 200 character limit due to 
-    // the array size defined in "GenerateMessageForQuestionWithFourOptions()
-    // This one comes to 155 characters.
-    
-    char* question =
-    "\x1A\x1A\x1A\x1A"                  // Standard padding for portrait
-    "Which item is"                        
-    "\x03"                              // Red Font
-    " NOT"                              
-    "\x08"                              // White Font
-    " used in the Biggoron\x5Cs Sword"
-    "\x0A"                              // Newline
-    "\x1A\x1A\x1A\x1A"                  // Standard padding for portrait
-    "Quest in The Legend of Zelda\x7B Ocarina of Time"
-    "\xC3"                              // ?
-    "\x0A";                             // Newline
+    //    
+    char* question = func_80035934(256);        // malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                                // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(question, 256);                       // Then zero out the memory allocated above so we don't get unexpected behavior.
 
-    char* correctAnswer = "Weird Egg";
-    char* wrongAnswer1 = "Odd Mushroom";
-    char* wrongAnswer2 = "Prescription";
-    char* wrongAnswer3 = "Eyeball Frog";
+    my_strcpy(question, "\x0B");                            // Start the message
+    my_strncat(question, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
+    my_strncat(question, "Which item is");                        
+    my_strncat(question, "\x03");                           // Red Font
+    my_strncat(question, " NOT");                              
+    my_strncat(question, "\x08");                           // White Font
+    my_strncat(question, " used in the Biggoron");
+    my_strncat(question, "\x5C");                           // '
+    my_strncat(question, "s Sword");
+    my_strncat(question, "\x0A");                           // Newline
+    my_strncat(question, "\x1A\x1A\x1A\x1A");               // Standard padding for portrait
+    my_strncat(question, "Quest in The Legend of Zelda");
+    my_strncat(question, "\x7B");                           // :
+    my_strncat(question, "Ocarina of Time");
+    my_strncat(question, "\xC3");                          // ?
+
+    char correctAnswer[16] = "Weird Egg";
+    char wrongAnswer1[16] = "Odd Mushroom";
+    char wrongAnswer2[16] = "Prescription";
+    char wrongAnswer3[16] = "Eyeball Frog";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
     
     return result;
 }
+
 
 //***************************************************************************//
 //****************************Question***************************************//
@@ -521,18 +564,18 @@ char* GetFourthQuestion(int* correctAnswerIndexPtr)
 // Question for index 4
 char* GetFifthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleOneLineQuestionMessage("Who wears a red hat");
+    char* question = CreateSimpleTwoLineQuestionMessage("Who wears a green hat", "and is a coward");
 
-    char* correctAnswer = "Mario";
-    char* wrongAnswer1 = "Luigi";
-    char* wrongAnswer2 = "Wario";
-    char* wrongAnswer3 = "Waluigi";
-
+    char correctAnswer[16] = "Luigi";
+    char wrongAnswer1[16] = "Mario";
+    char wrongAnswer2[16] = "Wario";
+    char wrongAnswer3[16] = "Waluigi";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
     return result;
 }
+
 
 //***************************************************************************//
 //****************************Question***************************************//
@@ -541,16 +584,16 @@ char* GetFifthQuestion(int* correctAnswerIndexPtr)
 // Question for index 5
 char* GetSixthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleTwoLineQuestionMessage("Who wears a yellow hat", "and has a moustache");
+    char* question = CreateSimpleOneLineQuestionMessage("What does Peach make Mario");
 
-    char* correctAnswer = "Wario";
-    char* wrongAnswer1 = "Mario";
-    char* wrongAnswer2 = "Luigi";
-    char* wrongAnswer3 = "Waluigi";
+    char correctAnswer[16] = "Cake";
+    char wrongAnswer1[16] = "Mushrooms";
+    char wrongAnswer2[16] = "Lonely";
+    char wrongAnswer3[16] = "Steak";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
-    return result;   
+    return result;
 }
 
 
@@ -563,14 +606,15 @@ char* GetSeventhQuestion(int* correctAnswerIndexPtr)
 {
     char* question = CreateSimpleThreeLineQuestionMessage("Who wears a purple hat", "and has a moustache", "and likes power");
     
-    char* correctAnswer = "Walugi";
-    char* wrongAnswer1 = "Mario";
-    char* wrongAnswer2 = "Luigi";
-    char* wrongAnswer3 = "Wario";
+    char correctAnswer[16] = "Walugi";
+    char wrongAnswer1[16] = "Mario";
+    char wrongAnswer2[16] = "Luigi";
+    char wrongAnswer3[16] = "Wario";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
     return result;
 }
+
 
 //***************************************************************************//
 //****************************Question***************************************//
@@ -578,29 +622,36 @@ char* GetSeventhQuestion(int* correctAnswerIndexPtr)
 
 // Question for index 7
 char* GetEigthQuestion(int* correctAnswerIndexPtr)
-{
-    char* question =
-    "\x1A\x1A\x1A\x1A"                  // Standard padding for portrait
-    "Which item is"                        
-    "\x03"                              // Red Font
-    " NOT"                              
-    "\x08"                              // White Font
-    " used in the Biggoron\x5Cs Sword"
-    "\x0A"                              // Newline
-    "\x1A\x1A\x1A\x1A"                  // Standard padding for portrait
-    "Quest in The Legend of Zelda\x7B Ocarina of Time"
-    "\xC3"                              // ?
-    "\x0A";                             // Newline
+{   
+    char* question = func_80035934(256);      
+    bzero(question, 256);                      
+    
+    my_strcpy(question, "\x0B");                            // Start the message
+    my_strncat(question, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
+    my_strncat(question, "Which item is");                        
+    my_strncat(question, "\x03");                           // Red Font
+    my_strncat(question, " NOT");                              
+    my_strncat(question, "\x08");                           // White Font
+    my_strncat(question, " used in the Biggoron");
+    my_strncat(question, "\x5C");                           // '
+    my_strncat(question, "s Sword");
+    my_strncat(question, "\x0A");                           // Newline
+    my_strncat(question, "\x1A\x1A\x1A\x1A");               // Standard padding for portrait
+    my_strncat(question, "Quest in The Legend of Zelda");
+    my_strncat(question, "\x7B");                           // :
+    my_strncat(question, "Ocarina of Time");
+    my_strncat(question, "\xC3");                          // ?
 
-    char* correctAnswer = "Weird Egg";
-    char* wrongAnswer1 = "Odd Mushroom";
-    char* wrongAnswer2 = "Prescription";
-    char* wrongAnswer3 = "Eyeball Frog";
+    char correctAnswer[16] = "Weird Egg";
+    char wrongAnswer1[16] = "Odd Mushroom";
+    char wrongAnswer2[16] = "Prescription";
+    char wrongAnswer3[16] = "Eyeball Frog";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
     
     return result;
 }
+
 
 //***************************************************************************//
 //****************************Question***************************************//
@@ -611,22 +662,17 @@ char* GetNinthQuestion(int* correctAnswerIndexPtr)
 {
     char* question = CreateSimpleOneLineQuestionMessage("Who wears a red hat");
 
-
-    // Answers are defined here:
-    // Correct answer gets defined first.  Then the three wrong answers.  
-    // Order here doesn't matter; They will be displayed in a 
-    // random order each time the question is selected.
-
-    char* correctAnswer = "Mario";
-    char* wrongAnswer1 = "Luigi";
-    char* wrongAnswer2 = "Wario";
-    char* wrongAnswer3 = "Waluigi";
-
+    char correctAnswer[16] = "Mario";
+    char wrongAnswer1[16] = "Luigi";
+    char wrongAnswer2[16] = "Wario";
+    char wrongAnswer3[16] = "Waluigi";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
     return result;
 }
+
+
 //***************************************************************************//
 //****************************Question***************************************//
 //***************************************************************************//
@@ -636,15 +682,16 @@ char* GetTenthQuestion(int* correctAnswerIndexPtr)
 {
     char* question = CreateSimpleTwoLineQuestionMessage("Who wears a yellow hat", "and has a moustache");
 
-    char* correctAnswer = "Wario";
-    char* wrongAnswer1 = "Mario";
-    char* wrongAnswer2 = "Luigi";
-    char* wrongAnswer3 = "Waluigi";
+    char correctAnswer[16] = "Wario";
+    char wrongAnswer1[16] = "Mario";
+    char wrongAnswer2[16] = "Luigi";
+    char wrongAnswer3[16] = "Waluigi";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
     return result;
 }
+
 
 //***************************************************************************//
 //****************************Question***************************************//
@@ -655,14 +702,15 @@ char* GetEleventhQuestion(int* correctAnswerIndexPtr)
 {
     char* question = CreateSimpleThreeLineQuestionMessage("Who wears a purple hat", "and has a moustache", "and likes power");
     
-    char* correctAnswer = "Walugi";
-    char* wrongAnswer1 = "Mario";
-    char* wrongAnswer2 = "Luigi";
-    char* wrongAnswer3 = "Wario";
+    char correctAnswer[16] = "Walugi";
+    char wrongAnswer1[16] = "Mario";
+    char wrongAnswer2[16] = "Luigi";
+    char wrongAnswer3[16] = "Wario";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
     return result;
 }
+
 
 //***************************************************************************//
 //****************************Question***************************************//
@@ -671,28 +719,35 @@ char* GetEleventhQuestion(int* correctAnswerIndexPtr)
 // Question for index 11
 char* GetTwelfthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question =
-    "\x1A\x1A\x1A\x1A"                  // Standard padding for portrait
-    "Which item is"                        
-    "\x03"                              // Red Font
-    " NOT"                              
-    "\x08"                              // White Font
-    " used in the Biggoron\x5Cs Sword"
-    "\x0A"                              // Newline
-    "\x1A\x1A\x1A\x1A"                  // Standard padding for portrait
-    "Quest in The Legend of Zelda\x7B Ocarina of Time"
-    "\xC3"                              // ?
-    "\x0A";                             // Newline
+    char* question = func_80035934(256);      
+    bzero(question, 256);                      
+    
+    my_strcpy(question, "\x0B");                            // Start the message
+    my_strncat(question, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
+    my_strncat(question, "Which item is");                        
+    my_strncat(question, "\x03");                           // Red Font
+    my_strncat(question, " NOT");                              
+    my_strncat(question, "\x08");                           // White Font
+    my_strncat(question, " used in the Biggoron");
+    my_strncat(question, "\x5C");                           // '
+    my_strncat(question, "s Sword");
+    my_strncat(question, "\x0A");                           // Newline
+    my_strncat(question, "\x1A\x1A\x1A\x1A");               // Standard padding for portrait
+    my_strncat(question, "Quest in The Legend of Zelda");
+    my_strncat(question, "\x7B");                           // :
+    my_strncat(question, "Ocarina of Time");
+    my_strncat(question, "\xC3");                          // ?
 
-    char* correctAnswer = "Weird Egg";
-    char* wrongAnswer1 = "Odd Mushroom";
-    char* wrongAnswer2 = "Prescription";
-    char* wrongAnswer3 = "Eyeball Frog";
+    char correctAnswer[16] = "Weird Egg";
+    char wrongAnswer1[16] = "Odd Mushroom";
+    char wrongAnswer2[16] = "Prescription";
+    char wrongAnswer3[16] = "Eyeball Frog";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
     
     return result;
 }
+
 
 //***************************************************************************//
 //****************************Question***************************************//
@@ -703,22 +758,16 @@ char* GetThirteenthQuestion(int* correctAnswerIndexPtr)
 {
     char* question = CreateSimpleOneLineQuestionMessage("Who wears a red hat");
 
-
-    // Answers are defined here:
-    // Correct answer gets defined first.  Then the three wrong answers.  
-    // Order here doesn't matter; They will be displayed in a 
-    // random order each time the question is selected.
-
-    char* correctAnswer = "Mario";
-    char* wrongAnswer1 = "Luigi";
-    char* wrongAnswer2 = "Wario";
-    char* wrongAnswer3 = "Waluigi";
-
+    char correctAnswer[16] = "Mario";
+    char wrongAnswer1[16] = "Luigi";
+    char wrongAnswer2[16] = "Wario";
+    char wrongAnswer3[16] = "Waluigi";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
     return result;
 }
+
 
 //***************************************************************************//
 //****************************Question***************************************//
@@ -729,15 +778,16 @@ char* GetFourteenthQuestion(int* correctAnswerIndexPtr)
 {
     char* question = CreateSimpleTwoLineQuestionMessage("Who wears a yellow hat", "and has a moustache");
 
-    char* correctAnswer = "Wario";
-    char* wrongAnswer1 = "Mario";
-    char* wrongAnswer2 = "Luigi";
-    char* wrongAnswer3 = "Waluigi";
+    char correctAnswer[16] = "Wario";
+    char wrongAnswer1[16] = "Mario";
+    char wrongAnswer2[16] = "Luigi";
+    char wrongAnswer3[16] = "Waluigi";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
     return result;
 }
+
 
 //***************************************************************************//
 //****************************Question***************************************//
@@ -748,14 +798,15 @@ char* GetFifteenthQuestion(int* correctAnswerIndexPtr)
 {
     char* question = CreateSimpleThreeLineQuestionMessage("Who wears a purple hat", "and has a moustache", "and likes power");
     
-    char* correctAnswer = "Walugi";
-    char* wrongAnswer1 = "Mario";
-    char* wrongAnswer2 = "Luigi";
-    char* wrongAnswer3 = "Wario";
+    char correctAnswer[16] = "Walugi";
+    char wrongAnswer1[16] = "Mario";
+    char wrongAnswer2[16] = "Luigi";
+    char wrongAnswer3[16] = "Wario";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-    return result;    
+    return result;   
 }
+
 
 //***************************************************************************//
 //****************************Question***************************************//
@@ -764,28 +815,35 @@ char* GetFifteenthQuestion(int* correctAnswerIndexPtr)
 // Question for index 15
 char* GetSixteenthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question =
-    "\x1A\x1A\x1A\x1A"                  // Standard padding for portrait
-    "Which item is"                        
-    "\x03"                              // Red Font
-    " NOT"                              
-    "\x08"                              // White Font
-    " used in the Biggoron\x5Cs Sword"
-    "\x0A"                              // Newline
-    "\x1A\x1A\x1A\x1A"                  // Standard padding for portrait
-    "Quest in The Legend of Zelda\x7B Ocarina of Time"
-    "\xC3"                              // ?
-    "\x0A";                             // Newline
+    char* question = func_80035934(256);      
+    bzero(question, 256);                      
+    
+    my_strcpy(question, "\x0B");                            // Start the message
+    my_strncat(question, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
+    my_strncat(question, "Which item is");                        
+    my_strncat(question, "\x03");                           // Red Font
+    my_strncat(question, " NOT");                              
+    my_strncat(question, "\x08");                           // White Font
+    my_strncat(question, " used in the Biggoron");
+    my_strncat(question, "\x5C");                           // '
+    my_strncat(question, "s Sword");
+    my_strncat(question, "\x0A");                           // Newline
+    my_strncat(question, "\x1A\x1A\x1A\x1A");               // Standard padding for portrait
+    my_strncat(question, "Quest in The Legend of Zelda");
+    my_strncat(question, "\x7B");                           // :
+    my_strncat(question, "Ocarina of Time");
+     my_strncat(question, "\xC3");                          // ?
 
-    char* correctAnswer = "Weird Egg";
-    char* wrongAnswer1 = "Odd Mushroom";
-    char* wrongAnswer2 = "Prescription";
-    char* wrongAnswer3 = "Eyeball Frog";
+    char correctAnswer[16] = "Weird Egg";
+    char wrongAnswer1[16] = "Odd Mushroom";
+    char wrongAnswer2[16] = "Prescription";
+    char wrongAnswer3[16] = "Eyeball Frog";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
     
     return result;
 }
+
 
 //***************************************************************************//
 //****************************Question***************************************//
@@ -796,22 +854,16 @@ char* GetSeventeenthQuestion(int* correctAnswerIndexPtr)
 {
     char* question = CreateSimpleOneLineQuestionMessage("Who wears a red hat");
 
-
-    // Answers are defined here:
-    // Correct answer gets defined first.  Then the three wrong answers.  
-    // Order here doesn't matter; They will be displayed in a 
-    // random order each time the question is selected.
-
-    char* correctAnswer = "Mario";
-    char* wrongAnswer1 = "Luigi";
-    char* wrongAnswer2 = "Wario";
-    char* wrongAnswer3 = "Waluigi";
-
+    char correctAnswer[16] = "Mario";
+    char wrongAnswer1[16] = "Luigi";
+    char wrongAnswer2[16] = "Wario";
+    char wrongAnswer3[16] = "Waluigi";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
     return result;
 }
+
 
 //***************************************************************************//
 //****************************Question***************************************//
@@ -822,15 +874,16 @@ char* GetEighteenthQuestion(int* correctAnswerIndexPtr)
 {
     char* question = CreateSimpleTwoLineQuestionMessage("Who wears a yellow hat", "and has a moustache");
 
-    char* correctAnswer = "Wario";
-    char* wrongAnswer1 = "Mario";
-    char* wrongAnswer2 = "Luigi";
-    char* wrongAnswer3 = "Waluigi";
+    char correctAnswer[16] = "Wario";
+    char wrongAnswer1[16] = "Mario";
+    char wrongAnswer2[16] = "Luigi";
+    char wrongAnswer3[16] = "Waluigi";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
     return result;
 }
+
 
 //***************************************************************************//
 //****************************Question***************************************//
@@ -841,14 +894,15 @@ char* GetNinteenthQuestion(int* correctAnswerIndexPtr)
 {
     char* question = CreateSimpleThreeLineQuestionMessage("Who wears a purple hat", "and has a moustache", "and likes power");
     
-    char* correctAnswer = "Walugi";
-    char* wrongAnswer1 = "Mario";
-    char* wrongAnswer2 = "Luigi";
-    char* wrongAnswer3 = "Wario";
+    char correctAnswer[16] = "Walugi";
+    char wrongAnswer1[16] = "Mario";
+    char wrongAnswer2[16] = "Luigi";
+    char wrongAnswer3[16] = "Wario";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
     return result;
 }
+
 
 //***************************************************************************//
 //****************************Question***************************************//
@@ -857,23 +911,29 @@ char* GetNinteenthQuestion(int* correctAnswerIndexPtr)
 // Question for index 19
 char* GetTwentiethQuestion(int* correctAnswerIndexPtr)
 {
-    char* question =
-    "\x1A\x1A\x1A\x1A"                  // Standard padding for portrait
-    "Which item is"                        
-    "\x03"                              // Red Font
-    " NOT"                              
-    "\x08"                              // White Font
-    " used in the Biggoron\x5Cs Sword"
-    "\x0A"                              // Newline
-    "\x1A\x1A\x1A\x1A"                  // Standard padding for portrait
-    "Quest in The Legend of Zelda\x7B Ocarina of Time"
-    "\xC3"                              // ?
-    "\x0A";                             // Newline
+    char* question = func_80035934(256);      
+    bzero(question, 256);                      
+    
+    my_strcpy(question, "\x0B");                            // Start the message
+    my_strncat(question, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
+    my_strncat(question, "Which item is");                        
+    my_strncat(question, "\x03");                           // Red Font
+    my_strncat(question, " NOT");                              
+    my_strncat(question, "\x08");                           // White Font
+    my_strncat(question, " used in the Biggoron");
+    my_strncat(question, "\x5C");                           // '
+    my_strncat(question, "s Sword");
+    my_strncat(question, "\x0A");                           // Newline
+    my_strncat(question, "\x1A\x1A\x1A\x1A");               // Standard padding for portrait
+    my_strncat(question, "Quest in The Legend of Zelda");
+    my_strncat(question, "\x7B");                           // :
+    my_strncat(question, "Ocarina of Time");
+    my_strncat(question, "\xC3");                          // ?
 
-    char* correctAnswer = "Weird Egg";
-    char* wrongAnswer1 = "Odd Mushroom";
-    char* wrongAnswer2 = "Prescription";
-    char* wrongAnswer3 = "Eyeball Frog";
+    char correctAnswer[16] = "Weird Egg";
+    char wrongAnswer1[16] = "Odd Mushroom";
+    char wrongAnswer2[16] = "Prescription";
+    char wrongAnswer3[16] = "Eyeball Frog";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
     
@@ -901,7 +961,10 @@ char* GetTwentiethQuestion(int* correctAnswerIndexPtr)
 
 char* CreateSimpleOneLineQuestionMessage(char* questionLineOne)
 {
-    char* result =
+    char* result = func_80035934(256);      // malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 256);                     // Zero out the memory allocated above so we don't get unexpected behavior.
+
     my_strcpy(result, "\x1A\x1A\x1A\x1A");  // Standard padding for portrait
     my_strncat(result, questionLineOne);
     my_strncat(result, "\xC3");             // ?   
@@ -911,7 +974,10 @@ char* CreateSimpleOneLineQuestionMessage(char* questionLineOne)
 
 char* CreateSimpleTwoLineQuestionMessage(char* questionLineOne, char* questionLineTwo)
 {
-    char* result =
+    char* result = func_80035934(256);          // malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                                // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 256);                         // Zero out the memory allocated above so we don't get unexpected behavior.
+    
     my_strcpy(result, "\x1A\x1A\x1A\x1A");      // Standard padding for portrait
     my_strncat(result, questionLineOne);
     my_strncat(result, "\x0A");                 // Newline
@@ -924,7 +990,11 @@ char* CreateSimpleTwoLineQuestionMessage(char* questionLineOne, char* questionLi
 
 char* CreateSimpleThreeLineQuestionMessage(char* questionLineOne, char* questionLineTwo, char* questionLineThree)
 {
-    char* result =
+    char* result = func_80035934(256);          // malloc() to reserve memory from the heap for character pointer named "result" size 256.  
+                                                // Heap is cleared during any MP3 scene transition, such as a minigame.  
+                                                // Or, you can call free() with func_80035958(ptr) to release memory early.
+    bzero(result, 256);                         // Zero out the memory allocated above so we don't get unexpected behavior.
+    
     my_strcpy(result, "\x1A\x1A\x1A\x1A");      // Standard padding for portrait
     my_strncat(result, questionLineOne);
     my_strncat(result, "\x0A");                 // Newline
@@ -942,13 +1012,11 @@ char* CreateSimpleThreeLineQuestionMessage(char* questionLineOne, char* question
 // Answer order will be randomized and the index of the correct answer will be returned via the correctAnswerIndexPtr parameter.
 char* GenerateMessageForQuestionWithFourOptions(char* question, char* correctAnswer, char* wrongAnswer1, char* wrongAnswer2, char* wrongAnswer3, int* correctAnswerIndexPtr)
 {
-    //56 characters for boilerplate here.
-    //No promises on what happens if user-provided message + answer is greater than 512 characters
-    char result[2048];
+    char result[1024];
+    bzero(result, 1024);                                     //Zero out result for safety.
 
     char* randomizedOptions[4];
-    *correctAnswerIndexPtr = RandomizeOptionOrderTest(&randomizedOptions, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3);
-
+    *correctAnswerIndexPtr = RandomizeOptionOrder(&randomizedOptions, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3);
 
     my_strcpy(result, "\x0B");                              //start the message
     my_strncat(result, question);
@@ -977,17 +1045,6 @@ char* GenerateMessageForQuestionWithFourOptions(char* question, char* correctAns
     return result;
 }
 
-int RandomizeOptionOrderTest(char* randomizedOptions[], char* correctAnswer, char* wrongAnswer1, char* wrongAnswer2, char* wrongAnswer3)
-{
-    int correctAnswerIndex = 0;
-    randomizedOptions[0] = correctAnswer;
-    randomizedOptions[1] = wrongAnswer1;
-    randomizedOptions[2] = wrongAnswer2;
-    randomizedOptions[3] = wrongAnswer3;
-
-    return correctAnswerIndex;
-}
-
 // Generate a random number for each option.  Sort the numbers in ascending order.
 // When the correct answer gets assigned, keep track of the index it was set to.
 // randomizedOptions is being modified and will have return 4 options in 
@@ -1000,7 +1057,7 @@ int RandomizeOptionOrder(char* randomizedOptions[], char* correctAnswer, char* w
     int wrongAnswer3SortingNumber = GetRandomByte();
 
     int biggestSortingNumber = my_max4(correctAnswerSortingNumber, wrongAnswer1SortingNumber, wrongAnswer2SortingNumber, wrongAnswer3SortingNumber);
-    int correctAnswerIndex;
+    int correctAnswerIndex = 0;
 
     //switch(case) must have constant expression =/
     if( biggestSortingNumber == correctAnswerSortingNumber)
@@ -1080,7 +1137,7 @@ int RandomizeRemainingThreeOptions(char* randomizedOptions[], char* correctAnswe
     int wrongAnswer2SortingNumber = GetRandomByte();
 
     int biggestSortingNumber = my_max3(correctAnswerSortingNumber, wrongAnswer1SortingNumber, wrongAnswer2SortingNumber);
-    int correctAnswerIndex;
+    int correctAnswerIndex = 0;
 
     if(biggestSortingNumber == correctAnswerSortingNumber)
     {
@@ -1137,12 +1194,10 @@ int RandomizeRemainingThreeOptions(char* randomizedOptions[], char* correctAnswe
 //***     to hide the complexity of some Mario Party-specific functions   ***//
 //***************************************************************************//
 //***************************************************************************//
-
-
 // Paste this at the bottom of an event file to get access to helpful functions!
 // Get the latest version or submit changes at: 
 // https://github.com/C-Kennelly/mario-party-custom-events
-
+//***************************************************************************//
 
 // Prints a message in game with the Millenium Star portrait.
 // Does not wait for player confirmation.
@@ -1215,6 +1270,7 @@ void mp3_play_idle_animation()
 }
 
 
+
 // Long-form implementation from:
 // https://www.techiedelight.com/implement-strcpy-function-c/
 //
@@ -1229,7 +1285,7 @@ char* my_strcpy(char* destination, const char* source)
     char *ptr = destination;
  
     // copy the C-string pointed by source into the array
-    // pointed by destination
+    // pointed to by destination
     while (*source != '\0')
     {
         *destination = *source;
@@ -1303,7 +1359,7 @@ int my_max4(int a1, int a2, int a3, int a4)
 //***************************************************************************//
 //***************************************************************************//
 //*************************                  ********************************//
-//**********************      end mplib       *******************************//
+//**********************      /end mplib       ******************************//
 //************************                  *********************************//
 //***************************************************************************//
 //***************************************************************************//
