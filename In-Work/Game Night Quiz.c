@@ -151,7 +151,7 @@ int GetChoiceForCPU()
     // are 4 answers to every qeustion.
     int result = mp3_PickARandomNumberBetween0AndN(3);
 
-    return result;
+    //return result;
 }
 
 // When the player gets a correct answer, run this logic.
@@ -374,6 +374,7 @@ char* GetQuestionByNumber(int question, int* correctAnswerPtr)
 */
     // Want to test a sepcific question?  Edit and uncomment 
     // the following line to ensure it always picks a specifc question.
+    // Don't forget to recomment when you are done testing!
     
     result = GetFirstQuestion(correctAnswerPtr);
 
@@ -943,10 +944,10 @@ char* GenerateMessageForQuestionWithFourOptions(char* question, char* correctAns
 {
     //56 characters for boilerplate here.
     //No promises on what happens if user-provided message + answer is greater than 512 characters
-    char result[1024];
+    char result[2048];
 
     char* randomizedOptions[4];
-    *correctAnswerIndexPtr = RandomizeOptionOrder(&randomizedOptions, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3);
+    *correctAnswerIndexPtr = RandomizeOptionOrderTest(&randomizedOptions, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3);
 
 
     my_strcpy(result, "\x0B");                              //start the message
@@ -974,6 +975,17 @@ char* GenerateMessageForQuestionWithFourOptions(char* question, char* correctAns
     my_strncat(result, "\xFF");                             //Show prompt to continue
 
     return result;
+}
+
+int RandomizeOptionOrderTest(char* randomizedOptions[], char* correctAnswer, char* wrongAnswer1, char* wrongAnswer2, char* wrongAnswer3)
+{
+    int correctAnswerIndex = 0;
+    randomizedOptions[0] = correctAnswer;
+    randomizedOptions[1] = wrongAnswer1;
+    randomizedOptions[2] = wrongAnswer2;
+    randomizedOptions[3] = wrongAnswer3;
+
+    return correctAnswerIndex;
 }
 
 // Generate a random number for each option.  Sort the numbers in ascending order.
