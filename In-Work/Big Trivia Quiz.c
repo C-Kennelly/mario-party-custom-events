@@ -1,22 +1,24 @@
-// NAME: Big Trivia Quiz
+// NAME: Nintendo Trivia Quiz
 // GAMES: MP3_USA
 // EXECUTION: Direct
 // PARAM: +Number|COIN_REWARD
+// PARAM: +Number|EASY_CPU_ACCURACY_PERCENT
+// PARAM: +Number|NORMAL_CPU_ACCURACY_PERCENT
+// PARAM: +Number|HARD_CPU_ACCURACY_PERCENT
 
-#include "ultra64.h"
 
-// This is version 1.0
+// This is version: 1.0
 //
 // There may be an update available at:
 // https://github.com/c-kennelly/mario-party-custom-events
-// You can also report a bug as an iusse (and maybe a PR that fixes it?)
+// You can also report a bug as an issue (and maybe a PR that fixes it?)
 
 //***************************************************************************//
 //******************** Quiz Configuration ***********************************//
 //***************************************************************************//
 
 // How many questions should the quiz use?
-#define ACTIVE_QUESTIONS 6
+#define ACTIVE_QUESTIONS 48
 
 // The character portrait of the character who is giving the quiz.
 #define QUIZ_GIVER_PORTRAIT 3
@@ -25,25 +27,38 @@
 
 
 //***************************************************************************//
-//*********************** Description** *************************************//
+//*********************** Description ***************************************//
 //***************************************************************************//
 // This event challenges a player to a quiz and asks them a random question
-// from the question bank.  Each time a question appears, the choices will
-// appear in a different order.  
-//
-// By default, the question bank has 6 questions active,
-// but it is very simple to use up to 48 questions.
-//
-// By default, if the player gets the question right, a coin reward is given.
-// If the player gets the question wrong, nothing happens.
-// 
-//
-//
-// The functionality is very similar to Airsola's "Trivia Quiz" event, 
-// but written in C. You can find that original quiz at
+// from the question bank.
+//  
+// The event design is based on Airsola's original "Trivia Quiz" event, with
+// some enchancments I hope you'll enjoy.  You can find that original quiz at:
 // www.mariopartylegacy.com/forum/index.php?action=downloads;sa=view;down=305
 //
+//                                 Features:
 //
+//  ***** 48 Questions ****
+// There are 48 default questions in the question bank, all based on N64-era 
+// Nintendo trivia.  You can customize the entire question bank.
+//
+// ***** Get coins for correct answers ****
+// If the player gets the question right, a coin reward is given.
+// If the player gets the question wrong, nothing happens.
+// This behavior is customizable - see "Where to Customize" below.
+//
+// ***** Randomized choice ordering ****
+// Each time a question appears, the choices will appear in a different order
+// so that the quiz is fresh on repeated plays.
+//
+// ***** Smart CPU's ****
+// CPU's also have different chances to get the question right:
+// Easy     --  25% chance of getting a question right
+// Normal   --  50% chance of getting a question right
+// Hard     --  75% chance of getting a question right.
+//
+//
+// 
 //
 // Finally, this file is commented to make it as easy as possible for 
 // non-programmers to edit and beginners to pull code samples, so I've 
@@ -60,8 +75,8 @@
 //***************************************************************************//
 //******************** Where to Customize ***********************************//
 //***************************************************************************//
-// Jump to "Quiz Configuration" to change the number of active questions in the
-// quiz bank, or the character who is giving the quiz the questions.
+// Jump to "Quiz Configuration" (up above) to change the number of active questions 
+// in the quiz bank, or the character who is giving the quiz the questions.
 //
 // Jump to "Message Configuration" to customize messages such as the greeting
 // or when a player gets a correct/incorrect answer.
@@ -72,6 +87,61 @@
 //
 // Finally, jump to "Question Definitions" to customize the question bank.
 
+
+//***************************************************************************//
+//*************************** Declarations **********************************//
+//***************************************************************************//
+
+// Used for the data types used in the player struct.
+// Header file: http://n64devkit.square7.ch/header/ultra64.htm
+// Ultratypes: http://n64devkit.square7.ch/header/ultratypes.htm
+// For more exploration: http://n64devkit.square7.ch/header/
+#include "ultra64.h"
+
+// Reference wiki article can be found here:
+// https://github.com/PartyPlanner64/PartyPlanner64/wiki/Player-Structs
+struct Player {
+    s8 unk0;
+    s8 cpu_difficulty;
+    s8 controller;
+    u8 character;
+    u8 flags;               // Miscellaneous flags. "1" is CPU player
+    s8 pad0[5];             // Skip undocumented offset 5-9
+    s16 coins;              // Offset 10: Current coin count.
+    s16 minigame_coins;     // Offset 12: Coins obtained during a Mini-Game.
+    s8 stars;               // Offset 14
+    
+    u8 cur_chain_index;     // Offset 15
+    u8 cur_space_index;     // Offset 16
+    u8 next_chain_index;    // Offset 17
+    u8 next_space_index;    // Offset 18
+    u8 unk1_chain_index;    // Offset 19
+    u8 unk1_space_index;    // Offset 20
+    u8 reverse_chain_index; // Offset 21
+    u8 reverse_space_index; // Offset 22
+
+    u8 flags2;              // Offset 23
+    u8 items[3];            // Offset 24
+    u8 bowser_suit_flag;    // Offset 27
+    u8 turn_color_status;   // Offset 28
+
+    s8 pad1[7];             // Offsets: 29 - 35
+
+    void *obj;              // Offset 36:  struct object *
+    s16 minigame_star;      // Offset 40
+    s16 coin_star;          // Offset 42
+    s8 happening_space_count; // Offset 44
+    s8 red_space_count;     
+    s8 blue_space_count;
+    s8 chance_space_count;
+    s8 bowser_space_count;  // Offset 48
+    s8 battle_space_count;
+    s8 item_space_count;
+    s8 bank_space_count;
+    s8 game_guy_space_count; //Offset  52
+
+    // s8 pad2[3];
+}; // sizeof == 56
 
 
 //***************************************************************************//
@@ -84,7 +154,7 @@ void main()
     DisplayGreetingMessage();
 
     int correctAnswer = AskTheQuestion();
-    int answerChosen = GetAnswerAndTeardownMessageBox();
+    int answerChosen = GetResponseAndTeardownMessageBox(correctAnswer);
     
     if(answerChosen == correctAnswer)
     {   
@@ -97,9 +167,6 @@ void main()
     
     return;
 }
-
-
-
 
 
 // Displays a message to intro the quiz.
@@ -132,9 +199,9 @@ int PickARandomQuestionIndex()
 
 // Display a message and return the answer chosen 
 // Also has defined logic for CPUs.
-int GetAnswerAndTeardownMessageBox()
+int GetResponseAndTeardownMessageBox(int correctAnswer)
 {
-    int cpuChoice = GetChoiceForCPU();
+    int cpuChoice = GetChoiceForCPU(correctAnswer);
 
     // Get the selection, either from the player or CPU.
     // MP3 built-in function: GetBasicPromptSelection(int strategy, int index)
@@ -143,8 +210,8 @@ int GetAnswerAndTeardownMessageBox()
     //   1 -> If CPU, always pick second (1th) option
     //   2 -> If CPU, pick the option that is passed in the second argument.
     //
-    // Here, we're using strategy 2, and then passing in the cpuChoice.
-    // Thus, the AI will always choose a random option for the question.
+    // Here, we're using strategy 2, and then passing in 'cpuChoice'
+    // which is calculated in our other function: GetChoiceForCPU().
     // Human players will always get to manually pick.
 
     int choice = GetBasicPromptSelection(2, cpuChoice);
@@ -153,15 +220,94 @@ int GetAnswerAndTeardownMessageBox()
     return choice;
 }
 
-// Select an answer to the quiz question for a CPU player.
-int GetChoiceForCPU()
+// Select an answer to the quiz question for a CPU player based on difficulty level
+// Each difficulty level has a chance of automatically getting the question right.
+// If that roll fails, then they select an incorrect answer.
+// 25%  -- Easy
+// 50%  -- Normal
+// 75%  -- Hard
+// 100% -- Hard & Waluigi (since he is a sneaky bastard, of course)
+int GetChoiceForCPU(int correctAnswer)
 {
-    // Generate a random integer that between 0 and 3 because there
-    // are 4 answers to every qeustion.
-    int result = mp3_PickARandomNumberBetween0AndN(3);
+    int maxValidIndex = 3;  // 4 answers to questions mean max valid index is 3 (0, 1, 2, and 3).
+    int cpuChoice = 0;
 
-    return result;
+
+    int playerIndex = GetCurrentPlayerIndex();
+    if (PlayerIsCPU(playerIndex))
+    {
+        u8 cpuDifficulty = GetCPUDifficulty(playerIndex);
+
+        if (cpuDifficulty == 0)  // Easy
+        {
+            if(mp3_ReturnTruePercentOfTime(EASY_CPU_ACCURACY_PERCENT))
+            {
+                cpuChoice = correctAnswer;
+            }   
+            else 
+            {
+                cpuChoice = (correctAnswer + 1) % maxValidIndex;        //Incorrect Answer
+            }
+        }
+        else if (cpuDifficulty == 1)  // Normal
+        {
+            if(mp3_ReturnTruePercentOfTime(NORMAL_CPU_ACCURACY_PERCENT))
+            {
+                cpuChoice = correctAnswer;
+            }   
+            else 
+            {
+                cpuChoice = (correctAnswer + 1) % maxValidIndex;        //Incorrect Answer    
+            }
+        }
+        else // Hard
+        {
+            // I am contractually obligated to make Waluigi the hardest CPU, and he's always wahhtching...
+            if( mp3_ReturnTruePercentOfTime(HARD_CPU_ACCURACY_PERCENT) || IsWaluigi(playerIndex) )
+            {    
+                cpuChoice = correctAnswer;
+            }   
+            else
+            {
+                cpuChoice = (correctAnswer + 1) % maxValidIndex;        //Incorrect Answer
+            }
+        }
+    }
+    
+    return cpuChoice;
 }
+
+int IsWaluigi(int playerIndex)
+{
+    struct Player *p = GetPlayerStruct(playerIndex);
+    if(p != NULL && p->character == 6)  // Mario=0, Luigi=1, Peach=2, Yoshi=3, Wario=4, DK=5, Waluigi=6, Daisy=7
+    {
+        return 1;
+    }
+    else
+    {
+        return 0; 
+    }
+}
+
+//Returns the difficulty of the CPU.  Uses ultra.64 types
+u8 GetCPUDifficulty(int playerIndex)
+{
+    struct Player *p = GetPlayerStruct(playerIndex);
+
+    if (p != NULL )
+    {
+        return p->cpu_difficulty;       //0:Easy; 1:Normal; 2:Hard
+    }
+    else
+    {
+        return 1;       //Couldn't get player index, which means things are borked.  Assume normal.
+    }
+    
+}
+
+
+
 
 // When the player gets a correct answer, run this logic.
 void RewardPlayerForCorrectAnswer()
@@ -228,9 +374,9 @@ void GraduallyAdjustPlayerCoins(int adjustmentAmount)
 // Defines the message the Quiz Giver displays first.
 char* GetGreetingMessage()
 {
-    char* result = func_80035934(256);      // malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+    char* result = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
                                             // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
-    bzero(result, 256);                     // Thenm zero out the memory allocated above so we don't get unexpected behavior.
+    bzero(result, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
 
     my_strcpy(result, "\x0B");                              // Start the message
     my_strncat(result, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
@@ -302,24 +448,31 @@ char* GetMessageforWrongAnswer()
 
 
 /******** How to Configure Questions ***********/
-// 1. This quiz has 48 questions slots;  
-//    6 of them are active by default.
-//   
-// 2. Questions get used **in order**, up to whatever number is
-//    defined by ACTIVE QUESTIONS at the top of the file.
-//    
-// 3. You can control how many questions are active by editing
+// 1. This quiz has 48 questions slots, all customizable.
+//     
+// 2. You can control how many questions are active by editing
 //    the definition "ACTIVE QUESTIONS" at the top of the file.
+//    So, if you wanted to populate the question bank with your
+//    own questions, but only wanted to write 20 of them, you
+//    would set the "ACTIVE_QUESTIONS" definition to 20.
+//
+// 3. Questions get used **in order**, up to whatever number is
+//    defined by ACTIVE QUESTIONS at the top of the file.  So if
+//    you limited ACTIVE_QUESTIONS to 20, then questions 1-20 would
+//    be active, and questions 21-48 would be inactive.
 // 
 // 4. To customize one of the 48 questions, simply edit the
-//    corresponding message and ensure the answer index is
-//    defined correctly.  You don't have to do anything else.
+//    corresponding message and ensure the answers are assigned
+//    correctly.  You don't have to do anything else.
+//
+// 5. If you want to increase array sizes for answers, go for it; 
+//    just know the quiz has only been tested with the default sizes.
 //    
-// 5. If 48 questions aren't enough for you, you're a monster.
+// 6. If 48 questions aren't enough for you, you're a monster.
 //    But it can be done.  You'll have to define the new question 
 //    AND edit the switch(case) in "GetQuestionByNumber()" to make 
 //    sure the question finder can randomly pick your question.  
-//    Follow the pattern and you'll be fine...
+//    Follow the pattern and you'll be fine!
 
 
 
@@ -1761,7 +1914,7 @@ char* CreateSimpleThreeLineQuestionMessage(char* questionLineOne, char* question
     return result;
 }
 
-// Takes a question message, a correct anser, and three incorrect answers, and returns a full message for Toad to read.
+// Takes a question message, a correct answer, and three incorrect answers, and returns a full message for the quiz giver to read.
 // Answer order will be randomized and the index of the correct answer will be returned via the correctAnswerIndexPtr parameter.
 char* GenerateMessageForQuestionWithFourOptions(char* question, char* correctAnswer, char* wrongAnswer1, char* wrongAnswer2, char* wrongAnswer3, int* correctAnswerIndexPtr)
 {
@@ -1952,6 +2105,11 @@ int RandomizeRemainingThreeOptions(char* randomizedOptions[], char* correctAnswe
 // https://github.com/C-Kennelly/mario-party-custom-events
 //***************************************************************************//
 
+// Looking for another function?  
+// Have you checked the PartyPlanner64 symbols table yet?
+// https://github.com/PartyPlanner64/symbols/blob/master/MarioParty3U.sym
+
+
 // Prints a message in game with the Millenium Star portrait.
 // Does not wait for player confirmation.
 void mp3_DebugMessage(char* message)
@@ -1960,9 +2118,10 @@ void mp3_DebugMessage(char* message)
 }
 
 // Picks a random number between 0 and N, using rejection sampling to avoid modulo bias.
-// IMPORTANT.  Maximum random number we could generate here would be 255 (max value of a byte).
 // Don't use this!!! -->  { return GetRandomByte() % n; } or you may bias your random generation!
 // https://zuttobenkyou.wordpress.com/2012/10/18/generating-random-numbers-without-modulo-bias/
+//
+// IMPORTANT.  Maximum random number we could generate here would be 255 (max value of a byte).
 int mp3_PickARandomNumberBetween0AndN(int n)
 {
     int result = GetRandomByte();                   //Get a random number by picking a random byte.
@@ -1976,6 +2135,38 @@ int mp3_PickARandomNumberBetween0AndN(int n)
     }    
 
     return result % n;                              //Since we rejected the excess samples, we've guaranteed an unbiased result.
+}
+
+
+// RNGChance from the built-in functions doesn't seem to re-roll within a turn
+// So this function provides the same functionality of returning true a certain 
+// percent of the time but uses GetRandomByte() to guarantee different rolls
+// within a turn.
+//
+// Values <= 0 always return false.  
+// Values >= 100 always return true.
+int mp3_ReturnTruePercentOfTime(int percentChanceOfTrue)
+{
+    if(percentChanceOfTrue <= 0)
+    {
+        return 0;    //negative chance always returns false
+    }
+    else if(percentChanceOfTrue >= 100)
+    {
+        return 1;    //greater than 100% chance always true
+    }
+    else
+    {
+        int randValue = mp3_PickARandomNumberBetween0AndN(99);
+        if (randValue < percentChanceOfTrue)
+        {
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
 }
 
 // Helper function that shows a message and then tears the message box down
