@@ -12,3 +12,4 @@ These are events I'm working on.  No guarantees they work, but I usually try to 
 These events are done and can be used as templates.  They definitely work on an emulator and are intended to work on real hardware.  Submit an issue if they don't, or better yet a PR. =)
 
 - MP3: Events for Mario Party 3
+  - Nintendo Trivia Quiz
