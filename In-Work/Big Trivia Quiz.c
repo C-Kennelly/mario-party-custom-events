@@ -52,10 +52,11 @@
 // so that the quiz is fresh on repeated plays.
 //
 // ***** Smart CPU's ****
-// CPU's also have different chances to get the question right:
-// Easy     --  25% chance of getting a question right
-// Normal   --  50% chance of getting a question right
-// Hard     --  75% chance of getting a question right.
+// CPU's have different accuracy rates based on their difficulty, which is
+// set in the event parameters.  Some recommended defaults:
+// Easy     --  25% chance of getting a question right  (value = 25)
+// Normal   --  50% chance of getting a question right  (value = 50)
+// Hard     --  75% chance of getting a question right. (value = 75)
 //
 //
 // 
@@ -673,17 +674,17 @@ char* GetFirstQuestion(int* correctAnswerIndexPtr)
     // If you want special characters or punctuation, either concatenate the
     // strings you send in, or look below for the custom message example.
     
-    char* question = CreateSimpleOneLineQuestionMessage("Who wears a red hat");
+    char* question = CreateSimpleTwoLineQuestionMessage("How many Game Boy Color handhelds", "can be found on this board");
 
     // Answers are defined here.
     // Correct answer gets defined first, followed by the the three wrong answers.  
     // Order here doesn't matter; They will be displayed in a 
     // random order each time the question is selected.
 
-    char correctAnswer[16] = "Mario";
-    char wrongAnswer1[16] = "Luigi";
-    char wrongAnswer2[16] = "Wario";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "Three";
+    char wrongAnswer1[48] = "One";
+    char wrongAnswer2[48] = "Two";
+    char wrongAnswer3[48] = "Four";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -707,12 +708,12 @@ char* GetSecondQuestion(int* correctAnswerIndexPtr)
     //
     // (final question mark and newline will be added automatically)
     
-    char* question = CreateSimpleTwoLineQuestionMessage("Who wears a yellow hat", "and has a moustache");
+    char* question = CreateSimpleTwoLineQuestionMessage("What well known soft drink for", "gamerz is found at Booze Boulevard");
 
-    char correctAnswer[16] = "Wario";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "Mountain Dew";
+    char wrongAnswer1[48] = "Surge";
+    char wrongAnswer2[48] = "Monster Energy";
+    char wrongAnswer3[48] = "Slurm";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
@@ -737,14 +738,15 @@ char* GetThirdQuestion(int* correctAnswerIndexPtr)
     //
     // (final question mark and newline will be added automatically)
 
-    char* question = CreateSimpleThreeLineQuestionMessage("Who wears a purple hat", "and has a moustache", "and likes power");
+    char* question = CreateSimpleTwoLineQuestionMessage("How many Game Boy Advance handhelds","can be found on this board");
     
-    char correctAnswer[16] = "Walugi";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Wario";
+    char correctAnswer[48] = "One";
+    char wrongAnswer1[48] = "Two";
+    char wrongAnswer2[48] = "Three";
+    char wrongAnswer3[48] = "Four";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
     return result;
 }
 
@@ -763,30 +765,12 @@ char* GetFourthQuestion(int* correctAnswerIndexPtr)
     // Mario Party 3 special characters documented at:
     // https://github.com/PartyPlanner64/PartyPlanner64/wiki/String-Encoding
     //    
-    char* question = func_80035934(256);        // malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
-                                                // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
-    bzero(question, 256);                       // Then zero out the memory allocated above so we don't get unexpected behavior.
+    char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo Consoles", "can \x03NOT\x08 be found on this board");
 
-    my_strcpy(question, "\x0B");                            // Start the message
-    my_strncat(question, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
-    my_strncat(question, "Which item is");                        
-    my_strncat(question, "\x03");                           // Red Font
-    my_strncat(question, " NOT");                              
-    my_strncat(question, "\x08");                           // White Font
-    my_strncat(question, " used in the Biggoron");
-    my_strncat(question, "\x5C");                           // '
-    my_strncat(question, "s Sword");
-    my_strncat(question, "\x0A");                           // Newline
-    my_strncat(question, "\x1A\x1A\x1A\x1A");               // Standard padding for portrait
-    my_strncat(question, "Quest in The Legend of Zelda");
-    my_strncat(question, "\x7B");                           // :
-    my_strncat(question, "Ocarina of Time");
-    my_strncat(question, "\xC3");                          // ?
-
-    char correctAnswer[16] = "Weird Egg";
-    char wrongAnswer1[16] = "Odd Mushroom";
-    char wrongAnswer2[16] = "Prescription";
-    char wrongAnswer3[16] = "Eyeball Frog";
+    char correctAnswer[48] = "Nintendo Wii";
+    char wrongAnswer1[48] = "Nintendo Switch";
+    char wrongAnswer2[48] = "Super NES Classic";
+    char wrongAnswer3[48] = "Nintendo 64";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
     
@@ -801,12 +785,13 @@ char* GetFourthQuestion(int* correctAnswerIndexPtr)
 // Question for index 4
 char* GetFifthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleTwoLineQuestionMessage("Who wears a green hat", "and is a coward");
+    char* question = CreateSimpleTwoLineQuestionMessage("Which Nintendo 64 game\x5Cs boxart", "can \x03NOT\x08 be found on this board");
 
-    char correctAnswer[16] = "Luigi";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Wario";
-    char wrongAnswer3[16] = "Waluigi";
+
+    char correctAnswer[48] = "Star Fox 64";
+    char wrongAnswer1[48] = "Goldeneye 007";
+    char wrongAnswer2[48] = "Super Smash Bros\x85";
+    char wrongAnswer3[48] = "Mario Party";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -823,10 +808,10 @@ char* GetSixthQuestion(int* correctAnswerIndexPtr)
 {
     char* question = CreateSimpleOneLineQuestionMessage("What does Peach make Mario");
 
-    char correctAnswer[16] = "Cake";
-    char wrongAnswer1[16] = "Mushrooms";
-    char wrongAnswer2[16] = "Lonely";
-    char wrongAnswer3[16] = "Steak";
+    char correctAnswer[48] = "Cake";
+    char wrongAnswer1[48] = "Mushrooms";
+    char wrongAnswer2[48] = "Lonely";
+    char wrongAnswer3[48] = "Spaghetti";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
@@ -841,14 +826,15 @@ char* GetSixthQuestion(int* correctAnswerIndexPtr)
 // Question for index 6
 char* GetSeventhQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleThreeLineQuestionMessage("Who wears a purple hat", "and has a moustache", "and likes power");
+	char* question = CreateSimpleTwoLineQuestionMessage("How many Nintendo Gamecube Controllers", "can be found on this Board");
     
-    char correctAnswer[16] = "Walugi";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Wario";
+	char correctAnswer[48] = "One";
+	char wrongAnswer1[48] = "Two";
+	char wrongAnswer2[48] = "Three";
+	char wrongAnswer3[48] = "Four";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
     return result;
 }
 
@@ -860,29 +846,12 @@ char* GetSeventhQuestion(int* correctAnswerIndexPtr)
 // Question for index 7
 char* GetEigthQuestion(int* correctAnswerIndexPtr)
 {   
-    char* question = func_80035934(256);      
-    bzero(question, 256);                      
-    
-    my_strcpy(question, "\x0B");                            // Start the message
-    my_strncat(question, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
-    my_strncat(question, "Which item is");                        
-    my_strncat(question, "\x03");                           // Red Font
-    my_strncat(question, " NOT");                              
-    my_strncat(question, "\x08");                           // White Font
-    my_strncat(question, " used in the Biggoron");
-    my_strncat(question, "\x5C");                           // '
-    my_strncat(question, "s Sword");
-    my_strncat(question, "\x0A");                           // Newline
-    my_strncat(question, "\x1A\x1A\x1A\x1A");               // Standard padding for portrait
-    my_strncat(question, "Quest in The Legend of Zelda");
-    my_strncat(question, "\x7B");                           // :
-    my_strncat(question, "Ocarina of Time");
-    my_strncat(question, "\xC3");                          // ?
+    char* question = CreateSimpleTwoLineQuestionMessage("A giant hat can be found on this board\x85", "Which character does it belong to");
 
-    char correctAnswer[16] = "Weird Egg";
-    char wrongAnswer1[16] = "Odd Mushroom";
-    char wrongAnswer2[16] = "Prescription";
-    char wrongAnswer3[16] = "Eyeball Frog";
+    char correctAnswer[48] = "Waluigi";
+    char wrongAnswer1[48] = "Mario";
+    char wrongAnswer2[48] = "Luigi";
+    char wrongAnswer3[48] = "Wario";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
     
@@ -897,12 +866,12 @@ char* GetEigthQuestion(int* correctAnswerIndexPtr)
 // Question for index 8
 char* GetNinthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleOneLineQuestionMessage("Who wears a red hat");
+    char* question = CreateSimpleTwoLineQuestionMessage("What game did Conker the Squirrel", "first appear in");
 
-    char correctAnswer[16] = "Mario";
-    char wrongAnswer1[16] = "Luigi";
-    char wrongAnswer2[16] = "Wario";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "Diddy Kong Racing";
+    char wrongAnswer1[48] = "Conker\x5Cs Bad Fur Day";
+    char wrongAnswer2[48] = "Conker\x5Cs Pocket Talesg";
+    char wrongAnswer3[48] = "Twelve Tales\x7B Conker 64";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -917,12 +886,12 @@ char* GetNinthQuestion(int* correctAnswerIndexPtr)
 // Question for index 9
 char* GetTenthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleTwoLineQuestionMessage("Who wears a yellow hat", "and has a moustache");
+    char* question = CreateSimpleTwoLineQuestionMessage("What Nintendo 64 game can be found", "above the Ancient Mew Card");
 
-    char correctAnswer[16] = "Wario";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "Mario Tennis";
+    char wrongAnswer1[48] = "Mario Golf";
+    char wrongAnswer2[48] = "Mario Kart 64";
+    char wrongAnswer3[48] = "Paper Mario";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
@@ -937,14 +906,15 @@ char* GetTenthQuestion(int* correctAnswerIndexPtr)
 // Question for index 10
 char* GetEleventhQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleThreeLineQuestionMessage("Who wears a purple hat", "and has a moustache", "and likes power");
+    char* question = CreateSimpleTwoLineQuestionMessage("What color of Nintendo 64 Controller is", "\x03NOT\x08 featured on this board");
     
-    char correctAnswer[16] = "Walugi";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Wario";
+    char correctAnswer[48] = "Solid Yellow";
+    char wrongAnswer1[48] = "Solid Blue";
+    char wrongAnswer2[48] = "Atomic Purple";
+    char wrongAnswer3[48] = "Solid Green";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
     return result;
 }
 
@@ -956,29 +926,12 @@ char* GetEleventhQuestion(int* correctAnswerIndexPtr)
 // Question for index 11
 char* GetTwelfthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = func_80035934(256);      
-    bzero(question, 256);                      
-    
-    my_strcpy(question, "\x0B");                            // Start the message
-    my_strncat(question, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
-    my_strncat(question, "Which item is");                        
-    my_strncat(question, "\x03");                           // Red Font
-    my_strncat(question, " NOT");                              
-    my_strncat(question, "\x08");                           // White Font
-    my_strncat(question, " used in the Biggoron");
-    my_strncat(question, "\x5C");                           // '
-    my_strncat(question, "s Sword");
-    my_strncat(question, "\x0A");                           // Newline
-    my_strncat(question, "\x1A\x1A\x1A\x1A");               // Standard padding for portrait
-    my_strncat(question, "Quest in The Legend of Zelda");
-    my_strncat(question, "\x7B");                           // :
-    my_strncat(question, "Ocarina of Time");
-    my_strncat(question, "\xC3");                          // ?
+    char* question = CreateSimpleThreeLineQuestionMessage("Three Pokemon cards can be found", "sitting together on this board\x85", "Whose card is on the left");
 
-    char correctAnswer[16] = "Weird Egg";
-    char wrongAnswer1[16] = "Odd Mushroom";
-    char wrongAnswer2[16] = "Prescription";
-    char wrongAnswer3[16] = "Eyeball Frog";
+    char correctAnswer[48] = "Venasaur";
+    char wrongAnswer1[48] = "Charizard";
+    char wrongAnswer2[48] = "Blastoise";
+    char wrongAnswer3[48] = "Pikachu";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
     
@@ -993,12 +946,12 @@ char* GetTwelfthQuestion(int* correctAnswerIndexPtr)
 // Question for index 12
 char* GetThirteenthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleOneLineQuestionMessage("Who wears a red hat");
+    char* question = CreateSimpleTwoLineQuestionMessage("Which Nintendo 64 game cartridge","can \x03NOT\x08 be found on this board");
 
-    char correctAnswer[16] = "Mario";
-    char wrongAnswer1[16] = "Luigi";
-    char wrongAnswer2[16] = "Wario";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "Mario Kart 64";
+    char wrongAnswer1[48] = "The Legend of Zelda\x7B Ocarina of Time";
+    char wrongAnswer2[48] = "Mario Tennis";
+    char wrongAnswer3[48] = "Mario Story";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -1013,12 +966,12 @@ char* GetThirteenthQuestion(int* correctAnswerIndexPtr)
 // Question for index 13
 char* GetFourteenthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleTwoLineQuestionMessage("Who wears a yellow hat", "and has a moustache");
+    char* question = CreateSimpleTwoLineQuestionMessage("What color of Gameboy Color handheld", "can \x03NOT\x08 be found on this board");
 
-    char correctAnswer[16] = "Wario";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "Kiwi";
+    char wrongAnswer1[48] = "Atomic Purple";
+    char wrongAnswer2[48] = "Grape";
+    char wrongAnswer3[48] = "Dandelion";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
@@ -1033,14 +986,15 @@ char* GetFourteenthQuestion(int* correctAnswerIndexPtr)
 // Question for index 14
 char* GetFifteenthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleThreeLineQuestionMessage("Who wears a purple hat", "and has a moustache", "and likes power");
+    char* question = CreateSimpleTwoLineQuestionMessage("What color is the Nintendo 3DS", "handheld on this board");
     
-    char correctAnswer[16] = "Walugi";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Wario";
+    char correctAnswer[48] = "Flame Red";
+    char wrongAnswer1[48] = "Cobalt Blue";
+    char wrongAnswer2[48] = "Metallic Red";
+    char wrongAnswer3[48] = "Cosmo Black";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
     return result;   
 }
 
@@ -1052,29 +1006,12 @@ char* GetFifteenthQuestion(int* correctAnswerIndexPtr)
 // Question for index 15
 char* GetSixteenthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = func_80035934(256);      
-    bzero(question, 256);                      
-    
-    my_strcpy(question, "\x0B");                            // Start the message
-    my_strncat(question, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
-    my_strncat(question, "Which item is");                        
-    my_strncat(question, "\x03");                           // Red Font
-    my_strncat(question, " NOT");                              
-    my_strncat(question, "\x08");                           // White Font
-    my_strncat(question, " used in the Biggoron");
-    my_strncat(question, "\x5C");                           // '
-    my_strncat(question, "s Sword");
-    my_strncat(question, "\x0A");                           // Newline
-    my_strncat(question, "\x1A\x1A\x1A\x1A");               // Standard padding for portrait
-    my_strncat(question, "Quest in The Legend of Zelda");
-    my_strncat(question, "\x7B");                           // :
-    my_strncat(question, "Ocarina of Time");
-     my_strncat(question, "\xC3");                          // ?
+    char* question = CreateSimpleTwoLineQuestionMessage("What was the first game that Banjo", "appeared in");
 
-    char correctAnswer[16] = "Weird Egg";
-    char wrongAnswer1[16] = "Odd Mushroom";
-    char wrongAnswer2[16] = "Prescription";
-    char wrongAnswer3[16] = "Eyeball Frog";
+    char correctAnswer[48] = "Diddy Kong Racing";
+    char wrongAnswer1[48] = "Banjo Kazooie";
+    char wrongAnswer2[48] = "Conker\x5Cs Pocket Tales";
+    char wrongAnswer3[48] = "Battletoads";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
     
@@ -1086,15 +1023,15 @@ char* GetSixteenthQuestion(int* correctAnswerIndexPtr)
 //****************************Question***************************************//
 //***************************************************************************//
 
-// Question for index 16
+// Question for index 48
 char* GetSeventeenthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleOneLineQuestionMessage("Who wears a red hat");
+    char* question = CreateSimpleOneLineQuestionMessage("What color are Banjo\x5Cs shorts");
 
-    char correctAnswer[16] = "Mario";
-    char wrongAnswer1[16] = "Luigi";
-    char wrongAnswer2[16] = "Wario";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "Yellow";
+    char wrongAnswer1[48] = "Blue";
+    char wrongAnswer2[48] = "Orange";
+    char wrongAnswer3[48] = "He does not wear shorts\x85";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -1109,12 +1046,12 @@ char* GetSeventeenthQuestion(int* correctAnswerIndexPtr)
 // Question for index 17
 char* GetEighteenthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleTwoLineQuestionMessage("Who wears a yellow hat", "and has a moustache");
+    char* question = CreateSimpleOneLineQuestionMessage("What color is Grunty\x5Cs scarf");
 
-    char correctAnswer[16] = "Wario";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "Purple";
+    char wrongAnswer1[48] = "Red";
+    char wrongAnswer2[48] = "Green";
+    char wrongAnswer3[48] = "Blue";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
@@ -1129,14 +1066,15 @@ char* GetEighteenthQuestion(int* correctAnswerIndexPtr)
 // Question for index 18
 char* GetNinteenthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleThreeLineQuestionMessage("Who wears a purple hat", "and has a moustache", "and likes power");
+    char* question = CreateSimpleOneLineQuestionMessage("What number am I thinking of");
     
-    char correctAnswer[16] = "Walugi";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Wario";
+    char correctAnswer[48] = "Two";
+    char wrongAnswer1[48] = "One";
+    char wrongAnswer2[48] = "Three";
+    char wrongAnswer3[48] = "Four";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
     return result;
 }
 
@@ -1148,29 +1086,12 @@ char* GetNinteenthQuestion(int* correctAnswerIndexPtr)
 // Question for index 19
 char* GetTwentiethQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = func_80035934(256);      
-    bzero(question, 256);                      
-    
-    my_strcpy(question, "\x0B");                            // Start the message
-    my_strncat(question, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
-    my_strncat(question, "Which item is");                        
-    my_strncat(question, "\x03");                           // Red Font
-    my_strncat(question, " NOT");                              
-    my_strncat(question, "\x08");                           // White Font
-    my_strncat(question, " used in the Biggoron");
-    my_strncat(question, "\x5C");                           // '
-    my_strncat(question, "s Sword");
-    my_strncat(question, "\x0A");                           // Newline
-    my_strncat(question, "\x1A\x1A\x1A\x1A");               // Standard padding for portrait
-    my_strncat(question, "Quest in The Legend of Zelda");
-    my_strncat(question, "\x7B");                           // :
-    my_strncat(question, "Ocarina of Time");
-    my_strncat(question, "\xC3");                          // ?
+    char* question = CreateSimpleTwoLineQuestionMessage("What was the Nintendo 64 named when", "it was first revealed to the public");
 
-    char correctAnswer[16] = "Weird Egg";
-    char wrongAnswer1[16] = "Odd Mushroom";
-    char wrongAnswer2[16] = "Prescription";
-    char wrongAnswer3[16] = "Eyeball Frog";
+    char correctAnswer[48] = "Ultra 64";
+    char wrongAnswer1[48] = "Super 64";
+    char wrongAnswer2[48] = "Mega 64";
+    char wrongAnswer3[48] = "Plus Ultra 64";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
     
@@ -1184,12 +1105,12 @@ char* GetTwentiethQuestion(int* correctAnswerIndexPtr)
 // Question for index 20
 char* GetTwentyFirstQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleOneLineQuestionMessage("Who wears a red hat");
+    char* question = CreateSimpleTwoLineQuestionMessage("What was the GameCube codenamed", "during development");
 
-    char correctAnswer[16] = "Mario";
-    char wrongAnswer1[16] = "Luigi";
-    char wrongAnswer2[16] = "Wario";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "Project Dolphin";
+    char wrongAnswer1[48] = "Project Cubed";
+    char wrongAnswer2[48] = "Project Revolution";
+    char wrongAnswer3[48] = "Project Ultra";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -1204,12 +1125,12 @@ char* GetTwentyFirstQuestion(int* correctAnswerIndexPtr)
 // Question for index 21
 char* GetTwentySecondQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleTwoLineQuestionMessage("Who wears a yellow hat", "and has a moustache");
+    char* question = CreateSimpleTwoLineQuestionMessage("What was the Wii U codenamed", "during development");
 
-    char correctAnswer[16] = "Wario";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "Project Cafe";
+    char wrongAnswer1[48] = "Project Nitro";
+    char wrongAnswer2[48] = "Project Revolution";
+    char wrongAnswer3[48] = "Project Wiiquel";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
@@ -1224,14 +1145,15 @@ char* GetTwentySecondQuestion(int* correctAnswerIndexPtr)
 // Question for index 22
 char* GetTwentyThirdQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleThreeLineQuestionMessage("Who wears a purple hat", "and has a moustache", "and likes power");
+	char* question = CreateSimpleThreeLineQuestionMessage("What is the name of the rabbit found", "in the basement of Peach\x5Cs Castle", "in Super Mario 64");
     
-    char correctAnswer[16] = "Walugi";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Wario";
+    char correctAnswer[48] = "MIPS";
+    char wrongAnswer1[48] = "Bink";
+    char wrongAnswer2[48] = "Fleep";
+    char wrongAnswer3[48] = "Lola";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
     return result;
 }
 
@@ -1243,29 +1165,12 @@ char* GetTwentyThirdQuestion(int* correctAnswerIndexPtr)
 // Question for index 23
 char* GetTwentyFourthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = func_80035934(256);      
-    bzero(question, 256);                      
-    
-    my_strcpy(question, "\x0B");                            // Start the message
-    my_strncat(question, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
-    my_strncat(question, "Which item is");                        
-    my_strncat(question, "\x03");                           // Red Font
-    my_strncat(question, " NOT");                              
-    my_strncat(question, "\x08");                           // White Font
-    my_strncat(question, " used in the Biggoron");
-    my_strncat(question, "\x5C");                           // '
-    my_strncat(question, "s Sword");
-    my_strncat(question, "\x0A");                           // Newline
-    my_strncat(question, "\x1A\x1A\x1A\x1A");               // Standard padding for portrait
-    my_strncat(question, "Quest in The Legend of Zelda");
-    my_strncat(question, "\x7B");                           // :
-    my_strncat(question, "Ocarina of Time");
-    my_strncat(question, "\xC3");                          // ?
+    char* question = CreateSimpleTwoLineQuestionMessage("Where did Waluigi first", "make his appearance");
 
-    char correctAnswer[16] = "Weird Egg";
-    char wrongAnswer1[16] = "Odd Mushroom";
-    char wrongAnswer2[16] = "Prescription";
-    char wrongAnswer3[16] = "Eyeball Frog";
+    char correctAnswer[48] = "Mario Tennis";
+    char wrongAnswer1[48] = "Mario Golf";
+    char wrongAnswer2[48] = "Mario Party 2";
+    char wrongAnswer3[48] = "Book of Genesis";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
     
@@ -1280,12 +1185,12 @@ char* GetTwentyFourthQuestion(int* correctAnswerIndexPtr)
 // Question for index 24
 char* GetTwentyFifthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleOneLineQuestionMessage("Who wears a red hat");
+    char* question = CreateSimpleTwoLineQuestionMessage("Which of these Masks is \x03NOT\x08 found", "in The Legend of Zelda\x7B Ocarina of Time");
 
-    char correctAnswer[16] = "Mario";
-    char wrongAnswer1[16] = "Luigi";
-    char wrongAnswer2[16] = "Wario";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "Gibdo Mask";
+    char wrongAnswer1[48] = "Mask of Truth";
+    char wrongAnswer2[48] = "Zora Mask";
+    char wrongAnswer3[48] = "Skull Mask";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -1300,12 +1205,12 @@ char* GetTwentyFifthQuestion(int* correctAnswerIndexPtr)
 // Question for index 25
 char* GetTwentySixthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleTwoLineQuestionMessage("Who wears a yellow hat", "and has a moustache");
+    char* question = CreateSimpleThreeLineQuestionMessage("What is the name of the sword", "Link starts the game with in", "The Legend of Zelda\x7B Majoras Mask");
 
-    char correctAnswer[16] = "Wario";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "Kokiri Sword";
+    char wrongAnswer1[48] = "Razor Sword";
+    char wrongAnswer2[48] = "Noble Sword";
+    char wrongAnswer3[48] = "Hero Sword";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
@@ -1320,14 +1225,15 @@ char* GetTwentySixthQuestion(int* correctAnswerIndexPtr)
 // Question for index 26
 char* GetTwentySeventhQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleThreeLineQuestionMessage("Who wears a purple hat", "and has a moustache", "and likes power");
+    char* question = CreateSimpleTwoLineQuestionMessage("According to the DK Rap\x82 which Kong", "is the last member of the DK Crew");
     
-    char correctAnswer[16] = "Walugi";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Wario";
+    char correctAnswer[48] = "Chunky Kong";
+    char wrongAnswer1[48] = "Lanky Kong";
+    char wrongAnswer2[48] = "Tiny Kong";
+    char wrongAnswer3[48] = "Coconut Gun";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
     return result;
 }
 
@@ -1339,29 +1245,12 @@ char* GetTwentySeventhQuestion(int* correctAnswerIndexPtr)
 // Question for index 27
 char* GetTwentyEighthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = func_80035934(256);      
-    bzero(question, 256);                      
-    
-    my_strcpy(question, "\x0B");                            // Start the message
-    my_strncat(question, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
-    my_strncat(question, "Which item is");                        
-    my_strncat(question, "\x03");                           // Red Font
-    my_strncat(question, " NOT");                              
-    my_strncat(question, "\x08");                           // White Font
-    my_strncat(question, " used in the Biggoron");
-    my_strncat(question, "\x5C");                           // '
-    my_strncat(question, "s Sword");
-    my_strncat(question, "\x0A");                           // Newline
-    my_strncat(question, "\x1A\x1A\x1A\x1A");               // Standard padding for portrait
-    my_strncat(question, "Quest in The Legend of Zelda");
-    my_strncat(question, "\x7B");                           // :
-    my_strncat(question, "Ocarina of Time");
-    my_strncat(question, "\xC3");                          // ?
+    char* question = CreateSimpleTwoLineQuestionMessage("What year was Donkey Kong 64", "released worldwide");
 
-    char correctAnswer[16] = "Weird Egg";
-    char wrongAnswer1[16] = "Odd Mushroom";
-    char wrongAnswer2[16] = "Prescription";
-    char wrongAnswer3[16] = "Eyeball Frog";
+    char correctAnswer[48] = "1999";
+    char wrongAnswer1[48] = "1997";
+    char wrongAnswer2[48] = "1998";
+    char wrongAnswer3[48] = "2000";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
     
@@ -1376,12 +1265,12 @@ char* GetTwentyEighthQuestion(int* correctAnswerIndexPtr)
 // Question for index 28
 char* GetTwentyNinthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleOneLineQuestionMessage("Who wears a red hat");
+    char* question = CreateSimpleTwoLineQuestionMessage("What year was Banjo Kazooie", "released worldwide");
 
-    char correctAnswer[16] = "Mario";
-    char wrongAnswer1[16] = "Luigi";
-    char wrongAnswer2[16] = "Wario";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "1998";
+    char wrongAnswer1[48] = "1997";
+    char wrongAnswer2[48] = "1999";
+    char wrongAnswer3[48] = "2000";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -1396,12 +1285,12 @@ char* GetTwentyNinthQuestion(int* correctAnswerIndexPtr)
 // Question for index 29
 char* GetThirtiethQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleTwoLineQuestionMessage("Who wears a yellow hat", "and has a moustache");
+    char* question = CreateSimpleTwoLineQuestionMessage("What year was Mario Party 3", "released in Japan");
 
-    char correctAnswer[16] = "Wario";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "2001";
+    char wrongAnswer1[48] = "2002";
+    char wrongAnswer2[48] = "1999";
+    char wrongAnswer3[48] = "2000";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
@@ -1416,14 +1305,15 @@ char* GetThirtiethQuestion(int* correctAnswerIndexPtr)
 // Question for index 30
 char* GetThirtyFirstQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleThreeLineQuestionMessage("Who wears a purple hat", "and has a moustache", "and likes power");
-    
-    char correctAnswer[16] = "Walugi";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Wario";
+    char* question = CreateSimpleTwoLineQuestionMessage("What year was Mario Kart 64", "released in the US");
+
+    char correctAnswer[48] = "1997";
+    char wrongAnswer1[48] = "1998";
+    char wrongAnswer2[48] = "1999";
+    char wrongAnswer3[48] = "2000";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
     return result;
 }
 
@@ -1435,29 +1325,12 @@ char* GetThirtyFirstQuestion(int* correctAnswerIndexPtr)
 // Question for index 31
 char* GetThirtySecondQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = func_80035934(256);      
-    bzero(question, 256);                      
-    
-    my_strcpy(question, "\x0B");                            // Start the message
-    my_strncat(question, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
-    my_strncat(question, "Which item is");                        
-    my_strncat(question, "\x03");                           // Red Font
-    my_strncat(question, " NOT");                              
-    my_strncat(question, "\x08");                           // White Font
-    my_strncat(question, " used in the Biggoron");
-    my_strncat(question, "\x5C");                           // '
-    my_strncat(question, "s Sword");
-    my_strncat(question, "\x0A");                           // Newline
-    my_strncat(question, "\x1A\x1A\x1A\x1A");               // Standard padding for portrait
-    my_strncat(question, "Quest in The Legend of Zelda");
-    my_strncat(question, "\x7B");                           // :
-    my_strncat(question, "Ocarina of Time");
-    my_strncat(question, "\xC3");                          // ?
+    char* question = CreateSimpleThreeLineQuestionMessage("What is the name of the unreleased", "Rareware RPG that went on to", "become Banjo Kazooie");
 
-    char correctAnswer[16] = "Weird Egg";
-    char wrongAnswer1[16] = "Odd Mushroom";
-    char wrongAnswer2[16] = "Prescription";
-    char wrongAnswer3[16] = "Eyeball Frog";
+    char correctAnswer[48] = "Project Dream";
+    char wrongAnswer1[48] = "Echo Delta";
+    char wrongAnswer2[48] = "Bird Bear 64";
+    char wrongAnswer3[48] = "40 Winks";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
     
@@ -1472,12 +1345,12 @@ char* GetThirtySecondQuestion(int* correctAnswerIndexPtr)
 // Question for index 32
 char* GetThirtyThirdQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleOneLineQuestionMessage("Who wears a red hat");
+	char* question = CreateSimpleThreeLineQuestionMessage("In Super Smash Bros\x85\x82 who is unlocked", "after completing Break the Targets", "with all 8 starter characters");
 
-    char correctAnswer[16] = "Mario";
-    char wrongAnswer1[16] = "Luigi";
-    char wrongAnswer2[16] = "Wario";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "Luigi";
+    char wrongAnswer1[48] = "Captain Falcon";
+    char wrongAnswer2[48] = "Jigglypuff";
+    char wrongAnswer3[48] = "Ness";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -1492,12 +1365,12 @@ char* GetThirtyThirdQuestion(int* correctAnswerIndexPtr)
 // Question for index 33
 char* GetThirtyFourthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleTwoLineQuestionMessage("Who wears a yellow hat", "and has a moustache");
+    char* question = CreateSimpleThreeLineQuestionMessage("What is unlocked in the Nintendo 64", "game Super Smash Bros\x85 when you play ", "100 multiplayer matches");
 
-    char correctAnswer[16] = "Wario";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "Item Switch";
+    char wrongAnswer1[48] = "Sound Test";
+    char wrongAnswer2[48] = "The Mushroom Kindom Stage";
+    char wrongAnswer3[48] = "Captain Falcon";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
@@ -1512,14 +1385,15 @@ char* GetThirtyFourthQuestion(int* correctAnswerIndexPtr)
 // Question for index 34
 char* GetThirtyFifthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleThreeLineQuestionMessage("Who wears a purple hat", "and has a moustache", "and likes power");
+	char* question = CreateSimpleThreeLineQuestionMessage("In The Legend of Zelda\x7B Majora\x5Cs Mask\x82",  "what mask do you earn after completing", "the Anju and Kafei Questline");
     
-    char correctAnswer[16] = "Walugi";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Wario";
+    char correctAnswer[48] = "The Couples Mask";
+    char wrongAnswer1[48] = "The All Night Mask";
+    char wrongAnswer2[48] = "Kafei\x5Cs Mask";
+    char wrongAnswer3[48] = "The Mask of Scents";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
     return result;
 }
 
@@ -1531,29 +1405,12 @@ char* GetThirtyFifthQuestion(int* correctAnswerIndexPtr)
 // Question for index 35
 char* GetThirtySixthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = func_80035934(256);      
-    bzero(question, 256);                      
-    
-    my_strcpy(question, "\x0B");                            // Start the message
-    my_strncat(question, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
-    my_strncat(question, "Which item is");                        
-    my_strncat(question, "\x03");                           // Red Font
-    my_strncat(question, " NOT");                              
-    my_strncat(question, "\x08");                           // White Font
-    my_strncat(question, " used in the Biggoron");
-    my_strncat(question, "\x5C");                           // '
-    my_strncat(question, "s Sword");
-    my_strncat(question, "\x0A");                           // Newline
-    my_strncat(question, "\x1A\x1A\x1A\x1A");               // Standard padding for portrait
-    my_strncat(question, "Quest in The Legend of Zelda");
-    my_strncat(question, "\x7B");                           // :
-    my_strncat(question, "Ocarina of Time");
-    my_strncat(question, "\xC3");                          // ?
+	char* question = CreateSimpleThreeLineQuestionMessage("In The Legend of Zelda\x7B Ocarina of Time\x82", "which item is not a part of the", "Biggoron\x5Cs Sword Quest");                        // ?
 
-    char correctAnswer[16] = "Weird Egg";
-    char wrongAnswer1[16] = "Odd Mushroom";
-    char wrongAnswer2[16] = "Prescription";
-    char wrongAnswer3[16] = "Eyeball Frog";
+    char correctAnswer[48] = "Weird Egg";
+    char wrongAnswer1[48] = "Odd Mushroom";
+    char wrongAnswer2[48] = "Prescription";
+    char wrongAnswer3[48] = "Eyeball Frog";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
     
@@ -1567,12 +1424,12 @@ char* GetThirtySixthQuestion(int* correctAnswerIndexPtr)
 // Question for index 36
 char* GetThirtySeventhQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleOneLineQuestionMessage("Who wears a red hat");
+	char* question = CreateSimpleThreeLineQuestionMessage("In The Legend of Zelda\x7B Majora\x5Cs Mask\x82 what", "mask does the Old Lady give you after", "stopping the man who robbed her");
 
-    char correctAnswer[16] = "Mario";
-    char wrongAnswer1[16] = "Luigi";
-    char wrongAnswer2[16] = "Wario";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "The Blast Mask";
+    char wrongAnswer1[48] = "The All Night Mask";
+    char wrongAnswer2[48] = "The Mask of Scents";
+    char wrongAnswer3[48] = "The Stone Mask";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -1588,12 +1445,12 @@ char* GetThirtySeventhQuestion(int* correctAnswerIndexPtr)
 // Question for index 37
 char* GetThirtyEighthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleTwoLineQuestionMessage("Who wears a yellow hat", "and has a moustache");
+    char* question = CreateSimpleTwoLineQuestionMessage("According to Shigeru Miyamoto\x82", "who is Bowser Jr\x85\x5Cs mother");
 
-    char correctAnswer[16] = "Wario";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "Shigeru Miyamoto";
+    char wrongAnswer1[48] = "Bowsette";
+    char wrongAnswer2[48] = "Bowletta";
+    char wrongAnswer3[48] = "Wendy O\x85 Koopa";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
@@ -1608,15 +1465,16 @@ char* GetThirtyEighthQuestion(int* correctAnswerIndexPtr)
 // Question for index 38
 char* GetThirtyNinthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleThreeLineQuestionMessage("Who wears a purple hat", "and has a moustache", "and likes power");
-    
-    char correctAnswer[16] = "Walugi";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Wario";
+	char* question = CreateSimpleOneLineQuestionMessage("What game did Mario make his debut");
 
-    char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-    return result;
+	char correctAnswer[48] = "Donkey Kong";
+	char wrongAnswer1[48] = "Mario Bros\x85";
+	char wrongAnswer2[48] = "Super Mario Bros\x85";
+	char wrongAnswer3[48] = "Punch Out\xC2\xC2";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
 }
 
 
@@ -1627,33 +1485,16 @@ char* GetThirtyNinthQuestion(int* correctAnswerIndexPtr)
 // Question for index 39
 char* GetFourtiethQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = func_80035934(256);      
-    bzero(question, 256);                      
-    
-    my_strcpy(question, "\x0B");                            // Start the message
-    my_strncat(question, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
-    my_strncat(question, "Which item is");                        
-    my_strncat(question, "\x03");                           // Red Font
-    my_strncat(question, " NOT");                              
-    my_strncat(question, "\x08");                           // White Font
-    my_strncat(question, " used in the Biggoron");
-    my_strncat(question, "\x5C");                           // '
-    my_strncat(question, "s Sword");
-    my_strncat(question, "\x0A");                           // Newline
-    my_strncat(question, "\x1A\x1A\x1A\x1A");               // Standard padding for portrait
-    my_strncat(question, "Quest in The Legend of Zelda");
-    my_strncat(question, "\x7B");                           // :
-    my_strncat(question, "Ocarina of Time");
-    my_strncat(question, "\xC3");                          // ?
+	char* question = CreateSimpleOneLineQuestionMessage("What game did Luigi make his debut");
 
-    char correctAnswer[16] = "Weird Egg";
-    char wrongAnswer1[16] = "Odd Mushroom";
-    char wrongAnswer2[16] = "Prescription";
-    char wrongAnswer3[16] = "Eyeball Frog";
+	char correctAnswer[48] = "Mario Bros\x85";
+	char wrongAnswer1[48] = "Super Mario Bros\x85";
+	char wrongAnswer2[48] = "Vs\x85 Super Mario Bros\x85";
+	char wrongAnswer3[48] = "Luigi\x5Cs Hammer Toss";
 
-    char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-    
-    return result;
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
 }
 
 
@@ -1664,12 +1505,12 @@ char* GetFourtiethQuestion(int* correctAnswerIndexPtr)
 // Question for index 40
 char* GetFourtyFirstQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleOneLineQuestionMessage("Who wears a red hat");
+    char* question = CreateSimpleTwoLineQuestionMessage("What game did Princess Peach", "make her debut");
 
-    char correctAnswer[16] = "Mario";
-    char wrongAnswer1[16] = "Luigi";
-    char wrongAnswer2[16] = "Wario";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "Super Mario Bros\x85";
+    char wrongAnswer1[48] = "Donkey Kong";
+    char wrongAnswer2[48] = "Super Mario Bros\x85 2";
+    char wrongAnswer3[48] = "Super Mario Land";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -1684,12 +1525,12 @@ char* GetFourtyFirstQuestion(int* correctAnswerIndexPtr)
 // Question for index 41
 char* GetFourtySecondQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleTwoLineQuestionMessage("Who wears a yellow hat", "and has a moustache");
+	char* question = CreateSimpleTwoLineQuestionMessage("What game did Princess Daisy", "make her debut");
 
-    char correctAnswer[16] = "Wario";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "Super Mario Land";
+    char wrongAnswer1[48] = "Mario Party 2";
+    char wrongAnswer2[48] = "Mario Tennis";
+    char wrongAnswer3[48] = "Mario Golf";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
@@ -1704,14 +1545,15 @@ char* GetFourtySecondQuestion(int* correctAnswerIndexPtr)
 // Question for index 42
 char* GetFourtyThirdQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleThreeLineQuestionMessage("Who wears a purple hat", "and has a moustache", "and likes power");
+	char* question = CreateSimpleOneLineQuestionMessage("What game did Wario make his debut");
     
-    char correctAnswer[16] = "Walugi";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Wario";
+    char correctAnswer[48] = "Super Mario Land 2\x7B 6 Golden Coins";
+    char wrongAnswer1[48] = "Wario Land";
+    char wrongAnswer2[48] = "Mario Kart 64";
+    char wrongAnswer3[48] = "Mario Tennis";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
     return result;
 }
 
@@ -1723,33 +1565,16 @@ char* GetFourtyThirdQuestion(int* correctAnswerIndexPtr)
 // Question for index 43
 char* GetFourtyFourthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = func_80035934(256);      
-    bzero(question, 256);                      
-    
-    my_strcpy(question, "\x0B");                            // Start the message
-    my_strncat(question, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
-    my_strncat(question, "Which item is");                        
-    my_strncat(question, "\x03");                           // Red Font
-    my_strncat(question, " NOT");                              
-    my_strncat(question, "\x08");                           // White Font
-    my_strncat(question, " used in the Biggoron");
-    my_strncat(question, "\x5C");                           // '
-    my_strncat(question, "s Sword");
-    my_strncat(question, "\x0A");                           // Newline
-    my_strncat(question, "\x1A\x1A\x1A\x1A");               // Standard padding for portrait
-    my_strncat(question, "Quest in The Legend of Zelda");
-    my_strncat(question, "\x7B");                           // :
-    my_strncat(question, "Ocarina of Time");
-    my_strncat(question, "\xC3");                          // ?
+	char* question = CreateSimpleThreeLineQuestionMessage("Which Pokemon Game Cartridge can", "be found hidden behind the case for", "Dairantou Smash Brothers DX");
 
-    char correctAnswer[16] = "Weird Egg";
-    char wrongAnswer1[16] = "Odd Mushroom";
-    char wrongAnswer2[16] = "Prescription";
-    char wrongAnswer3[16] = "Eyeball Frog";
+	char correctAnswer[48] = "Pokemon Gold Version";
+	char wrongAnswer1[48] = "Pokemon Silver Version";
+	char wrongAnswer2[48] = "Pokemon Yellow Version";
+	char wrongAnswer3[48] = "Pokemon Red Version";
 
-    char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-    
-    return result;
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
 }
 
 
@@ -1760,12 +1585,12 @@ char* GetFourtyFourthQuestion(int* correctAnswerIndexPtr)
 // Question for index 44
 char* GetFourtyFifthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleOneLineQuestionMessage("Who wears a red hat");
+    char* question = CreateSimpleTwoLineQuestionMessage("What game did Donkey Kong", "make his debut");
 
-    char correctAnswer[16] = "Mario";
-    char wrongAnswer1[16] = "Luigi";
-    char wrongAnswer2[16] = "Wario";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "Donkey Kong Country";
+    char wrongAnswer1[48] = "Donkey Kong";
+    char wrongAnswer2[48] = "Donkey Kong Jr\x85";
+    char wrongAnswer3[48] = "Donkey Konga";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -1780,12 +1605,12 @@ char* GetFourtyFifthQuestion(int* correctAnswerIndexPtr)
 // Question for index 45
 char* GetFourtySixthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleTwoLineQuestionMessage("Who wears a yellow hat", "and has a moustache");
+	char* question = CreateSimpleOneLineQuestionMessage("What game did Yoshi make his debut");
 
-    char correctAnswer[16] = "Wario";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Waluigi";
+    char correctAnswer[48] = "Super Mario World";
+    char wrongAnswer1[48] = "Yoshi";
+    char wrongAnswer2[48] = "Yoshi\x5Cs Cookie";
+    char wrongAnswer3[48] = "Super Mario Bros\x85 3";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
@@ -1800,14 +1625,15 @@ char* GetFourtySixthQuestion(int* correctAnswerIndexPtr)
 // Question for index 46
 char* GetFourtySeventhQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleThreeLineQuestionMessage("Who wears a purple hat", "and has a moustache", "and likes power");
+	char* question = CreateSimpleTwoLineQuestionMessage("What Nintendo 64 game was bundled", "together with a Rumble Pack");
     
-    char correctAnswer[16] = "Walugi";
-    char wrongAnswer1[16] = "Mario";
-    char wrongAnswer2[16] = "Luigi";
-    char wrongAnswer3[16] = "Wario";
+    char correctAnswer[48] = "Star Fox 64";
+    char wrongAnswer1[48] = "Wave Race 64";
+    char wrongAnswer2[48] = "Perfect Dark";
+    char wrongAnswer3[48] = "Donkey Kong 64";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
     return result;
 }
 
@@ -1819,34 +1645,19 @@ char* GetFourtySeventhQuestion(int* correctAnswerIndexPtr)
 // Question for index 47
 char* GetFourtyEighthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = func_80035934(256);      
-    bzero(question, 256);                      
-    
-    my_strcpy(question, "\x0B");                            // Start the message
-    my_strncat(question, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
-    my_strncat(question, "Which item is");                        
-    my_strncat(question, "\x03");                           // Red Font
-    my_strncat(question, " NOT");                              
-    my_strncat(question, "\x08");                           // White Font
-    my_strncat(question, " used in the Biggoron");
-    my_strncat(question, "\x5C");                           // '
-    my_strncat(question, "s Sword");
-    my_strncat(question, "\x0A");                           // Newline
-    my_strncat(question, "\x1A\x1A\x1A\x1A");               // Standard padding for portrait
-    my_strncat(question, "Quest in The Legend of Zelda");
-    my_strncat(question, "\x7B");                           // :
-    my_strncat(question, "Ocarina of Time");
-    my_strncat(question, "\xC3");                          // ?
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
 
-    char correctAnswer[16] = "Weird Egg";
-    char wrongAnswer1[16] = "Odd Mushroom";
-    char wrongAnswer2[16] = "Prescription";
-    char wrongAnswer3[16] = "Eyeball Frog";
 
-    char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-    
-    return result;
+	char correctAnswer[48] = "Pokemon Stadium 2";
+	char wrongAnswer1[48] = "Donkey Kong 64";
+	char wrongAnswer2[48] = "Perfect Dark";
+	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
 }
+
 
 
 
@@ -2216,7 +2027,20 @@ void mp3_play_idle_animation()
     func_800F2304(-1, -1, 0);
 }
 
+enum mp3_Character {Mario, Luigi, Peach, Yoshi, Wario, DK, Waluigi, Daisy};
 
+int IsPlayerCertainCharacter(int playerIndex, enum mp3_Character character)
+{
+    struct Player *p = GetPlayerStruct(playerIndex);
+    if(p != NULL && p->character == character)  
+    {
+        return 1;
+    }
+    else
+    {
+        return 0; 
+    }
+}
 
 
 // Long-form implementation from:
