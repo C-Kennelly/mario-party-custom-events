@@ -7,7 +7,15 @@
 // PARAM: +Number|HARD_CPU_ACCURACY_PERCENT
 
 
-// This is version: 1.0
+// ********  Perisistent board RAM values used:  ******** 
+//               D_800CD0A0;
+//               D_800CD0A1;
+//               D_800CD098;
+// ******** If any other events on your board use these values, you will get unexpected behavior!!! ******** 
+
+
+
+// This is version: 1.1
 //
 // There may be an update available at:
 // https://github.com/c-kennelly/mario-party-custom-events
@@ -58,7 +66,11 @@
 // Normal   --  50% chance of getting a question right  (value = 50)
 // Hard     --  75% chance of getting a question right. (value = 75)
 //
-//
+// ***** No repeats until all questions have been asked ****
+// The v1.1 update ensured that you'll see all the questions in the question bank
+// before the quiz asks a repeat question.  The quiz starts on a different random question
+// each game, and then asks the questions in sequence.  If the quiz has exactly 48 active questions
+// the sequence the questions are asked in will also change game to game.
 // 
 //
 // Finally, this file is commented to make it as easy as possible for 
@@ -70,6 +82,7 @@
 //***************************************************************************//
 //***********************     Changelist      *******************************//
 //***************************************************************************//
+//   Version 1.1 - Questions no longer repeat unless all questions have been asked!
 //   Version 1.0 - First version of the event!
 
 
@@ -93,11 +106,15 @@
 //*************************** Declarations **********************************//
 //***************************************************************************//
 
-// Used for the data types used in the player struct.
+// Used for the data types used in the player struct, and the board ram.
 // Header file: http://n64devkit.square7.ch/header/ultra64.htm
 // Ultratypes: http://n64devkit.square7.ch/header/ultratypes.htm
 // For more exploration: http://n64devkit.square7.ch/header/
 #include "ultra64.h"
+
+extern u8 D_800CD0A0;
+extern u8 D_800CD0A1;
+extern u8 D_800CD098;
 
 // Reference wiki article can be found here:
 // https://github.com/PartyPlanner64/PartyPlanner64/wiki/Player-Structs
@@ -181,7 +198,7 @@ void DisplayGreetingMessage()
 // Ask a random quiz question and return the correct answer for that question
 int AskTheQuestion()
 {
-    int index = PickARandomQuestionIndex();
+    int index = PickQuestionIndex();
 
     int correctAnswer = 0;
     char *question_msg = GetQuestionByNumber(index, &correctAnswer);
@@ -191,11 +208,83 @@ int AskTheQuestion()
     return correctAnswer;
 }
 
-// Pick a random question from the beginning of the bank
-// to the number defined by ACTIVE_QUESTIONS
-int PickARandomQuestionIndex()
+// Pick a question from the bank.  If it's the first question of the game,
+// start at a random question index so that there's a different question every game.
+// After we ask a question, increment the question index that will be returned next time by the StepValue.
+// This will step through the question list so that we never ask a repeat question until all questions in
+// the bank have been asked.
+
+// ******** Perisistent board RAM values used.
+// ******** If any other events on your board use these values, you will get unexpected behavior!!!***
+// D_800CD0A0 -> FirstQuestionIndex;        The question index for the first question
+// D_800CD0A1 -> NumQuestionsAsked;         The number of questions asked so far
+// D_800CD098 -> StepValue;                 The index we step by for each successive question.
+
+int PickQuestionIndex()
 {
-    return mp3_PickARandomNumberBetween0AndN(ACTIVE_QUESTIONS);
+    //If we haven't set a StepValue, it's the first time the event is called.
+    if(D_800CD098 == 0)
+    {
+        InitializeQuizData();
+    }
+
+    int result = 0;
+
+    // Take the initial question index, and roll foward by the step counter to get the index
+    // of the next question we should ask. Mod by total active questions so we always have a valid index.
+
+    // result = ((FirstQuestionIndex + (NumQuestionsAsked * StepValue)) % ACTIVE_QUESTIONS);
+    result = ( (D_800CD0A0 + (D_800CD0A1 * D_800CD098) ) % ACTIVE_QUESTIONS);
+
+    //increment NumQuestionsAsked counter.
+    D_800CD0A1 = (D_800CD0A1 + 1);
+
+    return result;
+}
+
+void InitializeQuizData()
+{
+    // board_ram9 -> initial question index; the question we'll ask first
+    // So pick a random first question.
+    D_800CD0A0 = mp3_PickARandomNumberBetween0AndN(ACTIVE_QUESTIONS);
+
+    // When we have 48 questions, stepping through the questions in increments of 1, 5, or 7
+    // will produce a different order, but guarantee we don't repeat until all questions are asked.
+    // So we'll choose a randomly choose a value of 1, 5, or 7 and initialize the StepValue with it.
+    // This means that questions will be asked in different orders each game.
+    //
+    // If you've modified ACTIVE_QUESTIONS to have anything other than 48, you'll need to recalulate
+    // appropriate StepValues that don't lead to repeats or skipped questions.  So the quiz defaults
+    // to using a step of "1" every time.  That means your quiz will still start in a random place,
+    // but questions will be asked in the same order every game.  (For example, Question 26 will ALWAYS
+    // be asked after Question 25.)
+
+    //Set the StepValue:
+    if(ACTIVE_QUESTIONS == 48)
+    {
+        int stepIndex = mp3_PickARandomNumberBetween0AndN(3);
+
+        switch (stepIndex)
+        {
+        case (0):
+            D_800CD098 = 1;
+            break;
+        case (1):
+            D_800CD098 = 5;
+            break;
+        case (2):
+            D_800CD098 = 7;
+            break;
+        default:
+            D_800CD098 = 1;
+            break;
+        }
+
+    }
+    else
+    {
+        D_800CD098 = 1;
+    }
 }
 
 // Display a message and return the answer chosen 

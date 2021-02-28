@@ -117,6 +117,9 @@ struct Player {
 void main() 
 {
     mp3_DebugMessage("Start");
+800CD067
+
+    D_80123456
 
     int currentPlayerIndex = GetCurrentPlayerIndex();
 
@@ -136,7 +139,7 @@ int GetControllerValueFromPlayer(int playerIndex)
     struct Player *p = GetPlayerStruct(playerIndex);
     if(p != NULL)  
     {
-        return p->controller;
+        return p->unk0;
     }
     else
     {
@@ -144,6 +147,7 @@ int GetControllerValueFromPlayer(int playerIndex)
     }
 }
 
+/*
 void P1Possession(int targetPlayerIndex)
 {
     struct Player *p = GetPlayerStruct(targetPlayerIndex)
@@ -152,7 +156,7 @@ void P1Possession(int targetPlayerIndex)
         player1
     }
 }
-
+*/
 
 void SwapControllers(int playerIndexA, int playerIndexB)
 {   
@@ -163,9 +167,9 @@ void SwapControllers(int playerIndexA, int playerIndexB)
 
         if(p_a != NULL && p_b != NULL)  
         {
-            s8 swapValue = p_a->controller;
-            p_a->controller = p_b->controller;
-            p_b->controller = swapValue;
+            s8 swapValue = p_a->unk0;
+            p_a->unk0 = p_b->unk0;
+            p_b->unk0 = swapValue;
         }
     }
 }
