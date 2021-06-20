@@ -5,6 +5,17 @@
 // PARAM: Boolean|COIN_REWARD
 
 //***************************************************************************//
+//******************** Version Info! ****************************************//
+//***************************************************************************//
+//
+// This is version: 1.0
+//
+// There may be an update available at:
+// https://github.com/c-kennelly/mario-party-custom-events
+// You can also report a bug as an issue (and maybe a PR that fixes it?)
+
+
+//***************************************************************************//
 //******************** BOARD RAM WARNING ************************************//
 //***************************************************************************//
 // This board uses the following addresses (board RAM)
@@ -29,15 +40,6 @@
 //
 // If you're not sure what this parameter does, just set the "USES BOARD RAM" to true. =)
 
-//***************************************************************************//
-//******************** Version Info! ****************************************//
-//***************************************************************************//
-//
-// This is version: 1.0
-//
-// There may be an update available at:
-// https://github.com/c-kennelly/mario-party-custom-events
-// You can also report a bug as an issue (and maybe a PR that fixes it?)
 
 //***************************************************************************//
 //******************** Event Configuration ***********************************//
