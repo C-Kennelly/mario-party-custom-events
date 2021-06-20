@@ -1,18 +1,33 @@
 // NAME: Nintendo Trivia Quiz
 // GAMES: MP3_USA
 // EXECUTION: Direct
+// PARAM: Boolean|USES_BOARD_RAM
 // PARAM: +Number|COIN_REWARD
 // PARAM: +Number|EASY_CPU_ACCURACY_PERCENT
 // PARAM: +Number|NORMAL_CPU_ACCURACY_PERCENT
 // PARAM: +Number|HARD_CPU_ACCURACY_PERCENT
 
+//***************************************************************************//
+//******************** BOARD RAM WARNING ************************************//
+//***************************************************************************//
+// This board uses the following addresses (board RAM)
+//               D_800CD0A0;    //board_ram9
+//               D_800CD0A1;    //board_ram10
+//               D_800CD098;    //board_ram11
+//
+// If any other events on your board use these values, you will get unexpected behavior! 
+//
+// You can disable this quiz's use of board RAM by setting the "USES_BOARD_RAM" parameter to
+// "False" in PartyPlanner when you place the event.
+//
+// The board RAM is used to ensure questions are asked without repeats.  So, if you disable
+// the use of board RAM, the questions will still be randomly selected, but they may repeat.
+//
+// If you're not sure what this parameter does, just set the "USES BOARD RAM" to true. =)
 
-// ********  Perisistent board RAM values used:  ******** 
-//               D_800CD0A0;
-//               D_800CD0A1;
-//               D_800CD098;
-// ******** If any other events on your board use these values, you will get unexpected behavior!!! ******** 
-
+//***************************************************************************//
+//******************** Version Info! ****************************************//
+//***************************************************************************//
 
 
 // This is version: 1.1
@@ -20,18 +35,6 @@
 // There may be an update available at:
 // https://github.com/c-kennelly/mario-party-custom-events
 // You can also report a bug as an issue (and maybe a PR that fixes it?)
-
-//***************************************************************************//
-//******************** Quiz Configuration ***********************************//
-//***************************************************************************//
-
-// How many questions should the quiz use?
-#define ACTIVE_QUESTIONS 48
-
-// The character portrait of the character who is giving the quiz.
-#define QUIZ_GIVER_PORTRAIT 3
-// Want to change the picture?  Find options the PartyPlanner64 wiki:
-// https://github.com/PartyPlanner64/PartyPlanner64/wiki/Displaying-Messages
 
 
 //***************************************************************************//
@@ -70,7 +73,8 @@
 // The v1.1 update ensured that you'll see all the questions in the question bank
 // before the quiz asks a repeat question.  The quiz starts on a different random question
 // each game, and then asks the questions in sequence.  If the quiz has exactly 48 active questions
-// the sequence the questions are asked in will also change game to game.
+// the sequence the questions are asked in will also change game to game.  v1.15 allows you to disable
+// this behavior in case you want to prioritize another event that uses the same addresses.
 // 
 //
 // Finally, this file is commented to make it as easy as possible for 
@@ -82,8 +86,10 @@
 //***************************************************************************//
 //***********************     Changelist      *******************************//
 //***************************************************************************//
-//   Version 1.1 - Questions no longer repeat unless all questions have been asked!
-//   Version 1.0 - First version of the event!
+//   Version 1.15   - Added ability to disable the event's use of Board RAM. 
+//                    Reorganized comments a bit.
+//   Version 1.1    - Questions no longer repeat unless all questions have been asked!
+//   Version 1.0    - First version of the event!
 
 
 //***************************************************************************//
@@ -103,15 +109,29 @@
 
 
 //***************************************************************************//
+//******************** Quiz Configuration ***********************************//
+//***************************************************************************//
+
+// How many questions should the quiz use?
+#define ACTIVE_QUESTIONS 48
+
+// The character portrait of the character who is giving the quiz.
+#define QUIZ_GIVER_PORTRAIT 3
+// Want to change the picture?  Find options on the PartyPlanner64 wiki:
+// https://github.com/PartyPlanner64/PartyPlanner64/wiki/Displaying-Messages
+
+
+//***************************************************************************//
 //*************************** Declarations **********************************//
 //***************************************************************************//
 
-// Used for the data types used in the player struct, and the board ram.
+// Used for the data types used in the player struct:
 // Header file: http://n64devkit.square7.ch/header/ultra64.htm
 // Ultratypes: http://n64devkit.square7.ch/header/ultratypes.htm
 // For more exploration: http://n64devkit.square7.ch/header/
 #include "ultra64.h"
 
+//Event parameter can disable these:
 extern u8 D_800CD0A0;
 extern u8 D_800CD0A1;
 extern u8 D_800CD098;
@@ -145,7 +165,7 @@ struct Player {
 
     s8 pad1[7];             // Offsets: 29 - 35
 
-    void *obj;              // Offset 36:  struct object *
+    void *obj;              // Offset 36:  struct object pointer
     s16 minigame_star;      // Offset 40
     s16 coin_star;          // Offset 42
     s8 happening_space_count; // Offset 44
@@ -195,7 +215,7 @@ void DisplayGreetingMessage()
     mp3_ShowMessageWithConfirmation(QUIZ_GIVER_PORTRAIT, greeting_msg);
 }
 
-// Ask a random quiz question and return the correct answer for that question
+// Selects the next question to be asked and returns the correct answer for that question
 int AskTheQuestion()
 {
     int index = PickQuestionIndex();
@@ -213,54 +233,73 @@ int AskTheQuestion()
 // After we ask a question, increment the question index that will be returned next time by the StepValue.
 // This will step through the question list so that we never ask a repeat question until all questions in
 // the bank have been asked.
-
+//
 // ******** Perisistent board RAM values used.
 // ******** If any other events on your board use these values, you will get unexpected behavior!!!***
 // D_800CD0A0 -> FirstQuestionIndex;        The question index for the first question
 // D_800CD0A1 -> NumQuestionsAsked;         The number of questions asked so far
 // D_800CD098 -> StepValue;                 The index we step by for each successive question.
-
+//
+// If board RAM is disabled - presumably because the board creator is using another event that clashes and didn't know
+// how to edit this event to use different addresses - fallback on selecting a random question from the question bank each time.
 int PickQuestionIndex()
 {
-    //If we haven't set a StepValue, it's the first time the event is called.
-    if(D_800CD098 == 0)
-    {
-        InitializeQuizData();
-    }
-
     int result = 0;
 
-    // Take the initial question index, and roll foward by the step counter to get the index
-    // of the next question we should ask. Mod by total active questions so we always have a valid index.
+    // If the event is allowed to use the persistent memory addresses, prevent repeat questions.
+    // This behavior is set by event parameter in PartyPlanner.
+    if(USES_BOARD_RAM == 1)
+    {
 
-    // result = ((FirstQuestionIndex + (NumQuestionsAsked * StepValue)) % ACTIVE_QUESTIONS);
-    result = ( (D_800CD0A0 + (D_800CD0A1 * D_800CD098) ) % ACTIVE_QUESTIONS);
+        // If we haven't set a StepValue, it's the first time the event is called.
+        // So we need to initialize the quiz data.
+        if(D_800CD098 == 0)
+        {
+            InitializeQuizData();
+        }
 
-    //increment NumQuestionsAsked counter.
-    D_800CD0A1 = (D_800CD0A1 + 1);
+        // Take the initial question index, and roll foward by the step counter to get the index
+        // of the next question we should ask. Mod by total active questions so we always have a valid index.
+        //
+        // result = ((FirstQuestionIndex + (NumQuestionsAsked * StepValue)) % ACTIVE_QUESTIONS);
+        result = ( (D_800CD0A0 + (D_800CD0A1 * D_800CD098) ) % ACTIVE_QUESTIONS);
+
+        //increment NumQuestionsAsked counter.
+        D_800CD0A1 = (D_800CD0A1 + 1);
+    }
+    // If not allowed to use persistent memory addresses, best we can do is select a random question each time.
+    else
+    {
+        result = mp3_PickARandomNumberBetween0AndN(ACTIVE_QUESTIONS);
+    }
 
     return result;
 }
 
+// The first time the event is called, decide what question we're starting on and what sequence
+// the questions will be asked in.  Not called if we've disabled board RAM.
 void InitializeQuizData()
 {
-    // board_ram9 -> initial question index; the question we'll ask first
-    // So pick a random first question.
+    // Pick a random first question.
     D_800CD0A0 = mp3_PickARandomNumberBetween0AndN(ACTIVE_QUESTIONS);
 
-    // When we have 48 questions, stepping through the questions in increments of 1, 5, or 7
-    // will produce a different order, but guarantee we don't repeat until all questions are asked.
-    // So we'll choose a randomly choose a value of 1, 5, or 7 and initialize the StepValue with it.
-    // This means that questions will be asked in different orders each game.
+    // When we have a question bank size that is divisible by 16, stepping through the questions in increments of 1, 5, or 7
+    // will guarantee we don't repeat a question until all questions have been asked once.  Randomly selecting a different StepValue
+    // each game means the question order will vary game to game.
     //
-    // If you've modified ACTIVE_QUESTIONS to have anything other than 48, you'll need to recalulate
-    // appropriate StepValues that don't lead to repeats or skipped questions.  So the quiz defaults
+    // The rest of this function is the logic to randomly choose a value of 1, 5, or 7 
+    // and initialize the StepValue with it.
+    //
+    // If you've modified ACTIVE_QUESTIONS to not be divisible by 16, the quiz defaults
     // to using a step of "1" every time.  That means your quiz will still start in a random place,
     // but questions will be asked in the same order every game.  (For example, Question 26 will ALWAYS
-    // be asked after Question 25.)
-
-    //Set the StepValue:
-    if(ACTIVE_QUESTIONS == 48)
+    // be asked after Question 25).   Feel free to edit this function if you'd like, but you'll need to 
+    // recalculate good step values and fill them in by hand.
+    //
+    // Set the StepValue:
+    if((ACTIVE_QUESTIONS % 16 == 0) && 
+        (ACTIVE_QUESTIONS % 5 != 0) && 
+        (ACTIVE_QUESTIONS % 7 != 0))  //These values have been tested for question banks at size: 16, 32, 48, 64, and 96.
     {
         int stepIndex = mp3_PickARandomNumberBetween0AndN(3);
 
@@ -279,7 +318,6 @@ void InitializeQuizData()
             D_800CD098 = 1;
             break;
         }
-
     }
     else
     {
@@ -313,6 +351,7 @@ int GetResponseAndTeardownMessageBox(int correctAnswer)
 // Select an answer to the quiz question for a CPU player based on difficulty level
 // Each difficulty level has a chance of automatically getting the question right.
 // If that roll fails, then they select an incorrect answer.
+// Recommended settings:
 // 25%  -- Easy
 // 50%  -- Normal
 // 75%  -- Hard
@@ -326,6 +365,8 @@ int GetChoiceForCPU(int correctAnswer)
     int playerIndex = GetCurrentPlayerIndex();
     if (PlayerIsCPU(playerIndex))
     {
+        PauseCPUToConsiderAnswer(15);
+        
         u8 cpuDifficulty = GetCPUDifficulty(playerIndex);
 
         if (cpuDifficulty == 0)  // Easy
@@ -336,7 +377,7 @@ int GetChoiceForCPU(int correctAnswer)
             }   
             else 
             {
-                cpuChoice = (correctAnswer + 1) % maxValidIndex;        //Incorrect Answer
+                cpuChoice = (correctAnswer + 1) % maxValidIndex;        //Incorrect answer clamped to valid index.
             }
         }
         else if (cpuDifficulty == 1)  // Normal
@@ -347,7 +388,7 @@ int GetChoiceForCPU(int correctAnswer)
             }   
             else 
             {
-                cpuChoice = (correctAnswer + 1) % maxValidIndex;        //Incorrect Answer    
+                cpuChoice = (correctAnswer + 1) % maxValidIndex;        //Incorrect answer clamped to valid index.
             }
         }
         else // Hard
@@ -359,7 +400,7 @@ int GetChoiceForCPU(int correctAnswer)
             }   
             else
             {
-                cpuChoice = (correctAnswer + 1) % maxValidIndex;        //Incorrect Answer
+                cpuChoice = (correctAnswer + 1) % maxValidIndex;        //Incorrect answer clamped to valid index.
             }
         }
     }
@@ -367,6 +408,14 @@ int GetChoiceForCPU(int correctAnswer)
     return cpuChoice;
 }
 
+// Pausing to let question be displayed when CPU player is looking at answer.
+// Without this, CPU's blaze through the questions and players don't have time to read the longer ones.
+void PauseCPUToConsiderAnswer(int msToPause)
+{
+        SleepProcess(msToPause);
+}
+
+// Returns true if the character wahs romantically.
 int IsWaluigi(int playerIndex)
 {
     struct Player *p = GetPlayerStruct(playerIndex);
@@ -380,7 +429,7 @@ int IsWaluigi(int playerIndex)
     }
 }
 
-//Returns the difficulty of the CPU.  Uses ultra.64 types
+// Returns the difficulty of the CPU.  Uses ultra.64 types
 u8 GetCPUDifficulty(int playerIndex)
 {
     struct Player *p = GetPlayerStruct(playerIndex);
@@ -391,7 +440,7 @@ u8 GetCPUDifficulty(int playerIndex)
     }
     else
     {
-        return 1;       //Couldn't get player index, which means things are borked.  Assume normal.
+        return 1;       //Couldn't get player index, which means things are borked.  Assume normal difficulty.
     }
     
 }
@@ -763,6 +812,7 @@ char* GetFirstQuestion(int* correctAnswerIndexPtr)
     // If you want special characters or punctuation, either concatenate the
     // strings you send in, or look below for the custom message example.
     
+    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("How many Game Boy Color handhelds", "can be found on this board");
 
     // Answers are defined here.
@@ -796,7 +846,7 @@ char* GetSecondQuestion(int* correctAnswerIndexPtr)
     //      "and has a moustache?"
     //
     // (final question mark and newline will be added automatically)
-    
+    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("What well known soft drink for", "gamerz is found at Booze Boulevard");
 
     char correctAnswer[48] = "Mountain Dew";
@@ -826,7 +876,7 @@ char* GetThirdQuestion(int* correctAnswerIndexPtr)
     //      "and likes power?"
     //
     // (final question mark and newline will be added automatically)
-
+    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("How many Game Boy Advance handhelds","can be found on this board");
     
     char correctAnswer[48] = "One";
@@ -853,7 +903,8 @@ char* GetFourthQuestion(int* correctAnswerIndexPtr)
     //
     // Mario Party 3 special characters documented at:
     // https://github.com/PartyPlanner64/PartyPlanner64/wiki/String-Encoding
-    //    
+    
+    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo Consoles", "can \x03NOT\x08 be found on this board");
 
     char correctAnswer[48] = "Nintendo Wii";
@@ -874,6 +925,7 @@ char* GetFourthQuestion(int* correctAnswerIndexPtr)
 // Question for index 4
 char* GetFifthQuestion(int* correctAnswerIndexPtr)
 {
+    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("Which Nintendo 64 game\x5Cs boxart", "can \x03NOT\x08 be found on this board");
 
 
@@ -915,6 +967,7 @@ char* GetSixthQuestion(int* correctAnswerIndexPtr)
 // Question for index 6
 char* GetSeventhQuestion(int* correctAnswerIndexPtr)
 {
+    //TODO
 	char* question = CreateSimpleTwoLineQuestionMessage("How many Nintendo Gamecube Controllers", "can be found on this Board");
     
 	char correctAnswer[48] = "One";
@@ -935,6 +988,7 @@ char* GetSeventhQuestion(int* correctAnswerIndexPtr)
 // Question for index 7
 char* GetEigthQuestion(int* correctAnswerIndexPtr)
 {   
+    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("A giant hat can be found on this board\x85", "Which character does it belong to");
 
     char correctAnswer[48] = "Waluigi";
@@ -975,6 +1029,7 @@ char* GetNinthQuestion(int* correctAnswerIndexPtr)
 // Question for index 9
 char* GetTenthQuestion(int* correctAnswerIndexPtr)
 {
+    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("What Nintendo 64 game can be found", "above the Ancient Mew Card");
 
     char correctAnswer[48] = "Mario Tennis";
@@ -995,6 +1050,7 @@ char* GetTenthQuestion(int* correctAnswerIndexPtr)
 // Question for index 10
 char* GetEleventhQuestion(int* correctAnswerIndexPtr)
 {
+    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("What color of Nintendo 64 Controller is", "\x03NOT\x08 featured on this board");
     
     char correctAnswer[48] = "Solid Yellow";
@@ -1015,6 +1071,7 @@ char* GetEleventhQuestion(int* correctAnswerIndexPtr)
 // Question for index 11
 char* GetTwelfthQuestion(int* correctAnswerIndexPtr)
 {
+    //TODO
     char* question = CreateSimpleThreeLineQuestionMessage("Three Pokemon cards can be found", "sitting together on this board\x85", "Whose card is on the left");
 
     char correctAnswer[48] = "Venasaur";
@@ -1035,6 +1092,7 @@ char* GetTwelfthQuestion(int* correctAnswerIndexPtr)
 // Question for index 12
 char* GetThirteenthQuestion(int* correctAnswerIndexPtr)
 {
+    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("Which Nintendo 64 game cartridge","can \x03NOT\x08 be found on this board");
 
     char correctAnswer[48] = "Mario Kart 64";
@@ -1055,6 +1113,7 @@ char* GetThirteenthQuestion(int* correctAnswerIndexPtr)
 // Question for index 13
 char* GetFourteenthQuestion(int* correctAnswerIndexPtr)
 {
+    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("What color of Gameboy Color handheld", "can \x03NOT\x08 be found on this board");
 
     char correctAnswer[48] = "Kiwi";
@@ -1075,6 +1134,7 @@ char* GetFourteenthQuestion(int* correctAnswerIndexPtr)
 // Question for index 14
 char* GetFifteenthQuestion(int* correctAnswerIndexPtr)
 {
+    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("What color is the Nintendo 3DS", "handheld on this board");
     
     char correctAnswer[48] = "Flame Red";
@@ -1155,6 +1215,7 @@ char* GetEighteenthQuestion(int* correctAnswerIndexPtr)
 // Question for index 18
 char* GetNinteenthQuestion(int* correctAnswerIndexPtr)
 {
+    //TODO - make a Banjo reference
     char* question = CreateSimpleOneLineQuestionMessage("What number am I thinking of");
     
     char correctAnswer[48] = "Two";
@@ -1374,6 +1435,7 @@ char* GetTwentyNinthQuestion(int* correctAnswerIndexPtr)
 // Question for index 29
 char* GetThirtiethQuestion(int* correctAnswerIndexPtr)
 {
+    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("What year was Mario Party 3", "released in Japan");
 
     char correctAnswer[48] = "2001";
@@ -1494,7 +1556,7 @@ char* GetThirtyFifthQuestion(int* correctAnswerIndexPtr)
 // Question for index 35
 char* GetThirtySixthQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleThreeLineQuestionMessage("In The Legend of Zelda\x7B Ocarina of Time\x82", "which item is not a part of the", "Biggoron\x5Cs Sword Quest");                        // ?
+	char* question = CreateSimpleThreeLineQuestionMessage("In The Legend of Zelda\x7B Ocarina of Time\x82", "which item is not a part of the", "Biggoron\x5Cs Sword Quest");
 
     char correctAnswer[48] = "Weird Egg";
     char wrongAnswer1[48] = "Odd Mushroom";
@@ -1554,7 +1616,7 @@ char* GetThirtyEighthQuestion(int* correctAnswerIndexPtr)
 // Question for index 38
 char* GetThirtyNinthQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleOneLineQuestionMessage("What game did Mario make his debut");
+	char* question = CreateSimpleOneLineQuestionMessage("In what game did Mario make his debut");
 
 	char correctAnswer[48] = "Donkey Kong";
 	char wrongAnswer1[48] = "Mario Bros\x85";
@@ -1574,7 +1636,7 @@ char* GetThirtyNinthQuestion(int* correctAnswerIndexPtr)
 // Question for index 39
 char* GetFourtiethQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleOneLineQuestionMessage("What game did Luigi make his debut");
+	char* question = CreateSimpleOneLineQuestionMessage("In what game did Luigi make his debut");
 
 	char correctAnswer[48] = "Mario Bros\x85";
 	char wrongAnswer1[48] = "Super Mario Bros\x85";
@@ -1594,7 +1656,7 @@ char* GetFourtiethQuestion(int* correctAnswerIndexPtr)
 // Question for index 40
 char* GetFourtyFirstQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleTwoLineQuestionMessage("What game did Princess Peach", "make her debut");
+    char* question = CreateSimpleTwoLineQuestionMessage("In what game did Princess Peach", "make her debut");
 
     char correctAnswer[48] = "Super Mario Bros\x85";
     char wrongAnswer1[48] = "Donkey Kong";
@@ -1614,7 +1676,7 @@ char* GetFourtyFirstQuestion(int* correctAnswerIndexPtr)
 // Question for index 41
 char* GetFourtySecondQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleTwoLineQuestionMessage("What game did Princess Daisy", "make her debut");
+	char* question = CreateSimpleTwoLineQuestionMessage("In what game did Princess Daisy", "make her debut");
 
     char correctAnswer[48] = "Super Mario Land";
     char wrongAnswer1[48] = "Mario Party 2";
@@ -1634,7 +1696,7 @@ char* GetFourtySecondQuestion(int* correctAnswerIndexPtr)
 // Question for index 42
 char* GetFourtyThirdQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleOneLineQuestionMessage("What game did Wario make his debut");
+	char* question = CreateSimpleOneLineQuestionMessage("In what game did Wario make his debut");
     
     char correctAnswer[48] = "Super Mario Land 2\x7B 6 Golden Coins";
     char wrongAnswer1[48] = "Wario Land";
@@ -1654,6 +1716,7 @@ char* GetFourtyThirdQuestion(int* correctAnswerIndexPtr)
 // Question for index 43
 char* GetFourtyFourthQuestion(int* correctAnswerIndexPtr)
 {
+    //TODO
 	char* question = CreateSimpleThreeLineQuestionMessage("Which Pokemon Game Cartridge can", "be found hidden behind the case for", "Dairantou Smash Brothers DX");
 
 	char correctAnswer[48] = "Pokemon Gold Version";
@@ -1674,7 +1737,7 @@ char* GetFourtyFourthQuestion(int* correctAnswerIndexPtr)
 // Question for index 44
 char* GetFourtyFifthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleTwoLineQuestionMessage("What game did Donkey Kong", "make his debut");
+    char* question = CreateSimpleTwoLineQuestionMessage("In what game did Donkey Kong", "make his debut");
 
     char correctAnswer[48] = "Donkey Kong Country";
     char wrongAnswer1[48] = "Donkey Kong";
@@ -1694,7 +1757,7 @@ char* GetFourtyFifthQuestion(int* correctAnswerIndexPtr)
 // Question for index 45
 char* GetFourtySixthQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleOneLineQuestionMessage("What game did Yoshi make his debut");
+	char* question = CreateSimpleOneLineQuestionMessage("In what game did Yoshi make his debut");
 
     char correctAnswer[48] = "Super Mario World";
     char wrongAnswer1[48] = "Yoshi";
@@ -1714,7 +1777,7 @@ char* GetFourtySixthQuestion(int* correctAnswerIndexPtr)
 // Question for index 46
 char* GetFourtySeventhQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleTwoLineQuestionMessage("What Nintendo 64 game was bundled", "together with a Rumble Pack");
+	char* question = CreateSimpleTwoLineQuestionMessage("Which Nintendo 64 game was bundled", "together with a Rumble Pack");
     
     char correctAnswer[48] = "Star Fox 64";
     char wrongAnswer1[48] = "Wave Race 64";

@@ -1,8 +1,38 @@
-// NAME: Controller Mischief
+// NAME: TODO - Replace This Name
 // GAMES: MP3_USA
 // EXECUTION: Direct
+// PARAM: Boolean|USES_BOARD_RAM
+// PARAM: Boolean|COIN_REWARD
 
+//***************************************************************************//
+//******************** BOARD RAM WARNING ************************************//
+//***************************************************************************//
+// This board uses the following addresses (board RAM)
+//                  TODO: Take this list down to only the ones used.
+//              D_800CD0A0;   //board_ram9
+//              D_800CD0A1;   //board_ram10
+//              D_800CD0A2;   //board_ram11
+//              D_800CD0A3;   //board_ram12
+//              D_800CD0A4;   //board_ram13
+//              D_800CD0A5;   //board_ram14
+//              D_800CD0A6;   //board_ram15
+//              D_800CD0A7;   //board_ram16
+//              D_800CD0A8;   //board_ram17
+//
+// If any other events on your board use these values, you will get unexpected behavior! 
+//
+// You can disable this quiz's use of board RAM by setting the "USES_BOARD_RAM" parameter to
+// "False" in PartyPlanner when you place the event.
+//
+// TODO: Describe what the board uses board_ram for.  Describe what the behavior falls back to if
+// you don't use board ram.
+//
+// If you're not sure what this parameter does, just set the "USES BOARD RAM" to true. =)
 
+//***************************************************************************//
+//******************** Version Info! ****************************************//
+//***************************************************************************//
+//
 // This is version: 1.0
 //
 // There may be an update available at:
@@ -10,10 +40,10 @@
 // You can also report a bug as an issue (and maybe a PR that fixes it?)
 
 //***************************************************************************//
-//******************** Quiz Configuration ***********************************//
+//******************** Event Configuration ***********************************//
 //***************************************************************************//
 
-// The character portrait of the character who is giving the quiz.
+// This is the portrait of the character giving the messages.
 #define CHARACTER_PORTRAIT 5
 // Want to change the picture?  Find options the PartyPlanner64 wiki:
 // https://github.com/PartyPlanner64/PartyPlanner64/wiki/Displaying-Messages
@@ -22,8 +52,7 @@
 //***************************************************************************//
 //*********************** Description ***************************************//
 //***************************************************************************//
-// This event challenges a player to a quiz and asks them a random question
-// from the question bank.
+// TODO: Describe the event's behavior
 // 
 //
 // Finally, this file is commented to make it as easy as possible for 
@@ -39,22 +68,6 @@
 
 
 //***************************************************************************//
-//******************** Where to Customize ***********************************//
-//***************************************************************************//
-// Jump to "Quiz Configuration" (up above) to change the number of active questions 
-// in the quiz bank, or the character who is giving the quiz the questions.
-//
-// Jump to "Message Configuration" to customize messages such as the greeting
-// or when a player gets a correct/incorrect answer.
-//
-// Jump to "RewardPlayerForCorrectAnswer()" to change behavior when the player
-// gets the answer right, or "PunishPlayerForIncorrectAnswer()" to change
-// what happens when the player gets the answer wrong.
-//
-// Finally, jump to "Question Definitions" to customize the question bank.
-
-
-//***************************************************************************//
 //*************************** Declarations **********************************//
 //***************************************************************************//
 
@@ -64,6 +77,7 @@
 // For more exploration: http://n64devkit.square7.ch/header/
 #include "ultra64.h"
 
+// The Player struct for Mario Party 3, used for player manipulation.
 // Reference wiki article can be found here:
 // https://github.com/PartyPlanner64/PartyPlanner64/wiki/Player-Structs
 struct Player {
@@ -115,46 +129,38 @@ struct Player {
 //***************************************************************************//
 
 void main() 
-{
-    mp3_DebugMessage("Swapping Controllers");
-    
-    //800CD067
-    //D_80123456
-
+{   
     int currentPlayerIndex = GetCurrentPlayerIndex();
-    int nextPlayerIndex = (currentPlayerIndex + 1) % 4;
-    
-    SwapControllers(currentPlayerIndex, nextPlayerIndex);
+    int coinReward = 10;
 
+    GraduallyAdjustPlayerCoins(currentPlayerIndex, COIN_REWARD);
 
-    mp3_DebugMessage("Done");
-    
     return;
 }
 
-
-void SwapControllers(int playerIndexA, int playerIndexB)
+// A function defined in this event that's named so it's easy to understand what it does.
+void GraduallyAdjustPlayerCoins(int playerIndex, int adjustmentAmount)
 {   
-    if(playerIndexA != playerIndexB)
-    {
-        struct Player *p_a = GetPlayerStruct(playerIndexA);
-        struct Player *p_b = GetPlayerStruct(playerIndexB);
+    // One of the helpful mplib functions.
+    mp3_DebugMessage("Adding 10 coins to the current player.");
 
-        if(p_a != NULL && p_b != NULL)  
-        {
-            s8 swapValue = p_a->controller;
-            p_a->controller = p_b->controller;
-            p_b->controller = swapValue;
-        }
-    }
+    // Some mp3-defined functions to change the coins
+    // Find more at https://github.com/PartyPlanner64/symbols/blob/master/MarioParty3U.sym
+    AdjustPlayerCoinsGradual(playerIndex, adjustmentAmount);
+    ShowPlayerCoinChange(playerIndex, adjustmentAmount);
+
+    // Sleep for 30 frames to let the coin change take effect.
+    // Also syncs up nicely with the joy animation.
+    SleepProcess(30);
+
+    mp3_DebugMessage("Done adding coins.");
 }
-
 
 
 //***************************************************************************//
 //***************************************************************************//
 //****************************                  *****************************//
-//*************************      mplib v1.0        **************************//
+//*************************      mplib v2.0        **************************//
 //****************************                  *****************************//
 //***************************************************************************//
 //***************************************************************************//
@@ -280,7 +286,7 @@ void mp3_play_idle_animation()
 
 enum mp3_Character {Mario, Luigi, Peach, Yoshi, Wario, DK, Waluigi, Daisy};
 
-int IsPlayerCertainCharacter(int playerIndex, enum mp3_Character character)
+int mp3_IsPlayerCertainCharacter(int playerIndex, enum mp3_Character character)
 {
     struct Player *p = GetPlayerStruct(playerIndex);
     if(p != NULL && p->character == character)  
@@ -298,7 +304,7 @@ int IsPlayerCertainCharacter(int playerIndex, enum mp3_Character character)
 // https://www.techiedelight.com/implement-strcpy-function-c/
 //
 // Function to implement strcpy() function
-char* my_strcpy(char* destination, const char* source)
+char* mplib_strcpy(char* destination, const char* source)
 {
     // return if no memory is allocated to the destination
     if (destination == NULL)
@@ -328,7 +334,7 @@ char* my_strcpy(char* destination, const char* source)
 // Stripped out the "num" prototype so that strncat always appends the full string passed, instead of a defined subset.
 
 // Function to implement strncat() function in C
-char* my_strncat(char* destination, const char* source)
+char* mplib_strncat(char* destination, const char* source)
 {
     int i, j;
  
@@ -349,32 +355,31 @@ char* my_strncat(char* destination, const char* source)
 }
 
 // Returns the largest of two numbers.  Ties go to the first argument.
-int my_max(int a1, int a2)
+int mplib_max(int a1, int a2)
 {
     if (a1 >= a2) { return a1; }
     else { return a2; }
 }
 
-
 // Returns the largest of three numbers
 // C doesn't support overloading, don't hate me
-int my_max3(int a1, int a2, int a3)
+int mplib_max3(int a1, int a2, int a3)
 {
     int result = a1;
-    result = my_max(result, a2);
-    result = my_max(result, a3);
+    result = mplib_max(result, a2);
+    result = mplib_max(result, a3);
 
     return result;
 }
 
 // Returns the largest of four numbers
 // C doesn't support overloading, don't hate me
-int my_max4(int a1, int a2, int a3, int a4)
+int mplib_max4(int a1, int a2, int a3, int a4)
 {
     int result = a1;
-    result = my_max(result, a2);
-    result = my_max(result, a3);
-    result = my_max(result, a3);
+    result = mplib_max(result, a2);
+    result = mplib_max(result, a3);
+    result = mplib_max(result, a3);
     
     return result;
 }

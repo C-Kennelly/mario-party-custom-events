@@ -1,69 +1,23 @@
-// NAME: Controller Mischief
-// GAMES: MP3_USA
-// EXECUTION: Direct
-
-
-// This is version: 1.0
+// How to use:
+// Copy and paste the declarations block to declare the Player struct at the
+// top of your file.
 //
-// There may be an update available at:
-// https://github.com/c-kennelly/mario-party-custom-events
-// You can also report a bug as an issue (and maybe a PR that fixes it?)
-
-//***************************************************************************//
-//******************** Quiz Configuration ***********************************//
-//***************************************************************************//
-
-// The character portrait of the character who is giving the quiz.
-#define CHARACTER_PORTRAIT 5
-// Want to change the picture?  Find options the PartyPlanner64 wiki:
-// https://github.com/PartyPlanner64/PartyPlanner64/wiki/Displaying-Messages
-
-
-//***************************************************************************//
-//*********************** Description ***************************************//
-//***************************************************************************//
-// This event challenges a player to a quiz and asks them a random question
-// from the question bank.
-// 
-//
-// Finally, this file is commented to make it as easy as possible for 
-// non-programmers to edit and beginners to pull code samples, so I've 
-// leaned on the verbose side for comments.  If you've a working knowledge 
-// of C, feel free to just jump to main() and see what's going on. 
-
-
-//***************************************************************************//
-//***********************     Changelist      *******************************//
-//***************************************************************************//
-//   Version 1.0 - First version of the event!
-
-
-//***************************************************************************//
-//******************** Where to Customize ***********************************//
-//***************************************************************************//
-// Jump to "Quiz Configuration" (up above) to change the number of active questions 
-// in the quiz bank, or the character who is giving the quiz the questions.
-//
-// Jump to "Message Configuration" to customize messages such as the greeting
-// or when a player gets a correct/incorrect answer.
-//
-// Jump to "RewardPlayerForCorrectAnswer()" to change behavior when the player
-// gets the answer right, or "PunishPlayerForIncorrectAnswer()" to change
-// what happens when the player gets the answer wrong.
-//
-// Finally, jump to "Question Definitions" to customize the question bank.
+// Then, copy and paste everything in the library block into the your 
+// bottom of any Mario Party 3 event to get some helpful functions!
 
 
 //***************************************************************************//
 //*************************** Declarations **********************************//
 //***************************************************************************//
 
+// https://github.com/PartyPlanner64/PartyPlanner64/wiki/Player-Structs
 // Used for the data types used in the player struct.
 // Header file: http://n64devkit.square7.ch/header/ultra64.htm
 // Ultratypes: http://n64devkit.square7.ch/header/ultratypes.htm
 // For more exploration: http://n64devkit.square7.ch/header/
 #include "ultra64.h"
 
+// The Player struct for Mario Party 3, used for player manipulation.
 // Reference wiki article can be found here:
 // https://github.com/PartyPlanner64/PartyPlanner64/wiki/Player-Structs
 struct Player {
@@ -111,50 +65,9 @@ struct Player {
 
 
 //***************************************************************************//
-//*************************** Event Logic ************************************//
-//***************************************************************************//
-
-void main() 
-{
-    mp3_DebugMessage("Swapping Controllers");
-    
-    //800CD067
-    //D_80123456
-
-    int currentPlayerIndex = GetCurrentPlayerIndex();
-    int nextPlayerIndex = (currentPlayerIndex + 1) % 4;
-    
-    SwapControllers(currentPlayerIndex, nextPlayerIndex);
-
-
-    mp3_DebugMessage("Done");
-    
-    return;
-}
-
-
-void SwapControllers(int playerIndexA, int playerIndexB)
-{   
-    if(playerIndexA != playerIndexB)
-    {
-        struct Player *p_a = GetPlayerStruct(playerIndexA);
-        struct Player *p_b = GetPlayerStruct(playerIndexB);
-
-        if(p_a != NULL && p_b != NULL)  
-        {
-            s8 swapValue = p_a->controller;
-            p_a->controller = p_b->controller;
-            p_b->controller = swapValue;
-        }
-    }
-}
-
-
-
-//***************************************************************************//
 //***************************************************************************//
 //****************************                  *****************************//
-//*************************      mplib v1.0        **************************//
+//*************************      mplib v2.0        **************************//
 //****************************                  *****************************//
 //***************************************************************************//
 //***************************************************************************//
@@ -280,7 +193,7 @@ void mp3_play_idle_animation()
 
 enum mp3_Character {Mario, Luigi, Peach, Yoshi, Wario, DK, Waluigi, Daisy};
 
-int IsPlayerCertainCharacter(int playerIndex, enum mp3_Character character)
+int mp3_IsPlayerCertainCharacter(int playerIndex, enum mp3_Character character)
 {
     struct Player *p = GetPlayerStruct(playerIndex);
     if(p != NULL && p->character == character)  
@@ -298,7 +211,7 @@ int IsPlayerCertainCharacter(int playerIndex, enum mp3_Character character)
 // https://www.techiedelight.com/implement-strcpy-function-c/
 //
 // Function to implement strcpy() function
-char* my_strcpy(char* destination, const char* source)
+char* mplib_strcpy(char* destination, const char* source)
 {
     // return if no memory is allocated to the destination
     if (destination == NULL)
@@ -328,7 +241,7 @@ char* my_strcpy(char* destination, const char* source)
 // Stripped out the "num" prototype so that strncat always appends the full string passed, instead of a defined subset.
 
 // Function to implement strncat() function in C
-char* my_strncat(char* destination, const char* source)
+char* mplib_strncat(char* destination, const char* source)
 {
     int i, j;
  
@@ -349,32 +262,31 @@ char* my_strncat(char* destination, const char* source)
 }
 
 // Returns the largest of two numbers.  Ties go to the first argument.
-int my_max(int a1, int a2)
+int mplib_max(int a1, int a2)
 {
     if (a1 >= a2) { return a1; }
     else { return a2; }
 }
 
-
 // Returns the largest of three numbers
 // C doesn't support overloading, don't hate me
-int my_max3(int a1, int a2, int a3)
+int mplib_max3(int a1, int a2, int a3)
 {
     int result = a1;
-    result = my_max(result, a2);
-    result = my_max(result, a3);
+    result = mplib_max(result, a2);
+    result = mplib_max(result, a3);
 
     return result;
 }
 
 // Returns the largest of four numbers
 // C doesn't support overloading, don't hate me
-int my_max4(int a1, int a2, int a3, int a4)
+int mplib_max4(int a1, int a2, int a3, int a4)
 {
     int result = a1;
-    result = my_max(result, a2);
-    result = my_max(result, a3);
-    result = my_max(result, a3);
+    result = mplib_max(result, a2);
+    result = mplib_max(result, a3);
+    result = mplib_max(result, a3);
     
     return result;
 }
