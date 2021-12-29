@@ -1,8 +1,9 @@
-// NAME: TODO - Replace This Name
+// NAME: Controller Mischief
 // GAMES: MP3_USA
 // EXECUTION: Direct
 // PARAM: Boolean|USES_BOARD_RAM
-// PARAM: Boolean|COIN_REWARD
+// PARAM: +Number|BASE_PRICE
+
 
 //***************************************************************************//
 //******************** Version Info! ****************************************//
@@ -19,25 +20,18 @@
 //******************** BOARD RAM WARNING ************************************//
 //***************************************************************************//
 // This board uses the following addresses (board RAM)
-//                  TODO: Take this list down to only the ones used.
-//              D_800CD0A0;   //board_ram9
-//              D_800CD0A1;   //board_ram10
-//              D_800CD0A2;   //board_ram11
 //              D_800CD0A3;   //board_ram12
-//              D_800CD0A4;   //board_ram13
-//              D_800CD0A5;   //board_ram14
-//              D_800CD0A6;   //board_ram15
-//              D_800CD0A7;   //board_ram16
-//              D_800CD0A8;   //board_ram17
 //
 // If any other events on your board use these values, you will get unexpected behavior! 
 //
-// You can disable this quiz's use of board RAM by setting the "USES_BOARD_RAM" parameter to
+// You can disable this event's use of board RAM by setting the "USES_BOARD_RAM" parameter to
 // "False" in PartyPlanner when you place the event.
 //
-// TODO: Describe what the board uses board_ram for.  Describe what the behavior falls back to if
-// you don't use board ram.
-//
+// This event uses board RAM to keep track of its Whomp Toll mechanic - i.e. the
+// the price it costs to swap controllers.  If board RAM is enabled, the price will escalate
+// over the course of the game.  If board RAM is disabled, the price will stay at the base price
+// no matter how many times the event is used.
+// 
 // If you're not sure what this parameter does, just set the "USES BOARD RAM" to true. =)
 
 
@@ -78,6 +72,9 @@
 // Ultratypes: http://n64devkit.square7.ch/header/ultratypes.htm
 // For more exploration: http://n64devkit.square7.ch/header/
 #include "ultra64.h"
+
+// Event parameter can disable this:
+extern u8 D_800CD0A3;
 
 // The Player struct for Mario Party 3, used for player manipulation.
 // Reference wiki article can be found here:
@@ -132,21 +129,119 @@ struct Player {
 
 void main() 
 {
-    mp3_DebugMessage("Swapping Controllers");
-
     int currentPlayerIndex = GetCurrentPlayerIndex();
-    int nextPlayerIndex = (currentPlayerIndex + 1) % 4;
+    int price = GetOrInitializeCurrentPrice();
     
-    SwapControllers(currentPlayerIndex, nextPlayerIndex);
-
-
-    mp3_DebugMessage("Done");
+    mp3_play_idle_animation();
     
+    if (!(PlayerHasCoins(currentPlayerIndex, price)))
+    {
+        RejectPlayerForNotHavingEnoughCoins(currentPlayerIndex);
+        return;
+    }
+
+    int targetPlayerIndex = MakeOfferToSwapControllerAndChargePlayer(currentPlayerIndex, price);
+
+    if (targetPlayerIndex != -1)
+    {
+        PlayReadyToSwapMessage(currentPlayerIndex, targetPlayerIndex);
+        ChargeToll(currentPlayerIndex, price);
+        
+        SwapControllersWithMessaging(currentPlayerIndex, targetPlayerIndex);
+        
+        RestoreCoinsToSwappedCharacter(currentPlayerIndex, targetPlayerIndex, 20);
+    }
+    else
+    {
+        BeratePlayerForSayingNo(currentPlayerIndex);
+    }
+
     return;
 }
 
+int MakeOfferToSwapControllerAndChargePlayer(int currentPlayerIndex, int startingPrice)
+{
+    int opponentIndex = -1;
 
-void SwapControllers(int playerIndexA, int playerIndexB)
+    PlayGreetingMessage();
+
+    int answerChosen = TemptPlayerWithControllerSwap(currentPlayerIndex);
+    
+    if (answerChosen == 0)
+    {
+        int* opponents[3];
+        GetOpponentsForPlayer(currentPlayerIndex, &opponents);
+        
+        int targetChoice = GetTargetOfSwap(currentPlayerIndex, opponents);
+
+        if (targetChoice == 3)
+        {
+            targetChoice = mp3_PickARandomNumberBetween0AndN(2);
+        }
+
+        opponentIndex = opponents[targetChoice];
+    }
+    
+    return opponentIndex;
+    
+    //if (answerChosen == 0)
+    //{
+        //if (USES_BOARD_RAM)
+        //{
+        //    tollSuccessful = ChargeToll(currentPlayerIndex, startingPrice);    
+        //}
+        //else
+        //{
+        //    tollSuccessful = ChargeBasePriceToll();
+        //}
+    //}
+
+    //return tollSuccessful;
+}
+
+int ChargeBasePriceToll(int playerIndex)
+{
+    AdjustPlayerCoinsGradual(playerIndex, -1 * BASE_PRICE);
+    ShowPlayerCoinChange(playerIndex, -1 * BASE_PRICE);
+    SleepProcess(40);
+    return 0;
+}
+
+// Taken and adapted from the Thwomp Toll C Events in:
+// https://github.com/PartyPlanner64/events
+int ChargeToll(int playerIndex, int startingPrice)
+{
+    //TODO - Stubbed
+    return ChargeBasePriceToll(playerIndex);
+}
+
+int TemptPlayerWithControllerSwap(int currentPlayerIndex)
+{
+    char* msg = GetTemptingQuestion(currentPlayerIndex);
+    ShowMessage(CHARACTER_PORTRAIT, msg, 0, 0, 0, 0, 0);
+    int result = GetResponseAndTeardownMessageBox();
+
+    return result;
+}
+
+int GetTargetOfSwap(int currentPlayerIndex, int* opponents)
+{
+    char* msg = GetTargetingMessage(opponents);
+    ShowMessage(CHARACTER_PORTRAIT, msg, 0, 0, 0, 0, 0);
+    int result = GetResponseAndTeardownMessageBox();
+
+    return result;
+}
+
+void SwapControllersWithMessaging(int originalPlayerIndex, int targetPlayerIndex)
+{
+    
+    SwapParametersInPlayerStructsToSwapControllers(originalPlayerIndex, targetPlayerIndex);
+
+    return;
+}
+
+void SwapParametersInPlayerStructsToSwapControllers(int playerIndexA, int playerIndexB)
 {   
     if(playerIndexA != playerIndexB)
     {
@@ -155,11 +250,519 @@ void SwapControllers(int playerIndexA, int playerIndexB)
 
         if(p_a != NULL && p_b != NULL)  
         {
-            s8 swapValue = p_a->controller;
+            // Move the controller
+            s8 s8SwapValue = p_a->controller;
             p_a->controller = p_b->controller;
-            p_b->controller = swapValue;
+            p_b->controller = s8SwapValue;
+
+            // Make the bonus star counts follow the player (controller), not the character
+            // This ensures rewards for player decisions stay with the player who made them.
+            s8SwapValue = p_a->happening_space_count;
+            p_a->happening_space_count = p_b->happening_space_count;
+            p_b->happening_space_count = s8SwapValue;
+
+            s16 s16SwapValue = p_a->minigame_star;
+            p_a->minigame_star = p_b->minigame_star;
+            p_b->minigame_star = s16SwapValue;
+
+            s16SwapValue = p_a->coin_star;
+            p_a->coin_star = p_b->coin_star;
+            p_b->coin_star = s16SwapValue;
+
+            //TODO - all the other counts:
+            //s8 red_space_count;     
+            //s8 blue_space_count;
+            //s8 chance_space_count;
+            //s8 bowser_space_count;  // Offset 48
+            //s8 battle_space_count;
+            //s8 item_space_count;
+            //s8 bank_space_count;
+            //s8 game_guy_space_count; //Offset  52
         }
     }
+}
+
+int BeratePlayerForSayingNo(int currentPlayerIndex)
+{
+    char* msg = GetMessageBeratingPlayer(currentPlayerIndex);
+    mp3_ShowMessageWithConfirmation(CHARACTER_PORTRAIT, msg);
+}
+
+int RejectPlayerForNotHavingEnoughCoins(int currentPlayerIndex)
+{
+    char* msg = GetRejectionMessage(currentPlayerIndex);
+    mp3_ShowMessageWithConfirmation(CHARACTER_PORTRAIT, msg);
+}
+
+// Display a message and return the answer chosen 
+// Also has defined logic for CPUs.
+int GetResponseAndTeardownMessageBox()
+{
+    int cpuChoice = GetChoiceForCPU();
+
+    // Get the selection, either from the player or CPU.
+    // MP3 built-in function: GetBasicPromptSelection(int strategy, int index)
+    // Strategy argument takes an int and behaves as follows:
+    //   0 -> If CPU, always pick first (0th) option
+    //   1 -> If CPU, always pick second (1th) option
+    //   2 -> If CPU, pick the option that is passed in the second argument.
+    //
+    // Here, we're using strategy 2, and then passing in 'cpuChoice'
+    // which is calculated in our other function: GetChoiceForCPU().
+    // Human players will always get to manually pick.
+
+    int choice = GetBasicPromptSelection(2, cpuChoice);
+    mp3_TeardownMessageBox();
+
+    return choice;
+}
+
+int GetChoiceForCPU()
+{
+    return 1;
+}
+
+int GetOrInitializeCurrentPrice()
+{
+    if (USES_BOARD_RAM)
+    {
+        // Initialize at start of game
+        if (D_800CD0A3 < BASE_PRICE)
+        {
+            SetCurrentPrice(BASE_PRICE);
+        }
+
+        return D_800CD0A3;
+    }
+    else
+    {
+        return BASE_PRICE;
+    }
+}
+
+// Sets the persistent price to the value provided so that state carries over from turn to turn.
+// Returns 0 if it worked, returns -1 if it failed;
+int SetCurrentPrice(int value)
+{
+    if (USES_BOARD_RAM)
+    {
+        D_800CD0A3 = value;
+        return 0;
+    }
+
+    return -1;
+}
+
+
+void RestoreCoinsToSwappedCharacter(int originalPlayerIndex, int targetPlayerIndex, int coinsToRestore)
+{
+    PlayPostSwapMessage(originalPlayerIndex, targetPlayerIndex); 
+
+    PlayCoinRestorationMessage();
+    AdjustPlayerCoinsGradual(originalPlayerIndex, coinsToRestore);
+    ShowPlayerCoinChange(originalPlayerIndex, coinsToRestore);
+    TransferStarFromPlayerToPlayer(targetPlayerIndex, originalPlayerIndex);
+    SleepProcess(40);
+    return;
+}
+
+void TransferStarFromPlayerToPlayer(int playerIndexA, int playerIndexB)
+{
+    if(playerIndexA != playerIndexB)
+    {
+        struct Player *p_a = GetPlayerStruct(playerIndexA);
+        struct Player *p_b = GetPlayerStruct(playerIndexB);
+
+        if(p_a != NULL && p_b != NULL)  
+        {
+            if(p_a ->stars > 0)
+            {
+                p_a->stars--;
+                p_b->stars++;
+            }
+        }
+    }
+}
+
+void PlayGreetingMessage(int currentPlayerIndex)
+{
+    char* msg = GetGreetingMessage(currentPlayerIndex);
+    mp3_ShowMessageWithConfirmation(CHARACTER_PORTRAIT, msg);
+}
+
+
+void PlayReadyToSwapMessage(int originalPlayerIndex, int targetPlayerIndex)
+{
+    char* msg = GetReadyToSwapMessage(targetPlayerIndex);
+    mp3_ShowMessageWithConfirmation(CHARACTER_PORTRAIT, msg);
+
+    return;
+}
+
+void PlayPostSwapMessage(int originalPlayerIndex, int targetPlayerIndex)
+{
+    char* msg = GetPostSwapMessage(originalPlayerIndex, targetPlayerIndex);
+    mp3_ShowMessageWithConfirmation(CHARACTER_PORTRAIT, msg);
+}
+
+void PlayCoinRestorationMessage()
+{
+    char* msg = GetCoinRestoreMessage();
+    mp3_ShowMessageWithConfirmation(CHARACTER_PORTRAIT, msg);
+}
+
+// Defines the message the Quiz Giver displays first.
+char* GetGreetingMessage(int currentPlayerIndex)
+{
+    char* playerCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(currentPlayerIndex);
+
+    char* result = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
+
+    mplib_strcpy(result, "\x0B");                              // Start the message
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A"); 	               // Standard padding for portrait
+    mplib_strncat(result, "Psst");                 
+    mplib_strncat(result, "\x82");                             // ,
+    mplib_strncat(result, " hey ");                 
+    mplib_strncat(result, "\x06");                             // Begin blue color                 
+    mplib_strncat(result, playerCharacterName);                 
+    mplib_strncat(result, "\x08");                             // Begin white (default) color
+    mplib_strncat(result, "\xC2");                             // !
+    mplib_strncat(result, "\x0A");                             // Newline
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait
+    mplib_strncat(result, "No one seems to be watching these");
+    mplib_strncat(result, "\x0A");                             // Newline
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait
+    mplib_strncat(result, "\x03");                             // Begin red color
+    mplib_strncat(result, "controller ports");
+    mplib_strncat(result, "\x08");                             // Begin white (default) color
+    mplib_strncat(result, "\x85\x85\x85");                     // ...
+    mplib_strncat(result, "\xFF");                             // Show prompt to continue arrow
+    mplib_strncat(result, "\x0B");                             // Feed old text away
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait
+    mplib_strncat(result, "If you wanted to ");
+    mplib_strncat(result, "\x07");                             // Begin yellow color
+    mplib_strncat(result, "slip me a little");
+    mplib_strncat(result, "\x0A");                             // Newline
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait
+    mplib_strncat(result, "something ");
+    mplib_strncat(result, "\x08");                             // Begin white (default) color
+    mplib_strncat(result, "I could ");
+    mplib_strncat(result, "\x03");                             // Begin red color
+    mplib_strncat(result, "swap them ");
+    mplib_strncat(result, "\x08");                             // Begin white (default) color
+    mplib_strncat(result, "for you");
+    mplib_strncat(result, "\x85\x85\x85");                     // ...
+    mplib_strncat(result, "\xFF");                             // Show prompt to continue arrow
+
+    return result;
+}
+
+char* GetTemptingQuestion()
+{
+    char* result = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
+
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A"); 	               // Standard padding for portrait
+    mplib_strncat(result, "Would you pay ");
+    mplib_strncat(result, "\x07");                             // Begin yellow color
+    //TODO - Hardcoded
+    mplib_strncat(result, "60 coins ");
+    mplib_strncat(result, "\x08");                             // Begin white (default) color
+    mplib_strncat(result, "to ");
+    mplib_strncat(result, "\x03");                             // Begin red color
+    mplib_strncat(result, "swap controllers with");
+    mplib_strncat(result, "\x0A");                             // Newline
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait
+    mplib_strncat(result, "another player ");
+    mplib_strncat(result, "\x08");                             // Begin white (default) color
+    mplib_strncat(result, "until the end of the game");
+    mplib_strncat(result, "\xC3");                             // ?
+    mplib_strncat(result, "\x0A");                             // Newline
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
+    mplib_strncat(result, "\x0C");                             // Start option
+    mplib_strncat(result, "Absolutely");
+    mplib_strncat(result, "\xC2");                             // !
+    mplib_strncat(result, "\x0D");                             // End option
+    mplib_strncat(result, "\x0A");                             // Newline
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
+    mplib_strncat(result, "\x0C");                             // Start option
+    mplib_strncat(result, "That feels like cheating");
+    mplib_strncat(result, "\x85\x85\x85");                     // ...
+    mplib_strncat(result, "\x0D");                             // End option
+    mplib_strncat(result, "\xFF");                             // Show prompt to continue arrow
+
+    return result;
+}
+
+char* GetReadyToSwapMessage(int targetPlayerIndex)
+{
+    char* targetCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(targetPlayerIndex);
+
+    char* result = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
+
+    mplib_strcpy(result, "\x0B");                              // Start the message
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A"); 	               // Standard padding for portrait
+    mplib_strncat(result, "Okay");
+    mplib_strncat(result, "\x82");                             // ,
+    mplib_strncat(result, " I");
+    mplib_strncat(result, "\x5C");                             // '
+    mplib_strncat(result, "m going to swap your controller with ");
+    mplib_strncat(result, "\x0A");                             // Newline
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait
+    mplib_strncat(result, "\x03");                             // Begin red color
+    mplib_strncat(result, targetCharacterName);
+    mplib_strncat(result, "\x08");                             // Begin white (default) color
+    mplib_strncat(result, "\x5C");                             // '
+    mplib_strncat(result, "\x85");                             // .
+    mplib_strncat(result, "s controller");
+    mplib_strncat(result, " Here goes nothin");
+    mplib_strncat(result, "\x5C");                             // '
+    mplib_strncat(result, "\xC2");                             // !
+    mplib_strncat(result, "\xFF");                             // Show prompt to continue arrow
+}
+
+char* GetPostSwapMessage(int targetPlayerIndex)
+{
+    char* targetCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(targetPlayerIndex);
+
+    char* result = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
+
+    mplib_strcpy(result, "\x0B");                              // Start the message
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A"); 	               // Standard padding for portrait
+    mplib_strncat(result, "There");
+    mplib_strncat(result, "\xC2");                             // !
+    mplib_strncat(result, " Did it work");
+    mplib_strncat(result, "\x82");                             // ,
+    mplib_strncat(result, " ");
+    mplib_strncat(result, "\x06");                             // Begin blue color        
+    mplib_strncat(result, targetCharacterName);
+    mplib_strncat(result, "\x08");                             // Begin white (default) color
+    mplib_strncat(result, "\xC3");                             // ?
+    mplib_strncat(result, "\xFF");                             // Show prompt to continue arrow
+    mplib_strncat(result, "\x0B");                             // Feed old text away
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A"); 	               // Standard padding for portrait
+    mplib_strncat(result, "Yes");
+    mplib_strncat(result, "\xC2");                             // !
+    mplib_strncat(result, " You");
+    mplib_strncat(result, "\x5C");                             // '
+    mplib_strncat(result, "ve swapped controllers now");
+    mplib_strncat(result, "\x85\x85\x85");                     // ...
+    mplib_strncat(result, "\x0A");                             // Newline
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait    
+    mplib_strncat(result, "Hey");
+    mplib_strncat(result, "\x82");                             // ,
+    mplib_strncat(result, " hey");
+    mplib_strncat(result, "\x82");                             // ,
+    mplib_strncat(result, " don ");
+    mplib_strncat(result, "\x5C");                             // '
+    mplib_strncat(result, "t look so angry");
+    mplib_strncat(result, "\xC2");                             // !
+    mplib_strncat(result, "\xFF");                             // Show prompt to continue arrow
+    mplib_strncat(result, "\x0B");                             // Feed old text away
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait
+    mplib_strncat(result, "Listen");
+    mplib_strncat(result, "\x82");                             // ,
+    mplib_strncat(result, " I don");
+    mplib_strncat(result, "\x5C");                             // '
+    mplib_strncat(result, "t want any trouble");
+    mplib_strncat(result, "\x85\x85\x85");                     // ...
+    mplib_strncat(result, "\x0A");                             // Newline
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait
+    mplib_strncat(result, "Here");
+    mplib_strncat(result, "\x82");                             // ,
+    mplib_strncat(result, " take these and just don");
+    mplib_strncat(result, "\x82");                             // ,
+    mplib_strncat(result, "t hurt me");
+    mplib_strncat(result, "\xC2");                             // !
+    mplib_strncat(result, "\xFF");                             // Show prompt to continue arrow
+}
+
+char* GetCoinRestoreMessage()
+{
+    char* result = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
+
+    mplib_strcpy(result, "\x0B");                              // Start the message
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait
+    mplib_strncat(result, "Listen");
+    mplib_strncat(result, "\x82");                             // ,
+    mplib_strncat(result, " I don");
+    mplib_strncat(result, "\x5C");                             // '
+    mplib_strncat(result, "t want any trouble");
+    mplib_strncat(result, "\x85\x85\x85");                     // ...
+    mplib_strncat(result, "\x0A");                             // Newline
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait
+    mplib_strncat(result, "Here");
+    mplib_strncat(result, "\x82");                             // ,
+    mplib_strncat(result, " take these and just don");
+    mplib_strncat(result, "\x82");                             // ,
+    mplib_strncat(result, "t hurt me");
+    mplib_strncat(result, "\xC2");                             // !
+    mplib_strncat(result, "\xFF");                             // Show prompt to continue arrow
+}
+
+char* GetTargetingMessage(int* opponents)
+{
+    char* opponentNames[3];
+    for (int i = 0; i < 3; i++)
+    {
+        opponentNames[i] = mp3_GetCharacterNameStringFromPlayerIndex(opponents[i]);
+    }
+
+    char* result = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
+
+    mplib_strcpy(result, "\x0B");                              //start the message
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A"); 	               // Standard padding for portrait
+    mplib_strncat(result, "Whose controller should I swap with yours");
+    mplib_strncat(result, "\xC3");                             // ?
+    mplib_strncat(result, "\x0A");                             // Newline
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
+    mplib_strncat(result, "\x0C");                             // Start option
+    mplib_strncat(result, opponentNames[0]);
+    mplib_strncat(result, "\x0D");                             // End option
+    mplib_strncat(result, "\x0A");                             // Newline
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
+    mplib_strncat(result, "\x0C");                             // Start option
+    mplib_strncat(result, opponentNames[1]);
+    mplib_strncat(result, "\x0D");                             // End option
+    mplib_strncat(result, "\x0A");                             // Newline
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
+    mplib_strncat(result, "\x0C");                             // Start option
+    mplib_strncat(result, opponentNames[2]);
+    mplib_strncat(result, "\x0D");                             // End option
+    mplib_strncat(result, "\x0A");                             // Newline
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
+    mplib_strncat(result, "\x0C");                             // Start option
+    mplib_strncat(result, "You choose");
+    mplib_strncat(result, "\xC2");                             // !
+    mplib_strncat(result, "\x0D");                             // End option
+    mplib_strncat(result, "\xFF");                             //Show prompt to continue
+
+    return result;
+}
+
+void GetOpponentsForPlayer(int currentPlayerIndex, int* opponents[])
+{
+    int opponentIndex = 0;
+    for(int i = 0; i < 3; i++)
+    {
+        if (currentPlayerIndex != opponentIndex)
+        {
+            opponents[i] = opponentIndex;
+        }
+        else //Found current player, so skip one opponent index.  Will cap at three because of the for loop.
+        {
+            opponentIndex++;
+            opponents[i] = opponentIndex;
+        }
+
+        opponentIndex++;
+    }
+
+    return;
+}
+
+char* GetMessageBeratingPlayer(int currentPlayerIndex)
+{
+    int rivalCharacterIndex = GetRivalForPlayer(currentPlayerIndex);
+    char* rivalCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(rivalCharacterIndex);
+
+    char* result = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
+
+    mplib_strcpy(result, "\x0B");                              // Start the message
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A"); 	               // Standard padding for portrait
+    mplib_strncat(result, "Pah");
+    mplib_strncat(result, "\xC2");                             // !
+    mplib_strncat(result, " I guess we");                 
+    mplib_strncat(result, "\x5C");                             // '
+    mplib_strncat(result, "ll see if");
+    mplib_strncat(result, "\x0A");                             // Newline
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait
+    mplib_strncat(result, "\x03");                             // Begin red color
+    mplib_strncat(result, rivalCharacterName);                 
+    mplib_strncat(result, "\x08");                             // Begin white (default) color
+    mplib_strncat(result, " feels the same way");
+    mplib_strncat(result, "\x85\x85\x85");                     // ...
+    mplib_strncat(result, "\xFF");                             // Show prompt to continue arrow
+    mplib_strncat(result, "\x0B");                             // Feed old text away
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait
+    mplib_strncat(result, "Now");
+    mplib_strncat(result, "\x82");                             // ,
+    mplib_strncat(result, " scram");
+    mplib_strncat(result, "\xC2");                             // !
+    mplib_strncat(result, "\xFF");                             // Show prompt to continue arrow
+
+    return result;
+}
+
+int GetRivalForPlayer(int characterIndex)
+{
+    int rivalIndex = 0;
+    int playerPlacement = GetPlayerPlacementAtEndOfGame(characterIndex);
+
+    if (playerPlacement == 3)
+    {
+        // player in 4th? Return player in third.
+        rivalIndex = mp3_GetPlayerInPlace(2);
+    }
+    else
+    {
+        // Else, get the player immediately behind the other.  For example:
+        // 1st's rival is 2nd, 2nd's rival is 3rd, and 3rd's rival is 4th.
+        rivalIndex = mp3_GetPlayerInPlace(playerPlacement + 1);
+    }
+
+    // Handle ties.
+    if (rivalIndex == characterIndex)
+    {
+        return (characterIndex + 1) % 4;
+    }
+    else
+    {
+        return rivalIndex;
+    }
+}
+
+char* GetRejectionMessage(int currentPlayerIndex)
+{
+    char* playerCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(currentPlayerIndex);
+
+    char* result = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
+
+    mplib_strcpy(result, "\x0B");                              // Start the message
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A"); 	               // Standard padding for portrait
+    mplib_strncat(result, "You don");
+    mplib_strncat(result, "\x5C");                             // '
+    mplib_strncat(result, "t have enough coins");
+    mplib_strncat(result, "\x82");                             // ,
+    mplib_strncat(result, " ");
+    mplib_strncat(result, "\x06");                             // Begin blue color                 
+    mplib_strncat(result, playerCharacterName);                 
+    mplib_strncat(result, "\x08");                             // Begin white (default) color
+    mplib_strncat(result, "\x85");                             // .
+    mplib_strncat(result, "\x0A");                             // Newline
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait
+    mplib_strncat(result, "Quit wastin");
+    mplib_strncat(result, "\x5C");                             // '
+    mplib_strncat(result, " my time");
+    mplib_strncat(result, "\xC2");                             // !
+    mplib_strncat(result, "\xFF");                             // Show prompt to continue arrow
+
+    return result;
 }
 
 
@@ -302,6 +905,136 @@ int mp3_IsPlayerCertainCharacter(int playerIndex, enum mp3_Character character)
     else
     {
         return 0; 
+    }
+}
+
+char* mp3_GetCharacterNameStringFromPlayerIndex(int playerIndex)
+{
+    char* characterName = func_80035934(8);         // malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                                    // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(characterName, 8);                        // Zero out the memory allocated above so we don't get unexpected behavior.
+    
+    int characterInt = -1;     
+
+    struct Player *p = GetPlayerStruct(playerIndex);
+    if(p != NULL)
+    {
+        characterInt = p->character;
+    }
+
+
+    if(characterInt == 0)
+    {
+        mplib_strcpy(characterName, "MARIO");
+    }
+    else if(characterInt == 1)
+    {
+        mplib_strcpy(characterName, "LUIGI");
+    }
+    else if(characterInt == 2)
+    {
+        mplib_strcpy(characterName, "PEACH");
+    }
+    else if(characterInt == 3)
+    {
+        mplib_strcpy(characterName, "YOSHI");
+    }
+    else if(characterInt == 4)
+    {
+        mplib_strcpy(characterName, "WARIO");
+    }
+    else if(characterInt == 5)
+    {
+        mplib_strcpy(characterName, "DK");
+    }
+    else if(characterInt == 6)
+    {
+        mplib_strcpy(characterName, "WALUIGI");
+    }
+    else if(characterInt == 7)
+    {
+        mplib_strcpy(characterName, "DAISY");
+    }
+    else
+    {
+        mplib_strcpy(characterName, "champ");
+    }
+    
+    return characterName;
+}
+
+// Returns the first playerIndex that is in 1st, 2nd, 3rd, or 4th place using zero-based placements.
+// Pass '0' for 1st place, '1' for 2nd place, '2' for 3rd place, and '3' for 4th place
+// If no one is in the place you asked for, find the next closest place. For example, you ask for 4th, but players
+// are in 1st, 1st, 2nd, 3rd, the function will check for 3rd place.
+int mp3_GetPlayerInPlace(int place) //1st, 2nd, 3rd, 4th
+{
+    place = mp3_clampPlace(place);
+
+    for (int p = place; p >= 0; p--) //Step up through the places, since someone will always be in first.
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            if (GetPlayerPlacementAtEndOfGame(i) == p)
+            {
+                return i;
+            }
+        }
+    }
+
+    return 0;
+}
+
+char* mplib_DebugConvertIntToString(int i)
+{
+    if (i <= -2)
+    {
+        return "Neg 2 or less";
+    }
+    else if (i == -1)
+    {
+        return "Neg 1";
+    }
+    else if (i == 0)
+    {
+        return "0";
+    }
+    else if (i == 1)
+    {
+        return "1";
+    }
+    else if (i == 2)
+    {
+        return "2";
+    }
+    else if (i == 3)
+    {
+        return "3";
+    }
+    else if (i == 4)
+    {
+        return "4";
+    }
+    else
+    {
+        return "5 or more";
+    }
+}
+
+// Takes an integer representing 1st, 2nd, 3rd, and 4th place and ensures it is valid.
+int mp3_clampPlace(int place)
+{
+    if (place <= 0)
+    {
+        return 0;
+    }
+    else if (place >= 3)
+    {
+        return 3;
+    }
+    else
+    {
+        return place;
     }
 }
 

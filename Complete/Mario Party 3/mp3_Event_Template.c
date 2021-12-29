@@ -2,7 +2,7 @@
 // GAMES: MP3_USA
 // EXECUTION: Direct
 // PARAM: Boolean|USES_BOARD_RAM
-// PARAM: Boolean|COIN_REWARD
+// PARAM: +Number|COIN_REWARD
 
 //***************************************************************************//
 //******************** Version Info! ****************************************//
