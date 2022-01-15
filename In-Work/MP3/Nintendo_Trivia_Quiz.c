@@ -1434,7 +1434,7 @@ char* GetTwentyNinthQuestion(int* correctAnswerIndexPtr)
 // Question for index 29
 char* GetThirtiethQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO
+    //TODO - can we do American/Japan release dates for all three games???
     char* question = CreateSimpleTwoLineQuestionMessage("What year was Mario Party 3", "released in Japan");
 
     char correctAnswer[48] = "2001";
@@ -1776,6 +1776,7 @@ char* GetFourtySixthQuestion(int* correctAnswerIndexPtr)
 // Question for index 46
 char* GetFourtySeventhQuestion(int* correctAnswerIndexPtr)
 {
+    //TODO - Hey You Pikachu question, additional  (Also, pokemon snap because it's awesome)
 	char* question = CreateSimpleTwoLineQuestionMessage("Which Nintendo 64 game was bundled", "together with a Rumble Pack");
     
     char correctAnswer[48] = "Star Fox 64";
