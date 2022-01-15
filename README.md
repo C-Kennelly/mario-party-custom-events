@@ -1,6 +1,6 @@
 # mario-party-custom-events
 This repository holds custom events I've written for Mario Party.
-All events will be in C, for I am a mere mortal who will never understand MIPS.
+All events will be in C, for I am a mere mortal who may never understand MIPS.
 
 
 # Repo Structure
