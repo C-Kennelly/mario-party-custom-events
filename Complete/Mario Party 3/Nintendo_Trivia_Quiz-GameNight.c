@@ -1,4 +1,4 @@
-// NAME: Nintendo Trivia Quiz
+// NAME: Game Night Trivia Quiz
 // GAMES: MP3_USA
 // EXECUTION: Direct
 // PARAM: Boolean|USES_BOARD_RAM
@@ -41,7 +41,8 @@
 //*********************** Description ***************************************//
 //***************************************************************************//
 // This event challenges a player to a quiz and asks them a random question
-// from the question bank.
+// from the question bank.  It has been modified from the base "Nintendo Trivia Quiz"
+// for the Game Night board.
 //  
 // The event design is based on Airsola's original "Trivia Quiz" event, with
 // some enchancments I hope you'll enjoy.  You can find that original quiz at:
@@ -801,24 +802,7 @@ char* GetQuestionByNumber(int question, int* correctAnswerPtr)
 // Question for index 0
 char* GetFirstQuestion(int* correctAnswerIndexPtr)
 {
-    // This sample question demonstrates how to make a 2-line simple question.
-    // Each line is its own argument to the function.
-    // This will display as:
-    //  
-    //      "Who wears a red hat?"
-    //
-    // (final question mark and newline will be added automatically)
-    //
-    // If you want special characters or punctuation, either concatenate the
-    // strings you send in, or look below for the custom message example.
-    
-    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("How many Game Boy Color handhelds", "can be found on this board");
-
-    // Answers are defined here.
-    // Correct answer gets defined first, followed by the the three wrong answers.  
-    // Order here doesn't matter; They will be displayed in a 
-    // random order each time the question is selected.
 
     char correctAnswer[48] = "Three";
     char wrongAnswer1[48] = "One";
@@ -838,15 +822,6 @@ char* GetFirstQuestion(int* correctAnswerIndexPtr)
 // Question for index 1
 char* GetSecondQuestion(int* correctAnswerIndexPtr)
 {
-    // This sample question demonstrates how to make a 2-line simple question.
-    // Each line is its own argument to the function.
-    // This will display as:
-    //  
-    //      "Who wears a purple hat"
-    //      "and has a moustache?"
-    //
-    // (final question mark and newline will be added automatically)
-    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("What well known soft drink for", "gamerz is found at Booze Boulevard");
 
     char correctAnswer[48] = "Mountain Dew";
@@ -867,16 +842,6 @@ char* GetSecondQuestion(int* correctAnswerIndexPtr)
 // Question for index 2
 char* GetThirdQuestion(int* correctAnswerIndexPtr)
 {
-    // This sample question demonstrates how to make a 3-line simple question.
-    // Each line is its own argument to the function.
-    // This will display as: 
-    //
-    //      "Who wears a purple hat"
-    //      "and has a moustache"
-    //      "and likes power?"
-    //
-    // (final question mark and newline will be added automatically)
-    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("How many Game Boy Advance handhelds","can be found on this board");
     
     char correctAnswer[48] = "One";
@@ -897,14 +862,6 @@ char* GetThirdQuestion(int* correctAnswerIndexPtr)
 // Question for index 3
 char* GetFourthQuestion(int* correctAnswerIndexPtr)
 {
-    // This sample question demonstrates how to make a complex question that uses special characters.
-    // You need to add your own question mark to close.
-    // However, a newline before the answers is automatically inserted.
-    //
-    // Mario Party 3 special characters documented at:
-    // https://github.com/PartyPlanner64/PartyPlanner64/wiki/String-Encoding
-    
-    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo Consoles", "can \x03NOT\x08 be found on this board");
 
     char correctAnswer[48] = "Nintendo Wii";
@@ -925,7 +882,6 @@ char* GetFourthQuestion(int* correctAnswerIndexPtr)
 // Question for index 4
 char* GetFifthQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("Which Nintendo 64 game\x5Cs boxart", "can \x03NOT\x08 be found on this board");
 
 
@@ -967,7 +923,6 @@ char* GetSixthQuestion(int* correctAnswerIndexPtr)
 // Question for index 6
 char* GetSeventhQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO
 	char* question = CreateSimpleTwoLineQuestionMessage("How many Nintendo Gamecube Controllers", "can be found on this Board");
     
 	char correctAnswer[48] = "One";
@@ -987,8 +942,7 @@ char* GetSeventhQuestion(int* correctAnswerIndexPtr)
 
 // Question for index 7
 char* GetEigthQuestion(int* correctAnswerIndexPtr)
-{   
-    //TODO
+{
     char* question = CreateSimpleTwoLineQuestionMessage("A giant hat can be found on this board\x85", "Which character does it belong to");
 
     char correctAnswer[48] = "Waluigi";
@@ -1029,7 +983,6 @@ char* GetNinthQuestion(int* correctAnswerIndexPtr)
 // Question for index 9
 char* GetTenthQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("What Nintendo 64 game can be found", "above the Ancient Mew Card");
 
     char correctAnswer[48] = "Mario Tennis";
@@ -1050,7 +1003,6 @@ char* GetTenthQuestion(int* correctAnswerIndexPtr)
 // Question for index 10
 char* GetEleventhQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("What color of Nintendo 64 Controller is", "\x03NOT\x08 featured on this board");
     
     char correctAnswer[48] = "Solid Yellow";
@@ -1071,7 +1023,6 @@ char* GetEleventhQuestion(int* correctAnswerIndexPtr)
 // Question for index 11
 char* GetTwelfthQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO
     char* question = CreateSimpleThreeLineQuestionMessage("Three Pokemon cards can be found", "sitting together on this board\x85", "Whose card is on the left");
 
     char correctAnswer[48] = "Venasaur";
@@ -1092,7 +1043,6 @@ char* GetTwelfthQuestion(int* correctAnswerIndexPtr)
 // Question for index 12
 char* GetThirteenthQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("Which Nintendo 64 game cartridge","can \x03NOT\x08 be found on this board");
 
     char correctAnswer[48] = "Mario Kart 64";
@@ -1113,7 +1063,6 @@ char* GetThirteenthQuestion(int* correctAnswerIndexPtr)
 // Question for index 13
 char* GetFourteenthQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("What color of Gameboy Color handheld", "can \x03NOT\x08 be found on this board");
 
     char correctAnswer[48] = "Kiwi";
@@ -1134,7 +1083,6 @@ char* GetFourteenthQuestion(int* correctAnswerIndexPtr)
 // Question for index 14
 char* GetFifteenthQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("What color is the Nintendo 3DS", "handheld on this board");
     
     char correctAnswer[48] = "Flame Red";
@@ -1434,7 +1382,6 @@ char* GetTwentyNinthQuestion(int* correctAnswerIndexPtr)
 // Question for index 29
 char* GetThirtiethQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO
     char* question = CreateSimpleTwoLineQuestionMessage("What year was Mario Party 3", "released in Japan");
 
     char correctAnswer[48] = "2001";
@@ -1715,7 +1662,6 @@ char* GetFourtyThirdQuestion(int* correctAnswerIndexPtr)
 // Question for index 43
 char* GetFourtyFourthQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO
 	char* question = CreateSimpleThreeLineQuestionMessage("Which Pokemon Game Cartridge can", "be found hidden behind the case for", "Dairantou Smash Brothers DX");
 
 	char correctAnswer[48] = "Pokemon Gold Version";
