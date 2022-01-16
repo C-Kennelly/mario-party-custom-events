@@ -802,31 +802,34 @@ char* GetQuestionByNumber(int question, int* correctAnswerPtr)
 char* GetFirstQuestion(int* correctAnswerIndexPtr)
 {
     // This sample question demonstrates how to make a 2-line simple question.
-    // Each line is its own argument to the function.
-    // This will display as:
+    // Each line is its own argument to the function. 
+    // This question will display as:
     //  
-    //      "Who wears a red hat?"
+    //      According to Shigeru Miyamoto,
+    //      who is Bowser Jr.'s mother?
     //
     // (final question mark and newline will be added automatically)
+    // As you can see, special characters or punctuation can be used inline.
+    //    Find special characters at this community resource:
+    //    https://github.com/PartyPlanner64/PartyPlanner64/wiki/String-Encoding
+
+    char* question = CreateSimpleTwoLineQuestionMessage("According to Shigeru Miyamoto\x82", "who is Bowser Jr\x85\x5Cs mother");
+
+    // After you have defined the question, you define the answers.
     //
-    // If you want special characters or punctuation, either concatenate the
-    // strings you send in, or look below for the custom message example.
-    
-    //TODO
-    char* question = CreateSimpleTwoLineQuestionMessage("How many Game Boy Color handhelds", "can be found on this board");
+    // In this case, correct answer is "Shigeru Miyamoto" so we assign it to the "correctAnswer variable."
+    // You then fill in three incorrect answers (note, you can still  use special characters inline here)
+    // and pass them to the GenerateMessageForQuestionWithFourOptions() function.
+    //
+    // The Generate...() function will scramble the order of the possible answers every single time.
 
-    // Answers are defined here.
-    // Correct answer gets defined first, followed by the the three wrong answers.  
-    // Order here doesn't matter; They will be displayed in a 
-    // random order each time the question is selected.
-
-    char correctAnswer[48] = "Three";
-    char wrongAnswer1[48] = "One";
-    char wrongAnswer2[48] = "Two";
-    char wrongAnswer3[48] = "Four";
+    char correctAnswer[48] = "Shigeru Miyamoto";
+    char wrongAnswer1[48] = "Bowsette";
+    char wrongAnswer2[48] = "Peach";
+    char wrongAnswer3[48] = "Wendy O\x85 Koopa";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-
+   
     return result;
 }
 
@@ -838,21 +841,12 @@ char* GetFirstQuestion(int* correctAnswerIndexPtr)
 // Question for index 1
 char* GetSecondQuestion(int* correctAnswerIndexPtr)
 {
-    // This sample question demonstrates how to make a 2-line simple question.
-    // Each line is its own argument to the function.
-    // This will display as:
-    //  
-    //      "Who wears a purple hat"
-    //      "and has a moustache?"
-    //
-    // (final question mark and newline will be added automatically)
-    //TODO
-    char* question = CreateSimpleTwoLineQuestionMessage("What well known soft drink for", "gamerz is found at Booze Boulevard");
+    char* question = CreateSimpleTwoLineQuestionMessage("What year was Mario Party 1", "released in Japan");
 
-    char correctAnswer[48] = "Mountain Dew";
-    char wrongAnswer1[48] = "Surge";
-    char wrongAnswer2[48] = "Monster Energy";
-    char wrongAnswer3[48] = "Slurm";
+    char correctAnswer[48] = "1998";
+    char wrongAnswer1[48] = "1997";
+    char wrongAnswer2[48] = "1999";
+    char wrongAnswer3[48] = "2000";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
@@ -867,25 +861,15 @@ char* GetSecondQuestion(int* correctAnswerIndexPtr)
 // Question for index 2
 char* GetThirdQuestion(int* correctAnswerIndexPtr)
 {
-    // This sample question demonstrates how to make a 3-line simple question.
-    // Each line is its own argument to the function.
-    // This will display as: 
-    //
-    //      "Who wears a purple hat"
-    //      "and has a moustache"
-    //      "and likes power?"
-    //
-    // (final question mark and newline will be added automatically)
-    //TODO
-    char* question = CreateSimpleTwoLineQuestionMessage("How many Game Boy Advance handhelds","can be found on this board");
-    
-    char correctAnswer[48] = "One";
-    char wrongAnswer1[48] = "Two";
-    char wrongAnswer2[48] = "Three";
-    char wrongAnswer3[48] = "Four";
+    char* question = CreateSimpleTwoLineQuestionMessage("What year was Mario Party 1", "released in the US");
+
+    char correctAnswer[48] = "1999";
+    char wrongAnswer1[48] = "1997";
+    char wrongAnswer2[48] = "1998";
+    char wrongAnswer3[48] = "2000";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-
+   
     return result;
 }
 
@@ -897,23 +881,15 @@ char* GetThirdQuestion(int* correctAnswerIndexPtr)
 // Question for index 3
 char* GetFourthQuestion(int* correctAnswerIndexPtr)
 {
-    // This sample question demonstrates how to make a complex question that uses special characters.
-    // You need to add your own question mark to close.
-    // However, a newline before the answers is automatically inserted.
-    //
-    // Mario Party 3 special characters documented at:
-    // https://github.com/PartyPlanner64/PartyPlanner64/wiki/String-Encoding
-    
-    //TODO
-    char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo Consoles", "can \x03NOT\x08 be found on this board");
+    char* question = CreateSimpleTwoLineQuestionMessage("What year was Mario Party 2", "released in Japan");
 
-    char correctAnswer[48] = "Nintendo Wii";
-    char wrongAnswer1[48] = "Nintendo Switch";
-    char wrongAnswer2[48] = "Super NES Classic";
-    char wrongAnswer3[48] = "Nintendo 64";
+    char correctAnswer[48] = "1999";
+    char wrongAnswer1[48] = "1998";
+    char wrongAnswer2[48] = "2001";
+    char wrongAnswer3[48] = "2000";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-    
+   
     return result;
 }
 
@@ -925,17 +901,15 @@ char* GetFourthQuestion(int* correctAnswerIndexPtr)
 // Question for index 4
 char* GetFifthQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO
-    char* question = CreateSimpleTwoLineQuestionMessage("Which Nintendo 64 game\x5Cs boxart", "can \x03NOT\x08 be found on this board");
+    char* question = CreateSimpleTwoLineQuestionMessage("What year was Mario Party 2", "released in the US");
 
-
-    char correctAnswer[48] = "Star Fox 64";
-    char wrongAnswer1[48] = "Goldeneye 007";
-    char wrongAnswer2[48] = "Super Smash Bros\x85";
-    char wrongAnswer3[48] = "Mario Party";
+    char correctAnswer[48] = "2000";
+    char wrongAnswer1[48] = "1998";
+    char wrongAnswer2[48] = "2001";
+    char wrongAnswer3[48] = "1999";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-
+   
     return result;
 }
 
@@ -947,7 +921,7 @@ char* GetFifthQuestion(int* correctAnswerIndexPtr)
 // Question for index 5
 char* GetSixthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleOneLineQuestionMessage("What does Peach make Mario");
+    char* question = CreateSimpleOneLineQuestionMessage("What does Peach make Mario in Mario 64");
 
     char correctAnswer[48] = "Cake";
     char wrongAnswer1[48] = "Mushrooms";
@@ -967,16 +941,15 @@ char* GetSixthQuestion(int* correctAnswerIndexPtr)
 // Question for index 6
 char* GetSeventhQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO
-	char* question = CreateSimpleTwoLineQuestionMessage("How many Nintendo Gamecube Controllers", "can be found on this Board");
-    
-	char correctAnswer[48] = "One";
-	char wrongAnswer1[48] = "Two";
-	char wrongAnswer2[48] = "Three";
-	char wrongAnswer3[48] = "Four";
+    char* question = CreateSimpleOneLineQuestionMessage("What year was Pokemon Snap released");
+
+    char correctAnswer[48] = "1999";
+    char wrongAnswer1[48] = "1998";
+    char wrongAnswer2[48] = "1997";
+    char wrongAnswer3[48] = "2000";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-
+   
     return result;
 }
 
@@ -988,16 +961,15 @@ char* GetSeventhQuestion(int* correctAnswerIndexPtr)
 // Question for index 7
 char* GetEigthQuestion(int* correctAnswerIndexPtr)
 {   
-    //TODO
-    char* question = CreateSimpleTwoLineQuestionMessage("A giant hat can be found on this board\x85", "Which character does it belong to");
+    char* question = CreateSimpleTwoLineQuestionMessage("What was the name of the vehicle", "that carries Todd through Pokemon Snap");
 
-    char correctAnswer[48] = "Waluigi";
-    char wrongAnswer1[48] = "Mario";
-    char wrongAnswer2[48] = "Luigi";
-    char wrongAnswer3[48] = "Wario";
+    char correctAnswer[48] = "Zero\x3DOne";
+    char wrongAnswer1[48] = "It didn\x5Ct have a name";
+    char wrongAnswer2[48] = "Poke\x3DTrekker";
+    char wrongAnswer3[48] = "V\x3DZero";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-    
+   
     return result;
 }
 
@@ -1029,13 +1001,12 @@ char* GetNinthQuestion(int* correctAnswerIndexPtr)
 // Question for index 9
 char* GetTenthQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO
-    char* question = CreateSimpleTwoLineQuestionMessage("What Nintendo 64 game can be found", "above the Ancient Mew Card");
+    char* question = CreateSimpleTwoLineQuestionMessage("Pokemon Snap started development at HAL", "with what fairy tale theme");
 
-    char correctAnswer[48] = "Mario Tennis";
-    char wrongAnswer1[48] = "Mario Golf";
-    char wrongAnswer2[48] = "Mario Kart 64";
-    char wrongAnswer3[48] = "Paper Mario";
+    char correctAnswer[48] = "Jack and the Beanstalk";
+    char wrongAnswer1[48] = "Hansel and Gretel";
+    char wrongAnswer2[48] = "Goldilocks and the Three Bears";
+    char wrongAnswer3[48] = "Little Red Riding Hood";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
@@ -1050,16 +1021,15 @@ char* GetTenthQuestion(int* correctAnswerIndexPtr)
 // Question for index 10
 char* GetEleventhQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO
-    char* question = CreateSimpleTwoLineQuestionMessage("What color of Nintendo 64 Controller is", "\x03NOT\x08 featured on this board");
-    
-    char correctAnswer[48] = "Solid Yellow";
-    char wrongAnswer1[48] = "Solid Blue";
-    char wrongAnswer2[48] = "Atomic Purple";
-    char wrongAnswer3[48] = "Solid Green";
+    char* question = CreateSimpleOneLineQuestionMessage("What is the theme of the first level in Pokemon Snap");
+
+    char correctAnswer[48] = "Beach";
+    char wrongAnswer1[48] = "River";
+    char wrongAnswer2[48] = "Jungle";
+    char wrongAnswer3[48] = "Cave";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-
+   
     return result;
 }
 
@@ -1071,13 +1041,12 @@ char* GetEleventhQuestion(int* correctAnswerIndexPtr)
 // Question for index 11
 char* GetTwelfthQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO
-    char* question = CreateSimpleThreeLineQuestionMessage("Three Pokemon cards can be found", "sitting together on this board\x85", "Whose card is on the left");
+    char* question = CreateSimpleOneLineQuestionMessage("How many pictures can be taken per course in Pokemon Snap");
 
-    char correctAnswer[48] = "Venasaur";
-    char wrongAnswer1[48] = "Charizard";
-    char wrongAnswer2[48] = "Blastoise";
-    char wrongAnswer3[48] = "Pikachu";
+    char correctAnswer[48] = "60";
+    char wrongAnswer1[48] = "30";
+    char wrongAnswer2[48] = "45";
+    char wrongAnswer3[48] = "Unlimited";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
     
@@ -1092,13 +1061,12 @@ char* GetTwelfthQuestion(int* correctAnswerIndexPtr)
 // Question for index 12
 char* GetThirteenthQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO
-    char* question = CreateSimpleTwoLineQuestionMessage("Which Nintendo 64 game cartridge","can \x03NOT\x08 be found on this board");
+    char* question = CreateSimpleTwoLineQuestionMessage("What is the only Nintendo 64 game", "that sold more than ten million units");
 
-    char correctAnswer[48] = "Mario Kart 64";
+    char correctAnswer[48] = "Super Mario 64";
     char wrongAnswer1[48] = "The Legend of Zelda\x7B Ocarina of Time";
-    char wrongAnswer2[48] = "Mario Tennis";
-    char wrongAnswer3[48] = "Mario Story";
+    char wrongAnswer2[48] = "Mario Kart 64";
+    char wrongAnswer3[48] = "Super Smash Bros";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -1113,13 +1081,12 @@ char* GetThirteenthQuestion(int* correctAnswerIndexPtr)
 // Question for index 13
 char* GetFourteenthQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO
-    char* question = CreateSimpleTwoLineQuestionMessage("What color of Gameboy Color handheld", "can \x03NOT\x08 be found on this board");
+    char* question = CreateSimpleTwoLineQuestionMessage("About how many Nintendo 64 games", "sold more than one million units");
 
-    char correctAnswer[48] = "Kiwi";
-    char wrongAnswer1[48] = "Atomic Purple";
-    char wrongAnswer2[48] = "Grape";
-    char wrongAnswer3[48] = "Dandelion";
+    char correctAnswer[48] = "40 \x3D 49";
+    char wrongAnswer1[48] = "20 \x3D 29";
+    char wrongAnswer2[48] = "30 \x3D 39";
+    char wrongAnswer3[48] = "50 \x3D 59";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
@@ -1134,13 +1101,12 @@ char* GetFourteenthQuestion(int* correctAnswerIndexPtr)
 // Question for index 14
 char* GetFifteenthQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO
-    char* question = CreateSimpleTwoLineQuestionMessage("What color is the Nintendo 3DS", "handheld on this board");
+    char* question = CreateSimpleTwoLineQuestionMessage("Other than the Mario titles\x82 what", "was the most popular franchise on the N64 by combined sales");
     
-    char correctAnswer[48] = "Flame Red";
-    char wrongAnswer1[48] = "Cobalt Blue";
-    char wrongAnswer2[48] = "Metallic Red";
-    char wrongAnswer3[48] = "Cosmo Black";
+    char correctAnswer[48] = "Pokemon";
+    char wrongAnswer1[48] = "The Legend of Zelda";
+    char wrongAnswer2[48] = "Donkey Kong";
+    char wrongAnswer3[48] = "Star Wars";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -1434,13 +1400,12 @@ char* GetTwentyNinthQuestion(int* correctAnswerIndexPtr)
 // Question for index 29
 char* GetThirtiethQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO - can we do American/Japan release dates for all three games???
     char* question = CreateSimpleTwoLineQuestionMessage("What year was Mario Party 3", "released in Japan");
 
-    char correctAnswer[48] = "2001";
+    char correctAnswer[48] = "2000";
     char wrongAnswer1[48] = "2002";
     char wrongAnswer2[48] = "1999";
-    char wrongAnswer3[48] = "2000";
+    char wrongAnswer3[48] = "2001";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
    
@@ -1455,15 +1420,15 @@ char* GetThirtiethQuestion(int* correctAnswerIndexPtr)
 // Question for index 30
 char* GetThirtyFirstQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleTwoLineQuestionMessage("What year was Mario Kart 64", "released in the US");
+    char* question = CreateSimpleTwoLineQuestionMessage("What year was Mario Party 3", "released in the US");
 
-    char correctAnswer[48] = "1997";
-    char wrongAnswer1[48] = "1998";
+    char correctAnswer[48] = "2001";
+    char wrongAnswer1[48] = "2002";
     char wrongAnswer2[48] = "1999";
     char wrongAnswer3[48] = "2000";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-
+   
     return result;
 }
 
@@ -1595,15 +1560,15 @@ char* GetThirtySeventhQuestion(int* correctAnswerIndexPtr)
 // Question for index 37
 char* GetThirtyEighthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleTwoLineQuestionMessage("According to Shigeru Miyamoto\x82", "who is Bowser Jr\x85\x5Cs mother");
+    char* question = CreateSimpleTwoLineQuestionMessage("What year was Mario Kart 64", "released in the US");
 
-    char correctAnswer[48] = "Shigeru Miyamoto";
-    char wrongAnswer1[48] = "Bowsette";
-    char wrongAnswer2[48] = "Bowletta";
-    char wrongAnswer3[48] = "Wendy O\x85 Koopa";
+    char correctAnswer[48] = "1997";
+    char wrongAnswer1[48] = "1998";
+    char wrongAnswer2[48] = "1999";
+    char wrongAnswer3[48] = "2000";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-   
+
     return result;
 }
 
@@ -1715,13 +1680,12 @@ char* GetFourtyThirdQuestion(int* correctAnswerIndexPtr)
 // Question for index 43
 char* GetFourtyFourthQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO
-	char* question = CreateSimpleThreeLineQuestionMessage("Which Pokemon Game Cartridge can", "be found hidden behind the case for", "Dairantou Smash Brothers DX");
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these games was never bundled", "with the Nintendo 64 console during its lifetime");
 
-	char correctAnswer[48] = "Pokemon Gold Version";
-	char wrongAnswer1[48] = "Pokemon Silver Version";
-	char wrongAnswer2[48] = "Pokemon Yellow Version";
-	char wrongAnswer3[48] = "Pokemon Red Version";
+	char correctAnswer[48] = "The Legend of Zelda\x7B Ocarina of Time";
+	char wrongAnswer1[48] = "Pokemon Stadium";
+	char wrongAnswer2[48] = "Star Wars Episode 1\x7B Racer";
+	char wrongAnswer3[48] = "GoldenEye 007";
 
 	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -1776,13 +1740,12 @@ char* GetFourtySixthQuestion(int* correctAnswerIndexPtr)
 // Question for index 46
 char* GetFourtySeventhQuestion(int* correctAnswerIndexPtr)
 {
-    //TODO - Hey You Pikachu question, additional  (Also, pokemon snap because it's awesome)
-	char* question = CreateSimpleTwoLineQuestionMessage("Which Nintendo 64 game was bundled", "together with a Rumble Pack");
+	char* question = CreateSimpleThreeLineQuestionMessage("What was the in\x3Dgame name of the", "device that let you communicate with Pokemon", "in Hey You\x82 Pikachu");
     
-    char correctAnswer[48] = "Star Fox 64";
-    char wrongAnswer1[48] = "Wave Race 64";
-    char wrongAnswer2[48] = "Perfect Dark";
-    char wrongAnswer3[48] = "Donkey Kong 64";
+    char correctAnswer[48] = "PokeHelper";
+    char wrongAnswer1[48] = "Voice Recognition Unit";
+    char wrongAnswer2[48] = "PokeTalker";
+    char wrongAnswer3[48] = "PikaPhone";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -1809,13 +1772,6 @@ char* GetFourtyEighthQuestion(int* correctAnswerIndexPtr)
 
 	return result;
 }
-
-
-
-
-
-
-
 
 
 
