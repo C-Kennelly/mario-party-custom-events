@@ -165,7 +165,7 @@ int MakeOfferToSwapTurnOrderAndGetTargetPlayer(int currentPlayerIndex)
 {
     int opponentIndex = -1;
 
-    PlayGreetingMessage();
+    PlayGreetingMessage(currentPlayerIndex);
 
     int answerChosen = TemptPlayerWithControllerSwap(currentPlayerIndex);
     

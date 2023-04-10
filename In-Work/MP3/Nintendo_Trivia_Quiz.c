@@ -7,6 +7,26 @@
 // PARAM: +Number|NORMAL_CPU_ACCURACY_PERCENT
 // PARAM: +Number|HARD_CPU_ACCURACY_PERCENT
 
+#ifndef USES_BOARD_RAM
+#define USES_BOARD_RAM 1
+#endif
+
+#ifndef COIN_REWARD
+#define COIN_REWARD 10
+#endif
+
+#ifndef EASY_CPU_ACCURACY_PERCENT
+#define EASY_CPU_ACCURACY_PERCENT 100
+#endif
+
+#ifndef NORMAL_CPU_ACCURACY_PERCENT
+#define NORMAL_CPU_ACCURACY_PERCENT 100
+#endif
+
+#ifndef HARD_CPU_ACCURACY_PERCENT
+#define HARD_CPU_ACCURACY_PERCENT 100
+#endif
+
 //***************************************************************************//
 //******************** BOARD RAM WARNING ************************************//
 //***************************************************************************//

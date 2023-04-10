@@ -1,14 +1,13 @@
-// NAME: TODO - Replace This Name
+// NAME: Ancient Mew's Mystery
 // GAMES: MP3_USA
 // EXECUTION: Direct
 // PARAM: Boolean|USES_BOARD_RAM
 // PARAM: +Number|COIN_REWARD
 
-// Redefining params here for vs code highlighting, not actually used in partyplanner.
+//TODO - remove these defines before uploading to party planner, these just exist to fix the syntax errors.
 #ifndef COIN_REWARD
-    #define COIN_REWARD 10
+#define COIN_REWARD 0
 #endif
-
 //***************************************************************************//
 //******************** Version Info! ****************************************//
 //***************************************************************************//
@@ -59,8 +58,20 @@
 //***************************************************************************//
 //*********************** Description ***************************************//
 //***************************************************************************//
-// TODO: Describe the event's behavior
-// 
+// Intended as a passing event near the start of a baord, Ancient Mew's Mystery 
+// gives a a flavorful "get coins for passing go" event, giving you more coins 
+// if the player's landed on happening spaces.
+//
+// (base+n) to (base+range+n) + n * [multiplier] 
+//      base = 2
+//      suggested: range = 2; multiplier = 2x 
+//
+//          0                   2-4     // You look around the ancient tomb and find some coins but can't shake the feeling there are more mysteries to discover.
+//          1                   3-7     // Anicent Mews eyes glitter mysteriously. You follow their gaze to a pile of coins. 
+//          2                   4-10    // You have explored many mysteries.  Ancient Mew is pleased.
+//          3                   5-16    // You have explored many mysteries.  Ancient Mew is pleased.
+//
+//
 //
 // Finally, this file is commented to make it as easy as possible for 
 // non-programmers to edit and beginners to pull code samples, so I've 
