@@ -1,13 +1,32 @@
 // NAME: Ancient Mew's Mystery
 // GAMES: MP3_USA
 // EXECUTION: Direct
-// PARAM: Boolean|USES_BOARD_RAM
-// PARAM: +Number|COIN_REWARD
+// PARAM: +Number|HAPPENING_COIN_MULTIPLIER
+// PARAM: +Number|MIN_HAPPENING_SPACES
+// PARAM: +Number|MAX_HAPPENING_SPACES
 
-//TODO - remove these defines before uploading to party planner, these just exist to fix the syntax errors.
-#ifndef COIN_REWARD
-#define COIN_REWARD 0
+// The step-value for happening spaces - the happening space count is multiplied (with a little fuzz) by this number
+// For example, if this value is 3, each "step" becomes 3.  So the possible rewards are:
+// 1 | 1-5
+// 2 | 4-7
+// 3 | 7-11
+// 4 | 10-14
+// 5 | 13-17
+#ifndef HAPPENING_COIN_MULTIPLIER
+#define HAPPENING_COIN_MULTIPLIER 0
 #endif
+
+// If the player has landed on less happening spaces than this number, they won't get any coins.
+#ifndef MIN_HAPPENING_SPACES
+#define MIN_HAPPENING_SPACES 0
+#endif
+
+// Caps the number of happening spaces the player can get coins for to keep the economy in check.  
+// Player receives the flat HAPPENING_COIN_MULTIPLIER * Happening Spaces when they hit this cap.
+#ifndef MAX_HAPPENING_SPACES
+#define MAX_HAPPENING_SPACES 0
+#endif
+
 //***************************************************************************//
 //******************** Version Info! ****************************************//
 //***************************************************************************//
@@ -20,37 +39,11 @@
 
 
 //***************************************************************************//
-//******************** BOARD RAM WARNING ************************************//
-//***************************************************************************//
-// This board uses the following addresses (board RAM)
-//                  TODO: Take this list down to only the ones used.
-//              D_800CD0A0;   //board_ram9
-//              D_800CD0A1;   //board_ram10
-//              D_800CD0A2;   //board_ram11
-//              D_800CD0A3;   //board_ram12
-//              D_800CD0A4;   //board_ram13
-//              D_800CD0A5;   //board_ram14
-//              D_800CD0A6;   //board_ram15
-//              D_800CD0A7;   //board_ram16
-//              D_800CD0A8;   //board_ram17
-//
-// If any other events on your board use these values, you will get unexpected behavior! 
-//
-// You can disable this quiz's use of board RAM by setting the "USES_BOARD_RAM" parameter to
-// "False" in PartyPlanner when you place the event.
-//
-// TODO: Describe what the board uses board_ram for.  Describe what the behavior falls back to if
-// you don't use board ram.
-//
-// If you're not sure what this parameter does, just set the "USES BOARD RAM" to true. =)
-
-
-//***************************************************************************//
 //******************** Event Configuration ***********************************//
 //***************************************************************************//
 
 // This is the portrait of the character giving the messages.
-#define CHARACTER_PORTRAIT 5
+#define CHARACTER_PORTRAIT -1
 // Want to change the picture?  Find options the PartyPlanner64 wiki:
 // https://github.com/PartyPlanner64/PartyPlanner64/wiki/Displaying-Messages
 
@@ -61,17 +54,6 @@
 // Intended as a passing event near the start of a baord, Ancient Mew's Mystery 
 // gives a a flavorful "get coins for passing go" event, giving you more coins 
 // if the player's landed on happening spaces.
-//
-// (base+n) to (base+range+n) + n * [multiplier] 
-//      base = 2
-//      suggested: range = 2; multiplier = 2x 
-//
-//          0                   2-4     // You look around the ancient tomb and find some coins but can't shake the feeling there are more mysteries to discover.
-//          1                   3-7     // Anicent Mews eyes glitter mysteriously. You follow their gaze to a pile of coins. 
-//          2                   4-10    // You have explored many mysteries.  Ancient Mew is pleased.
-//          3                   5-16    // You have explored many mysteries.  Ancient Mew is pleased.
-//
-//
 //
 // Finally, this file is commented to make it as easy as possible for 
 // non-programmers to edit and beginners to pull code samples, so I've 
@@ -149,19 +131,75 @@ struct Player {
 void main() 
 {   
     int currentPlayerIndex = GetCurrentPlayerIndex();
-    int coinReward = 10;
+    int happeningSpaceCount = GetHappeningSpaceCount(currentPlayerIndex);
 
-    GraduallyAdjustPlayerCoins(currentPlayerIndex, COIN_REWARD);
+    if(happeningSpaceCount >= MIN_HAPPENING_SPACES)
+    {
+        int coinReward = CalculateCoinReward(happeningSpaceCount);
+
+        PlayFlavorMessage(happeningSpaceCount);
+        GraduallyAdjustPlayerCoins(currentPlayerIndex, coinReward);
+    }
+    else
+    {
+        PlayMessageForNoCoins();
+    }
+    
+    return;
+}
+
+int GetHappeningSpaceCount(int currentPlayerIndex)
+{
+    int happeningCount = 0;
+    struct Player *currentPlayerStruct = GetPlayerStruct(currentPlayerIndex);
+
+    if (currentPlayerStruct != NULL)
+    {
+        happeningCount = currentPlayerStruct->happening_space_count;
+    }
+
+    return happeningCount;
+}
+
+int CalculateCoinReward(int happeningSpaceCount)
+{
+    if( (MAX_HAPPENING_SPACES > 0) && (happeningSpaceCount >= MAX_HAPPENING_SPACES) )
+    {
+        return (HAPPENING_COIN_MULTIPLIER *happeningSpaceCount);
+    }
+
+    int fuzzFactor = mp3_PickARandomNumberBetween0AndN(HAPPENING_COIN_MULTIPLIER);
+
+    if (mp3_ReturnTruePercentOfTime(50))
+    {
+        fuzzFactor = fuzzFactor * -1;
+    }
+
+    int coinReward = (happeningSpaceCount * HAPPENING_COIN_MULTIPLIER) + fuzzFactor;
+
+    return coinReward;
+}
+
+void PlayFlavorMessage(int happeningSpaceCount)
+{
+    char* message = NULL;
+
+    if(happeningSpaceCount < 5)
+    {
+        message = GetFlavorMessage();
+    }
+    else
+    {
+        message = GetFinalFlavorMessage();
+    }
+
+    mp3_ShowMessageWithConfirmation(CHARACTER_PORTRAIT, message);
 
     return;
 }
 
-// A function defined in this event that's named so it's easy to understand what it does.
 void GraduallyAdjustPlayerCoins(int playerIndex, int adjustmentAmount)
 {   
-    // One of the helpful mplib functions.
-    mp3_DebugMessage("Adding 10 coins to the current player.");
-
     // Some mp3-defined functions to change the coins
     // Find more at https://github.com/PartyPlanner64/symbols/blob/master/MarioParty3U.sym
     AdjustPlayerCoinsGradual(playerIndex, adjustmentAmount);
@@ -170,15 +208,91 @@ void GraduallyAdjustPlayerCoins(int playerIndex, int adjustmentAmount)
     // Sleep for 30 frames to let the coin change take effect.
     // Also syncs up nicely with the joy animation.
     SleepProcess(30);
+}
 
-    mp3_DebugMessage("Done adding coins.");
+void PlayMessageForNoCoins()
+{
+    char* message = GetNoCoinMessage();
+    mp3_ShowMessageWithConfirmation(CHARACTER_PORTRAIT, message);
+    return;
+}
+
+// Anicent Mews eyes glitter mysteriously. You follow its gaze to a pile of coins.
+char* GetFlavorMessage()
+{
+    char* result = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
+
+    mplib_strcpy(result, "\x0B");                                   // Start the message
+    //mplib_strncat(result, "\x1A\x1A\x1A\x1A"); 	                // Standard padding for portrait
+    mplib_strncat(result, "Ancient Mew");                 
+    mplib_strncat(result, "\x5C");                                  // '
+    mplib_strncat(result, "s eyes glitter mysteriously");
+    mplib_strncat(result, "\x85");                                  // .
+    mplib_strncat(result, "\x0A");                                  // Newline
+    //mplib_strncat(result, "\x1A\x1A\x1A\x1A");                    // Standard padding for portrait
+    mplib_strncat(result, "You follow its gaze to a pile of ");
+    mplib_strncat(result, "\x06");                                  //Blue font start
+    mplib_strncat(result, "coins");
+    mplib_strncat(result, "\x06");                                  //White font start
+    mplib_strncat(result, "\x85");                                  //.
+    mplib_strncat(result, "\xFF");                                  //Show prompt to continue arrow
+
+    return result;
+}
+
+// You have explored many mysteries.  Ancient Mew is pleased.
+char* GetFinalFlavorMessage()
+{
+    char* result = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
+
+    mplib_strcpy(result, "\x0B");                               // Start the message
+    //mplib_strncat(result, "\x1A\x1A\x1A\x1A"); 	                // Standard padding for portrait
+    mplib_strncat(result, "You have explored many mysteries");
+    mplib_strncat(result, "\x85");                              //.
+    mplib_strncat(result, "\x0A");                              // Newline
+    //mplib_strncat(result, "\x1A\x1A\x1A\x1A");                  // Standard padding for portrait
+    mplib_strncat(result, "Ancient Mew is pleased");   
+    mplib_strncat(result, "\x85");                              //.
+    mplib_strncat(result, "\xFF");                              //Show prompt to continue arrow
+
+    return result;
+}
+
+// Your search of the ancient tomb turns up nothing, but you can't shake the feeling there are more mysteries to discover.
+char* GetNoCoinMessage()
+{
+    char* result = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
+
+    mplib_strcpy(result, "\x0B");                               // Start the message
+    //mplib_strncat(result, "\x1A\x1A\x1A\x1A"); 	                // Standard padding for portrait
+    mplib_strncat(result, "Your search of the ancient tomb turns up");                 
+    mplib_strncat(result, "\x0A");                              // Newline
+    //mplib_strncat(result, "\x1A\x1A\x1A\x1A");                  // Standard padding for portrait
+    mplib_strncat(result, "nothing");
+    mplib_strncat(result, "\x82");                              // ,
+    mplib_strncat(result, " but you can");
+    mplib_strncat(result, "\x5C");                              // '
+    mplib_strncat(result, "t shake the feeling");
+    mplib_strncat(result, "\x0A");                              // Newline
+    //mplib_strncat(result, "\x1A\x1A\x1A\x1A");                  //Standard padding for portrait
+    mplib_strncat(result, "there are more mysteries to discover");          
+    mplib_strncat(result, "\x85");                              //.
+    mplib_strncat(result, "\xFF");                              //Show prompt to continue arrow
+
+    return result;
 }
 
 
 //***************************************************************************//
 //***************************************************************************//
 //****************************                  *****************************//
-//*************************      mplib v2.0        **************************//
+//*************************      mplib v2.1        **************************//
 //****************************                  *****************************//
 //***************************************************************************//
 //***************************************************************************//
@@ -370,6 +484,13 @@ char* mplib_strncat(char* destination, const char* source)
  
     // destination is returned by standard strncat()
     return destination;
+}
+
+// Returns the smaller of two numbers.  Ties go to the first argument.
+int mplib_min(int a1, int a2)
+{
+    if (a1 <= a2) { return a1; }
+    else { return a2; }
 }
 
 // Returns the largest of two numbers.  Ties go to the first argument.
