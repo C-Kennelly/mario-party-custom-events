@@ -650,7 +650,7 @@ int GetRivalForPlayer(int characterIndex)
 //***************************************************************************//
 //***************************************************************************//
 //****************************                  *****************************//
-//*************************      mplib v2.0        **************************//
+//*************************      mplib v2.1        **************************//
 //****************************                  *****************************//
 //***************************************************************************//
 //***************************************************************************//
@@ -789,135 +789,6 @@ int mp3_IsPlayerCertainCharacter(int playerIndex, enum mp3_Character character)
     }
 }
 
-char* mp3_GetCharacterNameStringFromPlayerIndex(int playerIndex)
-{
-    char* characterName = func_80035934(8);         // malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
-                                                    // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
-    bzero(characterName, 8);                        // Zero out the memory allocated above so we don't get unexpected behavior.
-    
-    int characterInt = -1;     
-
-    struct Player *p = GetPlayerStruct(playerIndex);
-    if(p != NULL)
-    {
-        characterInt = p->character;
-    }
-
-
-    if(characterInt == 0)
-    {
-        mplib_strcpy(characterName, "MARIO");
-    }
-    else if(characterInt == 1)
-    {
-        mplib_strcpy(characterName, "LUIGI");
-    }
-    else if(characterInt == 2)
-    {
-        mplib_strcpy(characterName, "PEACH");
-    }
-    else if(characterInt == 3)
-    {
-        mplib_strcpy(characterName, "YOSHI");
-    }
-    else if(characterInt == 4)
-    {
-        mplib_strcpy(characterName, "WARIO");
-    }
-    else if(characterInt == 5)
-    {
-        mplib_strcpy(characterName, "DK");
-    }
-    else if(characterInt == 6)
-    {
-        mplib_strcpy(characterName, "WALUIGI");
-    }
-    else if(characterInt == 7)
-    {
-        mplib_strcpy(characterName, "DAISY");
-    }
-    else
-    {
-        mplib_strcpy(characterName, "champ");
-    }
-    
-    return characterName;
-}
-
-// Returns the first playerIndex that is in 1st, 2nd, 3rd, or 4th place using zero-based placements.
-// Pass '0' for 1st place, '1' for 2nd place, '2' for 3rd place, and '3' for 4th place
-// If no one is in the place you asked for, find the next closest place. For example, you ask for 4th, but players
-// are in 1st, 1st, 2nd, 3rd, the function will check for 3rd place.
-int mp3_GetPlayerInPlace(int place) //1st, 2nd, 3rd, 4th
-{
-    place = mp3_clampPlace(place);
-
-    for (int p = place; p >= 0; p--) //Step up through the places, since someone will always be in first.
-    {
-        for (int i = 0; i < 4; i++)
-        {
-            if (GetPlayerPlacementAtEndOfGame(i) == p)
-            {
-                return i;
-            }
-        }
-    }
-
-    return 0;
-}
-
-char* mplib_DebugConvertIntToString(int i)
-{
-    if (i <= -2)
-    {
-        return "Neg 2 or less";
-    }
-    else if (i == -1)
-    {
-        return "Neg 1";
-    }
-    else if (i == 0)
-    {
-        return "0";
-    }
-    else if (i == 1)
-    {
-        return "1";
-    }
-    else if (i == 2)
-    {
-        return "2";
-    }
-    else if (i == 3)
-    {
-        return "3";
-    }
-    else if (i == 4)
-    {
-        return "4";
-    }
-    else
-    {
-        return "5 or more";
-    }
-}
-
-// Takes an integer representing 1st, 2nd, 3rd, and 4th place and ensures it is valid.
-int mp3_clampPlace(int place)
-{
-    if (place <= 0)
-    {
-        return 0;
-    }
-    else if (place >= 3)
-    {
-        return 3;
-    }
-    else
-    {
-        return place;
-    }
-}
 
 // Long-form implementation from:
 // https://www.techiedelight.com/implement-strcpy-function-c/
@@ -971,6 +842,13 @@ char* mplib_strncat(char* destination, const char* source)
  
     // destination is returned by standard strncat()
     return destination;
+}
+
+// Returns the smaller of two numbers.  Ties go to the first argument.
+int mplib_min(int a1, int a2)
+{
+    if (a1 <= a2) { return a1; }
+    else { return a2; }
 }
 
 // Returns the largest of two numbers.  Ties go to the first argument.
