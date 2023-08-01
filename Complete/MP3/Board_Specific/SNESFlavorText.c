@@ -1,4 +1,4 @@
-// NAME: Poisoner Flavor Text
+// NAME: SNES Flavor Text
 // GAMES: MP3_USA
 // EXECUTION: Direct
 
@@ -26,9 +26,9 @@
 //***************************************************************************//
 //*********************** Description ***************************************//
 //***************************************************************************//
-// This event plays some flavor text and is meant to be paired with Airsola's
-// Poisoner event on the Game Night board.
-//https://www.mariopartylegacy.com/forum/index.php?action=downloads;sa=view;down=416
+// This event plays some flavor text and is meant to be paired with Gwonam
+// Get Random Item event on the Game Night board.
+// https://www.mariopartylegacy.com/forum/index.php?action=downloads;sa=view;down=272
 
 //***************************************************************************//
 //***********************     Changelist      *******************************//
@@ -66,21 +66,17 @@ char* GetFlavorMessage()
     bzero(result, 256);						// Second, zero out the memory allocated above so we don't get unexpected behavior.
 
     mplib_strcpy(result, "\x0B");								// Start the message
-    mplib_strncat(result, "Your head throbs as you wake up in the dirty");
+    mplib_strncat(result, "You rummage around your old box of games");
     mplib_strncat(result, "\x0A");								// Newline
-    mplib_strncat(result, "gutter of ");
-	mplib_strncat(result, "\x03");								// Begin red color
-    mplib_strncat(result, "Boo");
-    mplib_strncat(result, "\x5C");								// '
-    mplib_strncat(result, "s Boulevard"); 
-    mplib_strncat(result, "\x08");								// Begin white (default) color
+    mplib_strncat(result, "looking for an old favorite");
     mplib_strncat(result, "\x85");								// .
-	mplib_strncat(result, " It was a great night");
-	mplib_strncat(result, "\x82");								// ,
-    mplib_strncat(result, "\x0A");								// Newline
-    mplib_strncat(result, "but you won");
+    mplib_strncat(result, " You don");
     mplib_strncat(result, "\x5C");								// '
-	mplib_strncat(result, "t be getting much done today");
+    mplib_strncat(result, "t"); 
+    mplib_strncat(result, "\x0A");								// Newline
+	mplib_strncat(result, "find it");
+	mplib_strncat(result, "\x82");								// ,	
+	mplib_strncat(result, " but you do find something nice");
     mplib_strncat(result, "\x85");								// .
     mplib_strncat(result, "\xFF");								// Show prompt to continue arrow
 
