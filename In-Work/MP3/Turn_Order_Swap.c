@@ -210,6 +210,7 @@ void SwapControllersWithMessaging(int originalPlayerIndex, int targetPlayerIndex
 {
 	
 	SwapParametersInPlayerStructsToSwapControllers(originalPlayerIndex, targetPlayerIndex);
+	//Play message confirming struct swap
 
 	return;
 }
@@ -223,7 +224,7 @@ void SwapParametersInPlayerStructsToSwapControllers(int playerIndexA, int player
 
 		if(p_a != NULL && p_b != NULL)  
 		{
-			// Move the controller
+			// Swap the controller parameters
 			s8 s8SwapValue = p_a->controller;
 			p_a->controller = p_b->controller;
 			p_b->controller = s8SwapValue;
@@ -242,15 +243,38 @@ void SwapParametersInPlayerStructsToSwapControllers(int playerIndexA, int player
 			p_a->coin_star = p_b->coin_star;
 			p_b->coin_star = s16SwapValue;
 
-			//TODO - all the other counts:
-			//s8 red_space_count;     
-			//s8 blue_space_count;
-			//s8 chance_space_count;
-			//s8 bowser_space_count;  // Offset 48
-			//s8 battle_space_count;
-			//s8 item_space_count;
-			//s8 bank_space_count;
-			//s8 game_guy_space_count; //Offset  52
+			// Swap all space counts so they follow the player as well. This will keep stats intact for end of game.
+			s8SwapValue = p_a->red_space_count;
+			p_a->red_space_count = p_b->red_space_count;
+			p_b->red_space_count = s8SwapValue;
+
+			s8SwapValue = p_a->blue_space_count;
+			p_a->blue_space_count = p_b->blue_space_count;
+			p_b->blue_space_count = s8SwapValue;
+
+			s8SwapValue = p_a->chance_space_count;
+			p_a->chance_space_count = p_b->chance_space_count;
+			p_b->chance_space_count = s8SwapValue;
+
+			s8SwapValue = p_a->bowser_space_count;
+			p_a->bowser_space_count = p_b->bowser_space_count;
+			p_b->bowser_space_count = s8SwapValue;
+
+			s8SwapValue = p_a->battle_space_count;
+			p_a->battle_space_count = p_b->battle_space_count;
+			p_b->battle_space_count = s8SwapValue;
+
+			s8SwapValue = p_a->item_space_count;
+			p_a->item_space_count = p_b->item_space_count;
+			p_b->item_space_count = s8SwapValue;
+
+			s8SwapValue = p_a->bank_space_count;
+			p_a->bank_space_count = p_b->bank_space_count;
+			p_b->bank_space_count = s8SwapValue;
+
+			s8SwapValue = p_a->game_guy_space_count;
+			p_a->game_guy_space_count = p_b->game_guy_space_count;
+			p_b->game_guy_space_count = s8SwapValue;
 		}
 	}
 }
