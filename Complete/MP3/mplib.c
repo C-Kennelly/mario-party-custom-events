@@ -293,7 +293,7 @@ int mplib_max4(int a1, int a2, int a3, int a4)
     int result = a1;
     result = mplib_max(result, a2);
     result = mplib_max(result, a3);
-    result = mplib_max(result, a3);
+    result = mplib_max(result, a4);
     
     return result;
 }
