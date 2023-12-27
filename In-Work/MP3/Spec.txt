@@ -1,0 +1,19 @@
+Upcoming plans for the Character Swap Board
+
+Character Check:
+- Check Character:
+  - Hard Set 1-4, Set By Board
+    - 1 == Plumber, 2 == Princess, 3 == Beast, 4 == Villain
+  - Matching Only, Matching With Fees, All but Matching
+  - Allow, Offer Fee Accept, Offer Fee Decline, Block
+- Set Character Check on Board
+  - Landing/Passing or After Turn
+    - Landing/Passing: Fee to change
+    - After Turn: Change randomly every N Turns
+
+Swap Character
+  - Swap Character
+    - Open Only, Steal, Combined
+    - Steal Becomes Available With N Turns Remaining 
+    - Free, Fee, Decline
+    - Select Target Free, Select Target Steal
