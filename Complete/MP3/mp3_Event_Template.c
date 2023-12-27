@@ -167,7 +167,7 @@ void GraduallyAdjustPlayerCoins(int playerIndex, int adjustmentAmount)
 //***************************************************************************//
 //***************************************************************************//
 //****************************                  *****************************//
-//*************************      mplib v2.0        **************************//
+//*************************      mplib v2.1        **************************//
 //****************************                  *****************************//
 //***************************************************************************//
 //***************************************************************************//
@@ -359,6 +359,13 @@ char* mplib_strncat(char* destination, const char* source)
  
     // destination is returned by standard strncat()
     return destination;
+}
+
+// Returns the smaller of two numbers.  Ties go to the first argument.
+int mplib_min(int a1, int a2)
+{
+    if (a1 <= a2) { return a1; }
+    else { return a2; }
 }
 
 // Returns the largest of two numbers.  Ties go to the first argument.

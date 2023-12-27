@@ -127,65 +127,99 @@ struct Player {
 //*************************** Event Logic ************************************//
 //***************************************************************************//
 
-// TODO: Ask the player for a target and a victim. If the player accepts, setup the turn order swap.
+//This event is intended to run on After Turn timing. It may work on other timings, but is untested.
 void main() 
 {
 	if(D_800CD0A3 == 1)
 	{
-		PlayMessageForTargetAlreadyChosen();
-		return;
+		int firstPlayerIndex = D_800CD0A4;
+		int secondPlayerIndex = D_800CD0A5;
+
+		SwapContentsOfPlayerStructs(firstPlayerIndex, secondPlayerIndex);
+
+		// Refresh the HUD for the swapped players
+		RefreshHUD(firstPlayerIndex);
+		RefreshHUD(secondPlayerIndex);
+
+		// Mark the event an uninitialized and then remove the players from boardRAM
+		D_800CD0A3 = 0;
+		D_800CD0A4 = -1;
+		D_800CD0A5 = -1;
+
+		PlayMessageConfirmingSwap();
 	}
-
-
-	int currentPlayerIndex = GetCurrentPlayerIndex();
-
-
-	int firstPlayerIndex = AskPlayerToSelectTargetPlayerIndex(currentPlayerIndex);
-	if (firstPlayerIndex == -1)
-	{
-		PlayMessageForDeclineToSwap();
-		return;
-	}
-
-	int secondPlayerIndex = AskPlayerToSelectSecondPlayerIndex(currentPlayerIndex, firstPlayerIndex);
-	if (secondPlayerIndex == -1)
-	{
-		PlayMessageForDeclineToSwap();
-		return;
-	}
-
-
-	D_800CD0A3 = 1;
-	D_800CD0A4 = firstPlayerIndex;
-	D_800CD0A5 = secondPlayerIndex;
-	PlayMessageConfirmingTargetSelection(firstPlayerIndex, secondPlayerIndex);
-
+	
 	return;
 }
 
-int AskPlayerToSelectTargetPlayerIndex(int currentPlayerIndex)
+void PlayMessageConfirmingSwap()
 {
-	return 3;
-}
-
-
-// Messages
-void PlayMessageForTargetAlreadyChosen()
-{
-	char* message = "You have already chosen a target this turn";
+	char* message = "Heh heh heh";
 	mp3_DebugMessage(message);
 }
 
-void PlayMessageForDeclineToSwap()
-{
-	char* message = "That is too bad";
-	mp3_DebugMessage(message);
-}
+void SwapContentsOfPlayerStructs(int playerIndexA, int playerIndexB)
+{   
+	if(playerIndexA != playerIndexB)
+	{
+		struct Player *p_a = GetPlayerStruct(playerIndexA);
+		struct Player *p_b = GetPlayerStruct(playerIndexB);
 
-void PlayMessageConfirmingTargetSelection(int targetPlayerIndex)
-{
-	char* message = "They are really gonna get it";
-	mp3_DebugMessage(message);
+		if(p_a != NULL && p_b != NULL)  
+		{
+			// Swap the controller parameters
+			s8 s8SwapValue = p_a->controller;
+			p_a->controller = p_b->controller;
+			p_b->controller = s8SwapValue;
+
+			// Make the bonus star counts follow the player (controller), not the character
+			// This ensures rewards for player decisions stay with the player who made them.
+			s8SwapValue = p_a->happening_space_count;
+			p_a->happening_space_count = p_b->happening_space_count;
+			p_b->happening_space_count = s8SwapValue;
+
+			s16 s16SwapValue = p_a->minigame_star;
+			p_a->minigame_star = p_b->minigame_star;
+			p_b->minigame_star = s16SwapValue;
+
+			s16SwapValue = p_a->coin_star;
+			p_a->coin_star = p_b->coin_star;
+			p_b->coin_star = s16SwapValue;
+
+			// Swap all space counts so they follow the player as well. This will keep stats intact for end of game.
+			s8SwapValue = p_a->red_space_count;
+			p_a->red_space_count = p_b->red_space_count;
+			p_b->red_space_count = s8SwapValue;
+
+			s8SwapValue = p_a->blue_space_count;
+			p_a->blue_space_count = p_b->blue_space_count;
+			p_b->blue_space_count = s8SwapValue;
+
+			s8SwapValue = p_a->chance_space_count;
+			p_a->chance_space_count = p_b->chance_space_count;
+			p_b->chance_space_count = s8SwapValue;
+
+			s8SwapValue = p_a->bowser_space_count;
+			p_a->bowser_space_count = p_b->bowser_space_count;
+			p_b->bowser_space_count = s8SwapValue;
+
+			s8SwapValue = p_a->battle_space_count;
+			p_a->battle_space_count = p_b->battle_space_count;
+			p_b->battle_space_count = s8SwapValue;
+
+			s8SwapValue = p_a->item_space_count;
+			p_a->item_space_count = p_b->item_space_count;
+			p_b->item_space_count = s8SwapValue;
+
+			s8SwapValue = p_a->bank_space_count;
+			p_a->bank_space_count = p_b->bank_space_count;
+			p_b->bank_space_count = s8SwapValue;
+
+			s8SwapValue = p_a->game_guy_space_count;
+			p_a->game_guy_space_count = p_b->game_guy_space_count;
+			p_b->game_guy_space_count = s8SwapValue;
+		}
+	}
 }
 
 //***************************************************************************//
