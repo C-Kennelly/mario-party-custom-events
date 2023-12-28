@@ -1,73 +1,11 @@
 // How to use:
-// Copy and paste the declarations block to declare the Player struct at the
-// top of your file.
-//
-// Then, copy and paste everything in the library block into the your 
+// Copy and paste everything in the library block into the your 
 // bottom of any Mario Party 3 event to get some helpful functions!
-
-
-//***************************************************************************//
-//*************************** Declarations **********************************//
-//***************************************************************************//
-
-// https://github.com/PartyPlanner64/PartyPlanner64/wiki/Player-Structs
-// Used for the data types used in the player struct.
-// Header file: http://n64devkit.square7.ch/header/ultra64.htm
-// Ultratypes: http://n64devkit.square7.ch/header/ultratypes.htm
-// For more exploration: http://n64devkit.square7.ch/header/
-#include "ultra64.h"
-
-// The Player struct for Mario Party 3, used for player manipulation.
-// Reference wiki article can be found here:
-// https://github.com/PartyPlanner64/PartyPlanner64/wiki/Player-Structs
-struct Player {
-    s8 unk0;
-    s8 cpu_difficulty;
-    s8 controller;
-    u8 character;
-    u8 flags;               // Miscellaneous flags. "1" is CPU player
-    s8 pad0[5];             // Skip undocumented offset 5-9
-    s16 coins;              // Offset 10: Current coin count.
-    s16 minigame_coins;     // Offset 12: Coins obtained during a Mini-Game.
-    s8 stars;               // Offset 14
-    
-    u8 cur_chain_index;     // Offset 15
-    u8 cur_space_index;     // Offset 16
-    u8 next_chain_index;    // Offset 17
-    u8 next_space_index;    // Offset 18
-    u8 unk1_chain_index;    // Offset 19
-    u8 unk1_space_index;    // Offset 20
-    u8 reverse_chain_index; // Offset 21
-    u8 reverse_space_index; // Offset 22
-
-    u8 flags2;              // Offset 23
-    u8 items[3];            // Offset 24
-    u8 bowser_suit_flag;    // Offset 27
-    u8 turn_color_status;   // Offset 28
-
-    s8 pad1[7];             // Offsets: 29 - 35
-
-    void *obj;              // Offset 36:  struct object *
-    s16 minigame_star;      // Offset 40
-    s16 coin_star;          // Offset 42
-    s8 happening_space_count; // Offset 44
-    s8 red_space_count;     
-    s8 blue_space_count;
-    s8 chance_space_count;
-    s8 bowser_space_count;  // Offset 48
-    s8 battle_space_count;
-    s8 item_space_count;
-    s8 bank_space_count;
-    s8 game_guy_space_count; //Offset  52
-
-    // s8 pad2[3];
-}; // sizeof == 56
-
 
 //***************************************************************************//
 //***************************************************************************//
 //****************************                  *****************************//
-//*************************      mplib v2.1        **************************//
+//*************************      mplib v2.2        **************************//
 //****************************                  *****************************//
 //***************************************************************************//
 //***************************************************************************//
@@ -75,14 +13,18 @@ struct Player {
 //***     to hide the complexity of some Mario Party-specific functions   ***//
 //***************************************************************************//
 //***************************************************************************//
-// Paste this at the bottom of an event file to get access to helpful functions!
+// Paste this at the bottom of an event file to get access to helpful functions during development!
+// Then, when you are ready to ship, delete the functions you don't use to save space and remove clutter.
+//
 // Get the latest version or submit changes at: 
 // https://github.com/C-Kennelly/mario-party-custom-events
 //***************************************************************************//
-
+//
 // Looking for another function?  
 // Have you checked the PartyPlanner64 symbols table yet?
 // https://github.com/PartyPlanner64/symbols/blob/master/MarioParty3U.sym
+//***************************************************************************//
+
 
 
 // Prints a message in game with the Millenium Star portrait.
@@ -90,6 +32,18 @@ struct Player {
 void mp3_DebugMessage(char* message)
 {
     mp3_ShowMessageWithConfirmation(-1, message);
+}
+
+// As mp3_DebugMessage, but appends the prompt arrow to the end of the message so the message doesn't flash by.
+void mp3_DebugMessageWithConfirmation(char* message)
+{
+	char* result = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
+
+	mplib_strncat(result, message);                                 //Store the passed message in the buffer
+	mplib_strncat(result, "\xFF");                                  //Append the prompt to continue arrow so the message doesn't flash by
+	mp3_ShowMessageWithConfirmation(-1, result);
 }
 
 // Picks a random number between 0 and N, using rejection sampling to avoid modulo bias.

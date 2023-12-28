@@ -1,4 +1,4 @@
-// NAME: Turn Order Swap
+// NAME: Turn Order Swap Triggered
 // GAMES: MP3_USA
 // EXECUTION: Direct
 // PARAM: +Number|BASE_PRICE
@@ -42,8 +42,7 @@
 //***************************************************************************//
 //*********************** Description ***************************************//
 //***************************************************************************//
-// This land-on event allows a player advance their own turn order by 1.
-// So a player who goes third will swap with the player who is going second.
+// This land-on event allows a player to choose 2 players and swap their turn order.
 //
 // This is really a two part event, as this event simply logs the two players into
 // boardRAM, and relies on a passive after-turn event to check the boardRAM and actually
@@ -159,13 +158,16 @@ void main()
 	D_800CD0A4 = firstPlayerIndex;
 	D_800CD0A5 = secondPlayerIndex;
 	PlayMessageConfirmingTargetSelection(firstPlayerIndex, secondPlayerIndex);
-
-	return;
 }
 
 int AskPlayerToSelectTargetPlayerIndex(int currentPlayerIndex)
 {
 	return 3;
+}
+
+int AskPlayerToSelectSecondPlayerIndex(int currentPlayerIndex, int firstPlayerIndex)
+{
+	return 1;
 }
 
 
@@ -188,10 +190,14 @@ void PlayMessageConfirmingTargetSelection(int targetPlayerIndex)
 	mp3_DebugMessage(message);
 }
 
+// How to use:
+// Copy and paste everything in the library block into the your 
+// bottom of any Mario Party 3 event to get some helpful functions!
+
 //***************************************************************************//
 //***************************************************************************//
 //****************************                  *****************************//
-//*************************      mplib v2.1        **************************//
+//*************************      mplib v2.2        **************************//
 //****************************                  *****************************//
 //***************************************************************************//
 //***************************************************************************//
@@ -199,21 +205,37 @@ void PlayMessageConfirmingTargetSelection(int targetPlayerIndex)
 //***     to hide the complexity of some Mario Party-specific functions   ***//
 //***************************************************************************//
 //***************************************************************************//
-// Paste this at the bottom of an event file to get access to helpful functions!
+// Paste this at the bottom of an event file to get access to helpful functions during development!
+// Then, when you are ready to ship, delete the functions you don't use to save space and remove clutter.
+//
 // Get the latest version or submit changes at: 
 // https://github.com/C-Kennelly/mario-party-custom-events
 //***************************************************************************//
-
+//
 // Looking for another function?  
 // Have you checked the PartyPlanner64 symbols table yet?
 // https://github.com/PartyPlanner64/symbols/blob/master/MarioParty3U.sym
+//***************************************************************************//
+
 
 
 // Prints a message in game with the Millenium Star portrait.
 // Does not wait for player confirmation.
 void mp3_DebugMessage(char* message)
 {
-	mp3_ShowMessageWithConfirmation(-1, message);
+    mp3_ShowMessageWithConfirmation(-1, message);
+}
+
+// As mp3_DebugMessage, but appends the prompt arrow to the end of the message so the message doesn't flash by.
+void mp3_DebugMessageWithConfirmation(char* message)
+{
+	char* result = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
+
+	mplib_strncat(result, message);                                 //Store the passed message in the buffer
+	mplib_strncat(result, "\xFF");                                  //Append the prompt to continue arrow so the message doesn't flash by
+	mp3_ShowMessageWithConfirmation(-1, result);
 }
 
 // Picks a random number between 0 and N, using rejection sampling to avoid modulo bias.
@@ -223,17 +245,17 @@ void mp3_DebugMessage(char* message)
 // IMPORTANT.  Maximum random number we could generate here would be 255 (max value of a byte).
 int mp3_PickARandomNumberBetween0AndN(int n)
 {
-	int result = GetRandomByte();                   //Get a random number by picking a random byte.
-	
-	int randMax = 255;                              // 255 is the maximum value of a byte.
-	int randExcess = (randMax % n) + 1;             // Caluclate the biased remainder.  1/256 edge case when (randMax == n) but the result is just some wasted cycles, so acceptable.
-	int randLimit = randMax - randExcess;           // Anything above randLimit would create modulo bias, so...
-	while (result > randLimit)                      // Reject any random bytes with values above randLimit...
-	{
-		result = GetRandomByte();                   // and roll again by selecting a new byte.
-	}    
+    int result = GetRandomByte();                   //Get a random number by picking a random byte.
+    
+    int randMax = 255;                              // 255 is the maximum value of a byte.
+    int randExcess = (randMax % n) + 1;             // Caluclate the biased remainder.  1/256 edge case when (randMax == n) but the result is just some wasted cycles, so acceptable.
+    int randLimit = randMax - randExcess;           // Anything above randLimit would create modulo bias, so...
+    while (result > randLimit)                      // Reject any random bytes with values above randLimit...
+    {
+        result = GetRandomByte();                   // and roll again by selecting a new byte.
+    }    
 
-	return result % n;                              //Since we rejected the excess samples, we've guaranteed an unbiased result.
+    return result % n;                              //Since we rejected the excess samples, we've guaranteed an unbiased result.
 }
 
 
@@ -246,46 +268,46 @@ int mp3_PickARandomNumberBetween0AndN(int n)
 // Values >= 100 always return true.
 int mp3_ReturnTruePercentOfTime(int percentChanceOfTrue)
 {
-	if(percentChanceOfTrue <= 0)
-	{
-		return 0;    //negative chance always returns false
-	}
-	else if(percentChanceOfTrue >= 100)
-	{
-		return 1;    //greater than 100% chance always true
-	}
-	else
-	{
-		int randValue = mp3_PickARandomNumberBetween0AndN(99);
-		if (randValue < percentChanceOfTrue)
-		{
-			return 1;
-		}
-		else
-		{
-			return 0;
-		}
-	}
+    if(percentChanceOfTrue <= 0)
+    {
+        return 0;    //negative chance always returns false
+    }
+    else if(percentChanceOfTrue >= 100)
+    {
+        return 1;    //greater than 100% chance always true
+    }
+    else
+    {
+        int randValue = mp3_PickARandomNumberBetween0AndN(99);
+        if (randValue < percentChanceOfTrue)
+        {
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
 }
 
 // Helper function that shows a message and then tears the message box down
 // after the player confirms the last box.  Don't use for prompt selection.
 void mp3_ShowMessageWithConfirmation(int characterPortraitIndex, char* message)
 {
-	// This function assumes you aren't using the additional arguments
-	// of ShowMessage() and hardcodes them to 0.  If you want to use them,
-	// add them to the wrapper function and pass through.
+    // This function assumes you aren't using the additional arguments
+    // of ShowMessage() and hardcodes them to 0.  If you want to use them,
+    // add them to the wrapper function and pass through.
 
-	ShowMessage(characterPortraitIndex, message, 0, 0, 0, 0, 0);
-	mp3_WaitForPlayerConfirmation();
-	mp3_TeardownMessageBox();
+    ShowMessage(characterPortraitIndex, message, 0, 0, 0, 0, 0);
+    mp3_WaitForPlayerConfirmation();
+    mp3_TeardownMessageBox();
 
 }
 
 // A wrapper for the "wait for confimration" command in MP3
 void mp3_WaitForPlayerConfirmation()
 {
-	func_800EC9DC();    //Wait for confirmation
+    func_800EC9DC();    //Wait for confirmation
 }
 
 // Helper function that just does teardown of a message box.
@@ -293,41 +315,41 @@ void mp3_WaitForPlayerConfirmation()
 // or getting a selection choice.
 void mp3_TeardownMessageBox()
 {
-	CloseMessage();     //Close the message
-	func_800EC6EC();    //Message box teardown
+    CloseMessage();     //Close the message
+    func_800EC6EC();    //Message box teardown
 }
 
 //Plays the sad animation, with no loop
 void mp3_play_sad_animation() 
 {
-	func_800F2304(-1, 3, 0); // Sad animation, no loop
+    func_800F2304(-1, 3, 0); // Sad animation, no loop
 }
 
 //Plays the joy animation, with no loop
 void mp3_play_joy_animation() 
 {
-	func_800F2304(-1, 5, 0); // joy animation, no loop
+    func_800F2304(-1, 5, 0); // joy animation, no loop
 }
 
 // Plays the idle animation with no loop.
 void mp3_play_idle_animation() 
 {
-	func_800F2304(-1, -1, 0);
+    func_800F2304(-1, -1, 0);
 }
 
 enum mp3_Character {Mario, Luigi, Peach, Yoshi, Wario, DK, Waluigi, Daisy};
 
 int mp3_IsPlayerCertainCharacter(int playerIndex, enum mp3_Character character)
 {
-	struct Player *p = GetPlayerStruct(playerIndex);
-	if(p != NULL && p->character == character)  
-	{
-		return 1;
-	}
-	else
-	{
-		return 0; 
-	}
+    struct Player *p = GetPlayerStruct(playerIndex);
+    if(p != NULL && p->character == character)  
+    {
+        return 1;
+    }
+    else
+    {
+        return 0; 
+    }
 }
 
 
@@ -337,27 +359,27 @@ int mp3_IsPlayerCertainCharacter(int playerIndex, enum mp3_Character character)
 // Function to implement strcpy() function
 char* mplib_strcpy(char* destination, const char* source)
 {
-	// return if no memory is allocated to the destination
-	if (destination == NULL)
-		return NULL;
+    // return if no memory is allocated to the destination
+    if (destination == NULL)
+        return NULL;
  
-	// take a pointer pointing to the beginning of destination string
-	char *ptr = destination;
+    // take a pointer pointing to the beginning of destination string
+    char *ptr = destination;
  
-	// copy the C-string pointed by source into the array
-	// pointed to by destination
-	while (*source != '\0')
-	{
-		*destination = *source;
-		destination++;
-		source++;
-	}
+    // copy the C-string pointed by source into the array
+    // pointed to by destination
+    while (*source != '\0')
+    {
+        *destination = *source;
+        destination++;
+        source++;
+    }
  
-	// include the terminating null character
-	*destination = '\0';
+    // include the terminating null character
+    *destination = '\0';
  
-	// destination is returned by standard strcpy()
-	return ptr;
+    // destination is returned by standard strcpy()
+    return ptr;
 }
 
 // Second implementation from this site:
@@ -367,59 +389,59 @@ char* mplib_strcpy(char* destination, const char* source)
 // Function to implement strncat() function in C
 char* mplib_strncat(char* destination, const char* source)
 {
-	int i, j;
+    int i, j;
  
-	// move to the end of destination string
-	for (i = 0; destination[i] != '\0'; i++);
+    // move to the end of destination string
+    for (i = 0; destination[i] != '\0'; i++);
  
-	// i now points to terminating null character in destination
+    // i now points to terminating null character in destination
  
-	// Appends num characters of source to the destination string
-	for (j = 0; source[j] != '\0'; j++)
-		destination[i + j] = source[j];
+    // Appends num characters of source to the destination string
+    for (j = 0; source[j] != '\0'; j++)
+        destination[i + j] = source[j];
  
-	// null terminate destination string
-	destination[i + j] = '\0';
+    // null terminate destination string
+    destination[i + j] = '\0';
  
-	// destination is returned by standard strncat()
-	return destination;
+    // destination is returned by standard strncat()
+    return destination;
 }
 
 // Returns the smaller of two numbers.  Ties go to the first argument.
 int mplib_min(int a1, int a2)
 {
-	if (a1 <= a2) { return a1; }
-	else { return a2; }
+    if (a1 <= a2) { return a1; }
+    else { return a2; }
 }
 
 // Returns the largest of two numbers.  Ties go to the first argument.
 int mplib_max(int a1, int a2)
 {
-	if (a1 >= a2) { return a1; }
-	else { return a2; }
+    if (a1 >= a2) { return a1; }
+    else { return a2; }
 }
 
 // Returns the largest of three numbers
 // C doesn't support overloading, don't hate me
 int mplib_max3(int a1, int a2, int a3)
 {
-	int result = a1;
-	result = mplib_max(result, a2);
-	result = mplib_max(result, a3);
+    int result = a1;
+    result = mplib_max(result, a2);
+    result = mplib_max(result, a3);
 
-	return result;
+    return result;
 }
 
 // Returns the largest of four numbers
 // C doesn't support overloading, don't hate me
 int mplib_max4(int a1, int a2, int a3, int a4)
 {
-	int result = a1;
-	result = mplib_max(result, a2);
-	result = mplib_max(result, a3);
-	result = mplib_max(result, a4);
-	
-	return result;
+    int result = a1;
+    result = mplib_max(result, a2);
+    result = mplib_max(result, a3);
+    result = mplib_max(result, a4);
+    
+    return result;
 }
 
 //***************************************************************************//
