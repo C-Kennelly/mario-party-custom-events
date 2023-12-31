@@ -84,50 +84,55 @@
 // For more exploration: http://n64devkit.square7.ch/header/
 #include "ultra64.h"
 
+// Event parameter can disable this:
+extern u8 D_800CD0A3;	//IsInitialized - 1 == yes.
+extern u8 D_800CD0A4;	//firstPlayerIndex
+extern u8 D_800CD0A5;	//secondPlayerIndex
+
 // The Player struct for Mario Party 3, used for player manipulation.
 // Reference wiki article can be found here:
 // https://github.com/PartyPlanner64/PartyPlanner64/wiki/Player-Structs
 struct Player {
-    s8 unk0;
-    s8 cpu_difficulty;
-    s8 controller;
-    u8 character;
-    u8 flags;               // Miscellaneous flags. "1" is CPU player
-    s8 pad0[5];             // Skip undocumented offset 5-9
-    s16 coins;              // Offset 10: Current coin count.
-    s16 minigame_coins;     // Offset 12: Coins obtained during a Mini-Game.
-    s8 stars;               // Offset 14
-    
-    u8 cur_chain_index;     // Offset 15
-    u8 cur_space_index;     // Offset 16
-    u8 next_chain_index;    // Offset 17
-    u8 next_space_index;    // Offset 18
-    u8 unk1_chain_index;    // Offset 19
-    u8 unk1_space_index;    // Offset 20
-    u8 reverse_chain_index; // Offset 21
-    u8 reverse_space_index; // Offset 22
+	s8 unk0;
+	s8 cpu_difficulty;
+	s8 controller;
+	u8 character;
+	u8 flags;               // Miscellaneous flags. "1" is CPU player
+	s8 pad0[5];             // Skip undocumented offset 5-9
+	s16 coins;              // Offset 10: Current coin count.
+	s16 minigame_coins;     // Offset 12: Coins obtained during a Mini-Game.
+	s8 stars;               // Offset 14
+	
+	u8 cur_chain_index;     // Offset 15
+	u8 cur_space_index;     // Offset 16
+	u8 next_chain_index;    // Offset 17
+	u8 next_space_index;    // Offset 18
+	u8 unk1_chain_index;    // Offset 19
+	u8 unk1_space_index;    // Offset 20
+	u8 reverse_chain_index; // Offset 21
+	u8 reverse_space_index; // Offset 22
 
-    u8 flags2;              // Offset 23
-    u8 items[3];            // Offset 24
-    u8 bowser_suit_flag;    // Offset 27
-    u8 turn_color_status;   // Offset 28
+	u8 flags2;              // Offset 23
+	u8 items[3];            // Offset 24
+	u8 bowser_suit_flag;    // Offset 27
+	u8 turn_color_status;   // Offset 28
 
-    s8 pad1[7];             // Offsets: 29 - 35
+	s8 pad1[7];             // Offsets: 29 - 35
 
-    void *obj;              // Offset 36:  struct object *
-    s16 minigame_star;      // Offset 40
-    s16 coin_star;          // Offset 42
-    s8 happening_space_count; // Offset 44
-    s8 red_space_count;     
-    s8 blue_space_count;
-    s8 chance_space_count;
-    s8 bowser_space_count;  // Offset 48
-    s8 battle_space_count;
-    s8 item_space_count;
-    s8 bank_space_count;
-    s8 game_guy_space_count; //Offset  52
+	void *obj;              // Offset 36:  struct object *
+	s16 minigame_star;      // Offset 40
+	s16 coin_star;          // Offset 42
+	s8 happening_space_count; // Offset 44
+	s8 red_space_count;     
+	s8 blue_space_count;
+	s8 chance_space_count;
+	s8 bowser_space_count;  // Offset 48
+	s8 battle_space_count;
+	s8 item_space_count;
+	s8 bank_space_count;
+	s8 game_guy_space_count; //Offset  52
 
-    // s8 pad2[3];
+	char unk_35[3]; 		//likely padding
 }; // sizeof == 56
 
 
@@ -164,10 +169,14 @@ void GraduallyAdjustPlayerCoins(int playerIndex, int adjustmentAmount)
 }
 
 
+// How to use:
+// Copy and paste everything in the library block into the your 
+// bottom of any Mario Party 3 event to get some helpful functions!
+
 //***************************************************************************//
 //***************************************************************************//
 //****************************                  *****************************//
-//*************************      mplib v2.1        **************************//
+//*************************      mplib v2.3        **************************//
 //****************************                  *****************************//
 //***************************************************************************//
 //***************************************************************************//
@@ -175,14 +184,17 @@ void GraduallyAdjustPlayerCoins(int playerIndex, int adjustmentAmount)
 //***     to hide the complexity of some Mario Party-specific functions   ***//
 //***************************************************************************//
 //***************************************************************************//
-// Paste this at the bottom of an event file to get access to helpful functions!
+// Paste this at the bottom of an event file to get access to helpful functions during development!
+// Then, when you are ready to ship, delete the functions you don't use to save space and remove clutter.
+//
 // Get the latest version or submit changes at: 
 // https://github.com/C-Kennelly/mario-party-custom-events
 //***************************************************************************//
-
+//
 // Looking for another function?  
 // Have you checked the PartyPlanner64 symbols table yet?
 // https://github.com/PartyPlanner64/symbols/blob/master/MarioParty3U.sym
+//***************************************************************************//
 
 
 // Prints a message in game with the Millenium Star portrait.
@@ -190,6 +202,18 @@ void GraduallyAdjustPlayerCoins(int playerIndex, int adjustmentAmount)
 void mp3_DebugMessage(char* message)
 {
     mp3_ShowMessageWithConfirmation(-1, message);
+}
+
+// As mp3_DebugMessage, but appends the prompt arrow to the end of the message so the message doesn't flash by.
+void mp3_DebugMessageWithConfirmation(char* message)
+{
+	char* result = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
+
+	mplib_strncat(result, message);                                 //Store the passed message in the buffer
+	mplib_strncat(result, "\xFF");                                  //Append the prompt to continue arrow so the message doesn't flash by
+	mp3_ShowMessageWithConfirmation(-1, result);
 }
 
 // Picks a random number between 0 and N, using rejection sampling to avoid modulo bias.
@@ -243,6 +267,7 @@ int mp3_ReturnTruePercentOfTime(int percentChanceOfTrue)
         }
     }
 }
+
 
 // Helper function that shows a message and then tears the message box down
 // after the player confirms the last box.  Don't use for prompt selection.
@@ -306,6 +331,34 @@ int mp3_IsPlayerCertainCharacter(int playerIndex, enum mp3_Character character)
     }
 }
 
+void mp3_DebugPrintPlayerIndex(int playerIndex)
+{
+	char* message = mp3_PlayerIndexToString(playerIndex);
+	mp3_DebugMessageWithConfirmation(message);
+}
+
+char* mp3_PlayerIndexToString(int playerIndex)
+{
+	char *message = "10";
+	if(playerIndex == 0)
+	{
+		message = "0";
+	}
+	else if(playerIndex == 1)
+	{
+		message = "1";
+	}
+	else if(playerIndex == 2)
+	{
+		message = "2";
+	}
+	else if(playerIndex == 3)
+	{
+		message = "3";
+	}
+
+	return message;
+}
 
 // Long-form implementation from:
 // https://www.techiedelight.com/implement-strcpy-function-c/
@@ -397,6 +450,40 @@ int mplib_max4(int a1, int a2, int a3, int a4)
     
     return result;
 }
+
+// Reloads the scene with the given transition type. Big credit to Rain for figuring out how this works.
+// These are required to define the functions we use in ReloadScene below().
+extern s32 D_800A12D4;
+void func_8004F010(s32);
+void func_800F8C74(void);
+void func_8004819C(s32);
+void func_8004849C(void);
+void func_8004F074(void);
+
+void mp3_ReloadCurrentSceneWithTransition(int transitionType)
+{
+	InitFadeOut(transitionType, 0x10);
+	SleepProcess(0x11);
+	D_800A12D4 = 1;
+	func_800F8C74();
+	func_8004819C(1);
+	func_8004849C();
+	func_8004F074();
+}
+// First argument to initFade out is fade_out type. Per Airsola, types are:
+	// 0 = Bar Code
+	// 1 = Circle
+	// 2 = Star
+	// 3 = Bowser
+	// 4 = ?
+	// 5 = !
+	// 6 = Toad
+	// 7 = Koopa
+	// 8 = Goomba
+	// 9 = Game Guy
+	// 10 = Tumble
+	// 11 = Generic
+	// 12 = Boo
 
 //***************************************************************************//
 //***************************************************************************//

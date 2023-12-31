@@ -139,14 +139,14 @@ void main()
 	int currentPlayerIndex = GetCurrentPlayerIndex();
 
 
-	int firstPlayerIndex = AskPlayerToSelectTargetPlayerIndex(currentPlayerIndex);
+	int firstPlayerIndex = 0; //AskPlayerToSelectTargetPlayerIndex(currentPlayerIndex);
 	if (firstPlayerIndex == -1)
 	{
 		PlayMessageForDeclineToSwap();
 		return;
 	}
 
-	int secondPlayerIndex = AskPlayerToSelectSecondPlayerIndex(currentPlayerIndex, firstPlayerIndex);
+	int secondPlayerIndex = 2; //AskPlayerToSelectSecondPlayerIndex(currentPlayerIndex, firstPlayerIndex);
 	if (secondPlayerIndex == -1)
 	{
 		PlayMessageForDeclineToSwap();
@@ -162,7 +162,53 @@ void main()
 
 int AskPlayerToSelectTargetPlayerIndex(int currentPlayerIndex)
 {
-	return 3;
+    int opponentIndex = -1;
+
+
+    int answerChosen = AskIfPlayerWantsToSwapTurnOrderForPrice(currentPlayerIndex);
+    if (answerChosen != 0)
+    {
+        return -1;
+    }
+
+}
+
+int AskIfPlayerWantsToSwapTurnOrderForPrice(int currentPlayerIndex)
+{
+    char* msg = GetTurnSwapForPriceQuestion();
+    ShowMessage(CHARACTER_PORTRAIT, msg, 0, 0, 0, 0, 0);
+    int result = GetResponseAndTeardownMessageBox();
+
+    return result;
+}
+
+// Display a message and return the answer chosen 
+// Also has defined logic for CPUs.
+int GetResponseAndTeardownMessageBox()
+{
+    int cpuChoice = GetChoiceForCPU();
+
+    // Get the selection, either from the player or CPU.
+    // MP3 built-in function: GetBasicPromptSelection(int strategy, int index)
+    // Strategy argument takes an int and behaves as follows:
+    //   0 -> If CPU, always pick first (0th) option
+    //   1 -> If CPU, always pick second (1th) option
+    //   2 -> If CPU, pick the option that is passed in the second argument.
+    //
+    // Here, we're using strategy 2, and then passing in 'cpuChoice'
+    // which is calculated in our other function: GetChoiceForCPU().
+    // Human players will always get to manually pick.
+
+    int choice = GetBasicPromptSelection(2, cpuChoice);
+    mp3_TeardownMessageBox();
+
+    return choice;
+}
+
+int GetChoiceForCPU()
+{
+    // TODO - implement CPU logic here. Should improve own turn order to first.
+    return 1;
 }
 
 int AskPlayerToSelectSecondPlayerIndex(int currentPlayerIndex, int firstPlayerIndex)
@@ -175,19 +221,25 @@ int AskPlayerToSelectSecondPlayerIndex(int currentPlayerIndex, int firstPlayerIn
 void PlayMessageForTargetAlreadyChosen()
 {
 	char* message = "You have already chosen a target this turn";
-	mp3_DebugMessage(message);
+	mp3_DebugMessageWithConfirmation(message);
 }
 
 void PlayMessageForDeclineToSwap()
 {
 	char* message = "That is too bad";
-	mp3_DebugMessage(message);
+	mp3_DebugMessageWithConfirmation(message);
 }
 
 void PlayMessageConfirmingTargetSelection(int targetPlayerIndex)
 {
 	char* message = "They are really gonna get it";
-	mp3_DebugMessage(message);
+	mp3_DebugMessageWithConfirmation(message);
+}
+
+char* GetTurnSwapForPriceQuestion()
+{
+    char* message = "Would you like to swap turn order with another player for 10 coins";
+    return message;
 }
 
 // How to use:

@@ -118,7 +118,7 @@ struct Player {
 	s8 bank_space_count;
 	s8 game_guy_space_count; //Offset  52
 
-	// s8 pad2[3];
+	char unk_35[3]; 		//likely padding
 }; // sizeof == 56
 
 
@@ -129,268 +129,82 @@ struct Player {
 //This event is intended to run on After Turn timing. It may work on other timings, but is untested.
 void main() 
 {
-
-	if(D_800CD0A3 != 1)
+	// No swap needed if this bit isn't initialized or the players are the same
+	if((D_800CD0A3 != 1) || (D_800CD0A4 == D_800CD0A5))
 	{
-		// Passing event hasn't been hit this turn, so don't run.
 		return;
 	}
 
-	int firstPlayerIndex = D_800CD0A4;
-	int secondPlayerIndex = D_800CD0A5;
-
-	// TODO - remove debug
-	mp3_DebugMessageWithConfirmation(PlayerIndexToString(firstPlayerIndex));
-	mp3_DebugMessageWithConfirmation(PlayerIndexToString(secondPlayerIndex));
-
-	SwapContentsOfPlayerStructs(firstPlayerIndex, secondPlayerIndex);
-
-	// Refresh the HUD for the swapped players
-	RefreshHUD(firstPlayerIndex);
-	RefreshHUD(secondPlayerIndex);
-
-	// Mark the event an uninitialized and then remove the players from boardRAM
+	// Store variables locally and then mark event as uninitialized so we don't enlessly loop on scene reload
 	D_800CD0A3 = 0;
-	D_800CD0A4 = 128;
-	D_800CD0A5 = 128;
+	int firstPlayerIndex = D_800CD0A4;
+	D_800CD0A4 = 0;
+	int secondPlayerIndex = D_800CD0A5;
+	D_800CD0A5 = 0;
 
-	PlayMessageConfirmingSwap();
+	// Do the swap!
+	PlayFlavorMessage();
+	SwapPlayerStructs(firstPlayerIndex, secondPlayerIndex);
+	SwapCursedMushroomBits(firstPlayerIndex, secondPlayerIndex);
+
+	// Reloading the scene refreshes the HUD elements as well as prevents a minigame edge case where the
+	// minigame uses the cached turn_color_status data from the HUD instead of the character struct to
+	// determine teams for the minigame.
+	mp3_ReloadCurrentSceneWithTransition(2);
 }
 
-char* PlayerIndexToString(int playerIndex)
+void SwapPlayerStructs(s32 player1Index, s32 player2Index) { //swap player structs
+    void* temp_s0;
+    
+	struct Player* temp_s1;
+    struct Player* temp_s2;
+
+    temp_s1 = GetPlayerStruct(player1Index);
+    temp_s2 = GetPlayerStruct(player2Index);
+    temp_s0 = MallocPerm(sizeof(struct Player));
+
+
+    bcopy(temp_s1, temp_s0, sizeof(struct Player));
+    bcopy(temp_s2, temp_s1, sizeof(struct Player));
+    bcopy(temp_s0, temp_s2, sizeof(struct Player));
+    FreePerm(temp_s0);
+}
+
+void SwapCursedMushroomBits(int firstPlayerIndex, int secondPlayerIndex)
 {
-	char *message = "10";
-	if(playerIndex == 0)
-	{
-		message = "0";
-	}
-	else if(playerIndex == 1)
-	{
-		message = "1";
-	}
-	else if(playerIndex == 2)
-	{
-		message = "2";
-	}
-	else if(playerIndex == 3)
-	{
-		message = "3";
-	}
-
-	return message;
+	//TODO - this is stubbed
+	return;
 }
 
-void PlayMessageConfirmingSwap()
+void PlayFlavorMessage()
 {
-	char* message = "Heh heh heh";
-	mp3_DebugMessageWithConfirmation(message);
+	char* message = GetMessageConfirmingSwap();
+    mp3_ShowMessageWithConfirmation(CHARACTER_PORTRAIT, message);
 }
 
-//TODO, finish swapping all the values of the struct
+char* GetMessageConfirmingSwap()
+{
+    char* result = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(result, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
 
-void SwapContentsOfPlayerStructs(int playerIndexA, int playerIndexB)
-{   
-	if(playerIndexA == playerIndexB)
-	{
-		return;
-	}
+    mplib_strcpy(result, "\x0B");                              // Start the message
+    mplib_strncat(result, "\x1A\x1A\x1A\x1A"); 	               // Standard padding for portrait
+    mplib_strncat(result, "Hmmm");
+    mplib_strncat(result, "\x82");                             // ,
+    mplib_strncat(result, " so if I just ");
+	mplib_strncat(result, "\x0A");                             // Newline
+	mplib_strncat(result, "\x1A\x1A\x1A\x1A"); 	               // Standard padding for portrait
+    mplib_strncat(result, "mess with THIS cord");
+    mplib_strncat(result, "\x85");                             // .
+    mplib_strncat(result, "\x85");                             // .
+    mplib_strncat(result, "\x85");                             // .
+    mplib_strncat(result, "\xFF");                             // Show prompt to continue arrow
 
-	struct Player *p_a = GetPlayerStruct(playerIndexA);
-	struct Player *p_b = GetPlayerStruct(playerIndexB);
-
-	if(p_a != NULL || p_b != NULL)  
-	{
-		return;
-	}
-
-	// Declare swap variables
-	s8 s8SwapValue = NULL;
-	s16 s16SwapValue = NULL;
-	u8 u8SwapValue = NULL;
-	void *objSwapValue = NULL;
-
-	// Begin swapping all fields of the player struct. Tried to use a macro here
-	// to simplify, but PartyPlanner64 didn't like it.  So, doing it manually.
-
-	// s8 unk0;
-	s8SwapValue = p_a->unk0;
-	p_a->unk0 = p_b->unk0;
-	p_b->unk0 = s8SwapValue;
-
-	// s8 cpu_difficulty;
-	s8SwapValue = p_a->cpu_difficulty;
-	p_a->cpu_difficulty = p_b->cpu_difficulty;
-	p_b->cpu_difficulty = s8SwapValue;
-
-	// s8 controller;
-	s8SwapValue = p_a->cpu_difficulty;
-	p_a->cpu_difficulty = p_b->cpu_difficulty;
-	p_b->cpu_difficulty = s8SwapValue;
-
-	// u8 character;
-	u8SwapValue = p_a->character;
-	p_a->character = p_b->character;
-	p_b->character = u8SwapValue;
-
-	// u8 flags;               // Miscellaneous flags. "1" is CPU player
-	u8SwapValue = p_a->flags;
-	p_a->flags = p_b->flags;
-	p_b->flags = u8SwapValue;
-
-	// s8 pad0[5];             // Skip undocumented offset 5-9
-	for (int i = 0; i < 5; i++)
-	{
-		s8SwapValue = p_a->pad0[i];
-		p_a->pad0[i] = p_b->pad0[i];
-		p_b->pad0[i] = s8SwapValue;
-	}
-
-	// s16 coins;              // Offset 10: Current coin count.
-	s16SwapValue = p_a->coins;
-	p_a->coins = p_b->coins;
-	p_b->coins = s16SwapValue;
-
-	// s16 minigame_coins;     // Offset 12: Coins obtained during a Mini-Game.
-	s16SwapValue = p_a->minigame_coins;
-	p_a->minigame_coins = p_b->minigame_coins;
-	p_b->minigame_coins = s16SwapValue;
-
-	// s8 stars;               // Offset 14
-	s8SwapValue = p_a->stars;
-	p_a->stars = p_b->stars;
-	p_b->stars = s8SwapValue;
-
-	// u8 cur_chain_index;     // Offset 15
-	u8SwapValue = p_a->cur_chain_index;
-	p_a->cur_chain_index = p_b->cur_chain_index;
-	p_b->cur_chain_index = u8SwapValue;
-
-	// u8 cur_space_index;     // Offset 16
-	u8SwapValue = p_a->cur_space_index;
-	p_a->cur_space_index = p_b->cur_space_index;
-	p_b->cur_space_index = u8SwapValue;
-
-	// u8 next_chain_index;    // Offset 17
-	u8SwapValue = p_a->next_chain_index;
-	p_a->next_chain_index = p_b->next_chain_index;
-	p_b->next_chain_index = u8SwapValue;
-
-	// u8 next_space_index;    // Offset 18
-	u8SwapValue = p_a->next_space_index;
-	p_a->next_space_index = p_b->next_space_index;
-	p_b->next_space_index = u8SwapValue;
-
-	// u8 unk1_chain_index;    // Offset 19
-	u8SwapValue = p_a->unk1_chain_index;
-	p_a->unk1_chain_index = p_b->unk1_chain_index;
-	p_b->unk1_chain_index = u8SwapValue;
-
-	// u8 unk1_space_index;    // Offset 20
-	u8SwapValue = p_a->unk1_space_index;
-	p_a->unk1_space_index = p_b->unk1_space_index;
-	p_b->unk1_space_index = u8SwapValue;
-
-	// u8 reverse_chain_index; // Offset 21
-	u8SwapValue = p_a->reverse_chain_index;
-	p_a->reverse_chain_index = p_b->reverse_chain_index;
-	p_b->reverse_chain_index = u8SwapValue;
-
-	// u8 reverse_space_index; // Offset 22
-	u8SwapValue = p_a->reverse_space_index;
-	p_a->reverse_space_index = p_b->reverse_space_index;
-	p_b->reverse_space_index = u8SwapValue;
-
-	// u8 flags2;              // Offset 23
-	u8SwapValue = p_a->flags2;
-	p_a->flags2 = p_b->flags2;
-	p_b->flags2 = u8SwapValue;
-
-	// u8 items[3];            // Offset 24
-	for (int i = 0; i < 3; i++)
-	{
-		u8SwapValue = p_a->items[i];
-		p_a->items[i] = p_b->items[i];
-		p_b->items[i] = u8SwapValue;
-	}
-
-	// u8 bowser_suit_flag;    // Offset 27
-	u8SwapValue = p_a->bowser_suit_flag;
-	p_a->bowser_suit_flag = p_b->bowser_suit_flag;
-	p_b->bowser_suit_flag = u8SwapValue;
-
-	// u8 turn_color_status;   // Offset 28
-	u8SwapValue = p_a->turn_color_status;
-	p_a->turn_color_status = p_b->turn_color_status;
-	p_b->turn_color_status = u8SwapValue;
-
-	// s8 pad1[7];             // Offsets: 29 - 35
-	for (int i = 0; i < 7; i++)
-	{
-		s8SwapValue = p_a->pad1[i];
-		p_a->pad1[i] = p_b->pad1[i];
-		p_b->pad1[i] = s8SwapValue;
-	}
-
-	// void *obj;              // Offset 36:  struct object *
-	objSwapValue = p_a->obj;
-	p_a->obj = p_b->obj;
-	p_b->obj = objSwapValue;
-
-	// s16 minigame_star;      // Offset 40
-	s16SwapValue = p_a->minigame_star;
-	p_a->minigame_star = p_b->minigame_star;
-	p_b->minigame_star = s16SwapValue;
-
-	// s16 coin_star;          // Offset 42
-	s16SwapValue = p_a->coin_star;
-	p_a->coin_star = p_b->coin_star;
-	p_b->coin_star = s16SwapValue;
-
-	// s8 happening_space_count; // Offset 44
-	s8SwapValue = p_a->happening_space_count;
-	p_a->happening_space_count = p_b->happening_space_count;
-	p_b->happening_space_count = s8SwapValue;
-
-	// s8 red_space_count;
-	s8SwapValue = p_a->red_space_count;
-	p_a->red_space_count = p_b->red_space_count;
-	p_b->red_space_count = s8SwapValue;
-
-	// s8 blue_space_count;
-	s8SwapValue = p_a->blue_space_count;
-	p_a->blue_space_count = p_b->blue_space_count;
-	p_b->blue_space_count = s8SwapValue;
-
-	// s8 chance_space_count;
-	s8SwapValue = p_a->chance_space_count;
-	p_a->chance_space_count = p_b->chance_space_count;
-	p_b->chance_space_count = s8SwapValue;
-
-	// s8 bowser_space_count;  // Offset 48
-	s8SwapValue = p_a->bowser_space_count;
-	p_a->bowser_space_count = p_b->bowser_space_count;
-	p_b->bowser_space_count = s8SwapValue;
-
-	// s8 battle_space_count;
-	s8SwapValue = p_a->battle_space_count;
-	p_a->battle_space_count = p_b->battle_space_count;
-	p_b->battle_space_count = s8SwapValue;
-
-	// s8 item_space_count;
-	s8SwapValue = p_a->item_space_count;
-	p_a->item_space_count = p_b->item_space_count;
-	p_b->item_space_count = s8SwapValue;
-
-	// s8 bank_space_count;
-	s8SwapValue = p_a->bank_space_count;
-	p_a->bank_space_count = p_b->bank_space_count;
-	p_b->bank_space_count = s8SwapValue;
-
-	// s8 game_guy_space_count; //Offset  52
-	s8SwapValue = p_a->game_guy_space_count;
-	p_a->game_guy_space_count = p_b->game_guy_space_count;
-	p_b->game_guy_space_count = s8SwapValue;
+	return result;
 }
+
+
 
 // How to use:
 // Copy and paste everything in the library block into the your 
@@ -399,7 +213,7 @@ void SwapContentsOfPlayerStructs(int playerIndexA, int playerIndexB)
 //***************************************************************************//
 //***************************************************************************//
 //****************************                  *****************************//
-//*************************      mplib v2.2        **************************//
+//*************************      mplib v2.3        **************************//
 //****************************                  *****************************//
 //***************************************************************************//
 //***************************************************************************//
@@ -418,7 +232,6 @@ void SwapContentsOfPlayerStructs(int playerIndexA, int playerIndexB)
 // Have you checked the PartyPlanner64 symbols table yet?
 // https://github.com/PartyPlanner64/symbols/blob/master/MarioParty3U.sym
 //***************************************************************************//
-
 
 
 // Prints a message in game with the Millenium Star portrait.
@@ -492,6 +305,7 @@ int mp3_ReturnTruePercentOfTime(int percentChanceOfTrue)
     }
 }
 
+
 // Helper function that shows a message and then tears the message box down
 // after the player confirms the last box.  Don't use for prompt selection.
 void mp3_ShowMessageWithConfirmation(int characterPortraitIndex, char* message)
@@ -554,6 +368,34 @@ int mp3_IsPlayerCertainCharacter(int playerIndex, enum mp3_Character character)
     }
 }
 
+void mp3_DebugPrintPlayerIndex(int playerIndex)
+{
+	char* message = mp3_PlayerIndexToString(playerIndex);
+	mp3_DebugMessageWithConfirmation(message);
+}
+
+char* mp3_PlayerIndexToString(int playerIndex)
+{
+	char *message = "10";
+	if(playerIndex == 0)
+	{
+		message = "0";
+	}
+	else if(playerIndex == 1)
+	{
+		message = "1";
+	}
+	else if(playerIndex == 2)
+	{
+		message = "2";
+	}
+	else if(playerIndex == 3)
+	{
+		message = "3";
+	}
+
+	return message;
+}
 
 // Long-form implementation from:
 // https://www.techiedelight.com/implement-strcpy-function-c/
@@ -645,6 +487,40 @@ int mplib_max4(int a1, int a2, int a3, int a4)
     
     return result;
 }
+
+// Reloads the scene with the given transition type. Big credit to Rain for figuring out how this works.
+// These are required to define the functions we use in ReloadScene below().
+extern s32 D_800A12D4;
+void func_8004F010(s32);
+void func_800F8C74(void);
+void func_8004819C(s32);
+void func_8004849C(void);
+void func_8004F074(void);
+
+void mp3_ReloadCurrentSceneWithTransition(int transitionType)
+{
+	InitFadeOut(transitionType, 0x10);
+	SleepProcess(0x11);
+	D_800A12D4 = 1;
+	func_800F8C74();
+	func_8004819C(1);
+	func_8004849C();
+	func_8004F074();
+}
+// First argument to initFade out is fade_out type. Per Airsola, types are:
+	// 0 = Bar Code
+	// 1 = Circle
+	// 2 = Star
+	// 3 = Bowser
+	// 4 = ?
+	// 5 = !
+	// 6 = Toad
+	// 7 = Koopa
+	// 8 = Goomba
+	// 9 = Game Guy
+	// 10 = Tumble
+	// 11 = Generic
+	// 12 = Boo
 
 //***************************************************************************//
 //***************************************************************************//

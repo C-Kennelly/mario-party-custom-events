@@ -19,5 +19,6 @@ Complete/!.vscode/launch.json
 Complete/!.vscode/extensions.json
 Complete/*.code-workspace
 
+vs-highlighting/*
 # Local History for Visual Studio Code
 .history/

@@ -5,7 +5,7 @@
 //***************************************************************************//
 //***************************************************************************//
 //****************************                  *****************************//
-//*************************      mplib v2.2        **************************//
+//*************************      mplib v2.3        **************************//
 //****************************                  *****************************//
 //***************************************************************************//
 //***************************************************************************//
@@ -24,7 +24,6 @@
 // Have you checked the PartyPlanner64 symbols table yet?
 // https://github.com/PartyPlanner64/symbols/blob/master/MarioParty3U.sym
 //***************************************************************************//
-
 
 
 // Prints a message in game with the Millenium Star portrait.
@@ -98,6 +97,7 @@ int mp3_ReturnTruePercentOfTime(int percentChanceOfTrue)
     }
 }
 
+
 // Helper function that shows a message and then tears the message box down
 // after the player confirms the last box.  Don't use for prompt selection.
 void mp3_ShowMessageWithConfirmation(int characterPortraitIndex, char* message)
@@ -160,6 +160,34 @@ int mp3_IsPlayerCertainCharacter(int playerIndex, enum mp3_Character character)
     }
 }
 
+void mp3_DebugPrintPlayerIndex(int playerIndex)
+{
+	char* message = mp3_PlayerIndexToString(playerIndex);
+	mp3_DebugMessageWithConfirmation(message);
+}
+
+char* mp3_PlayerIndexToString(int playerIndex)
+{
+	char *message = "10";
+	if(playerIndex == 0)
+	{
+		message = "0";
+	}
+	else if(playerIndex == 1)
+	{
+		message = "1";
+	}
+	else if(playerIndex == 2)
+	{
+		message = "2";
+	}
+	else if(playerIndex == 3)
+	{
+		message = "3";
+	}
+
+	return message;
+}
 
 // Long-form implementation from:
 // https://www.techiedelight.com/implement-strcpy-function-c/
@@ -251,6 +279,40 @@ int mplib_max4(int a1, int a2, int a3, int a4)
     
     return result;
 }
+
+// Reloads the scene with the given transition type. Big credit to Rain for figuring out how this works.
+// These are required to define the functions we use in ReloadScene below().
+extern s32 D_800A12D4;
+void func_8004F010(s32);
+void func_800F8C74(void);
+void func_8004819C(s32);
+void func_8004849C(void);
+void func_8004F074(void);
+
+void mp3_ReloadCurrentSceneWithTransition(int transitionType)
+{
+	InitFadeOut(transitionType, 0x10);
+	SleepProcess(0x11);
+	D_800A12D4 = 1;
+	func_800F8C74();
+	func_8004819C(1);
+	func_8004849C();
+	func_8004F074();
+}
+// First argument to initFade out is fade_out type. Per Airsola, types are:
+	// 0 = Bar Code
+	// 1 = Circle
+	// 2 = Star
+	// 3 = Bowser
+	// 4 = ?
+	// 5 = !
+	// 6 = Toad
+	// 7 = Koopa
+	// 8 = Goomba
+	// 9 = Game Guy
+	// 10 = Tumble
+	// 11 = Generic
+	// 12 = Boo
 
 //***************************************************************************//
 //***************************************************************************//
