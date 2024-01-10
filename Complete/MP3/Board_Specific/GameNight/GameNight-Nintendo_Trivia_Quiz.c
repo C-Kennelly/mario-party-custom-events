@@ -1682,12 +1682,12 @@ char* GetFourtyFourthQuestion(int* correctAnswerIndexPtr)
 // Question for index 44
 char* GetFourtyFifthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleTwoLineQuestionMessage("In what game did Donkey Kong", "make his debut");
+    char* question = CreateSimpleOneLineQuestionMessage("Which of these Kongs cannot be found in any Ninendo game");
 
-    char correctAnswer[48] = "Donkey Kong Country";
-    char wrongAnswer1[48] = "Donkey Kong";
-    char wrongAnswer2[48] = "Donkey Kong Jr\x85";
-    char wrongAnswer3[48] = "Donkey Konga";
+    char correctAnswer[48] = "Krunky Kong";
+    char wrongAnswer1[48] = "Funky Kong";
+    char wrongAnswer2[48] = "Chunky Kong";
+    char wrongAnswer3[48] = "Chained Kong";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
