@@ -1,4 +1,4 @@
-// NAME: Turn Order Swap Triggered
+// NAME: Turn Order Improvement
 // GAMES: MP3_USA
 // EXECUTION: Direct
 // PARAM: +Number|BASE_PRICE
@@ -42,7 +42,10 @@
 //***************************************************************************//
 //*********************** Description ***************************************//
 //***************************************************************************//
-// This event allows a player to choose 2 players and swap their turn order.
+// This event allows a player to improve their turn order by one. For example, a player in 
+// 3rd place can swap with the player in 2nd place. Only one player can be swapped with per
+// turn, so subsequent event triggers will get a flavor text message letting them know they
+// cannot swap.  Recommended as a passing event, but should function just fine as a landing event.
 //
 // This is really a two part event, as this event simply logs the two players into
 // boardRAM, and relies on a passive after-turn event to check the boardRAM and actually
@@ -71,8 +74,8 @@
 #include "ultra64.h"
 
 // Event parameter can disable this:
-extern u8 D_800CD0A3;	//IsInitialized - 1 == yes.
-extern u8 D_800CD0A4;	//firstPlayerIndex
+extern u8 D_800CD0A3;	//IsInitialized: 1 == yes.
+extern u8 D_800CD0A4;	//firstPlayerIndex (currentPlayerIndex)
 extern u8 D_800CD0A5;	//secondPlayerIndex
 
 // The Player struct for Mario Party 3, used for player manipulation.

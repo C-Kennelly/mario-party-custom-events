@@ -42,7 +42,9 @@
 //***************************************************************************//
 //*********************** Description ***************************************//
 //***************************************************************************//
-// This land-on event allows a player to choose 2 players and swap their turn order.
+// This event allows a player to choose 2 players and swap their turn order.  Only
+// one swap can happen per turn, so players who trigger the event a second time in a
+// turn will see a flavor message telling them they cannot perform the swap.
 //
 // This is really a two part event, as this event simply logs the two players into
 // boardRAM, and relies on a passive after-turn event to check the boardRAM and actually

@@ -5,7 +5,7 @@
 //***************************************************************************//
 //***************************************************************************//
 //****************************                  *****************************//
-//*************************      mplib v2.3        **************************//
+//*************************      mplib v2.4        **************************//
 //****************************                  *****************************//
 //***************************************************************************//
 //***************************************************************************//
@@ -158,6 +158,61 @@ int mp3_IsPlayerCertainCharacter(int playerIndex, enum mp3_Character character)
     {
         return 0; 
     }
+}
+
+char* mp3_GetCharacterNameStringFromPlayerIndex(int playerIndex)
+{
+    char* characterName = func_80035934(8);         // malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                                    // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(characterName, 8);                        // Zero out the memory allocated above so we don't get unexpected behavior.
+    
+    int characterInt = -1;     
+
+    struct Player *p = GetPlayerStruct(playerIndex);
+    if(p != NULL)
+    {
+        characterInt = p->character;
+    }
+
+
+    if(characterInt == 0)
+    {
+        mplib_strcpy(characterName, "MARIO");
+    }
+    else if(characterInt == 1)
+    {
+        mplib_strcpy(characterName, "LUIGI");
+    }
+    else if(characterInt == 2)
+    {
+        mplib_strcpy(characterName, "PEACH");
+    }
+    else if(characterInt == 3)
+    {
+        mplib_strcpy(characterName, "YOSHI");
+    }
+    else if(characterInt == 4)
+    {
+        mplib_strcpy(characterName, "WARIO");
+    }
+    else if(characterInt == 5)
+    {
+        mplib_strcpy(characterName, "DK");
+    }
+    else if(characterInt == 6)
+    {
+        mplib_strcpy(characterName, "WALUIGI");
+    }
+    else if(characterInt == 7)
+    {
+        mplib_strcpy(characterName, "DAISY");
+    }
+    else
+    {
+        mplib_strcpy(characterName, "champ");
+    }
+    
+    return characterName;
 }
 
 void mp3_DebugPrintPlayerIndex(int playerIndex)
