@@ -143,7 +143,7 @@ void main()
 	D_800CD0A5 = 0;
 
 	// Do the swap!
-	PlayFlavorMessage();
+	PlayFlavorMessage(firstPlayerIndex);
 	SwapPlayerStructs(firstPlayerIndex, secondPlayerIndex);
 	SwapCursedMushroomBits(firstPlayerIndex, secondPlayerIndex);
 
@@ -176,30 +176,32 @@ void SwapCursedMushroomBits(int firstPlayerIndex, int secondPlayerIndex)
 	return;
 }
 
-void PlayFlavorMessage()
+void PlayFlavorMessage(int benefittingPlayerIndex)
 {
-	char* message = GetMessageConfirmingSwap();
+	char* message = GetMessageConfirmingSwap(benefittingPlayerIndex);
     mp3_ShowMessageWithConfirmation(CHARACTER_PORTRAIT, message);
 }
 
-char* GetMessageConfirmingSwap()
+char* GetMessageConfirmingSwap(int benefittingPlayerIndex)
 {
+    char* playerCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(benefittingPlayerIndex);
     char* result = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
                                             // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
     bzero(result, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
 
     mplib_strcpy(result, "\x0B");                              // Start the message
     mplib_strncat(result, "\x1A\x1A\x1A\x1A"); 	               // Standard padding for portrait
-    mplib_strncat(result, "Hmmm");
+    mplib_strncat(result, "All right");
     mplib_strncat(result, "\x82");                             // ,
-    mplib_strncat(result, " so if I just ");
+    mplib_strncat(result, "\x06");                             // Begin blue color                 
+    mplib_strncat(result, playerCharacterName);                 
+    mplib_strncat(result, "\x82");                             // ,
+    mplib_strncat(result, "\x08");                             // Begin white (default) color
+    mplib_strncat(result, " if I just ");
 	mplib_strncat(result, "\x0A");                             // Newline
 	mplib_strncat(result, "\x1A\x1A\x1A\x1A"); 	               // Standard padding for portrait
-    mplib_strncat(result, "mess with THIS cord");
-    mplib_strncat(result, "\x85");                             // .
-    mplib_strncat(result, "\x85");                             // .
-    mplib_strncat(result, "\x85");                             // .
-    mplib_strncat(result, "\xFF");                             // Show prompt to continue arrow
+    mplib_strncat(result, "swap THIS cord");
+    mplib_strncat(result, "\x85\x85\x85");                     // ...
 
 	return result;
 }

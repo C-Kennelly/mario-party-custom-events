@@ -42,7 +42,7 @@
 //***************************************************************************//
 //*********************** Description ***************************************//
 //***************************************************************************//
-// This land-on event allows a player to choose 2 players and swap their turn order.
+// This event allows a player to choose 2 players and swap their turn order.
 //
 // This is really a two part event, as this event simply logs the two players into
 // boardRAM, and relies on a passive after-turn event to check the boardRAM and actually
@@ -126,7 +126,6 @@ struct Player {
 //*************************** Event Logic ************************************//
 //***************************************************************************//
 
-// TODO: Ask the player for a target and a victim. If the player accepts, setup the turn order swap.
 void main() 
 {
 	if(D_800CD0A3 == 1)
