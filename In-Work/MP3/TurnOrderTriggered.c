@@ -1,7 +1,6 @@
 // NAME: Turn Order Swap Triggered
 // GAMES: MP3_USA
 // EXECUTION: Direct
-// PARAM: +Number|BASE_PRICE
 
 
 //***************************************************************************//
@@ -157,7 +156,7 @@ void main()
 	D_800CD0A3 = 1;
 	D_800CD0A4 = firstTargetPlayerIndex;
 	D_800CD0A5 = secondTargetPlayerIndex;
-	PlayMessageConfirmingTargetSelection(firstTargetPlayerIndex, secondTargetPlayerIndex, currentPlayerIndex);
+	PlayMessageConfirmingTargetSelection(firstTargetPlayerIndex, secondTargetPlayerIndex);
 }
 
 int AskPlayerToSwapTurnOrders(int currentPlayerIndex)
@@ -184,12 +183,15 @@ int AskPlayerToSwapTurnOrders(int currentPlayerIndex)
 
 int AskPlayerToSelectFirstTarget(int currentPlayerIndex)
 {
-
-    int cpuChoice = CPUGetSelfOrSecondPlayer(currentPlayerIndex);
     char *firstTargetMessage = GetFirstTargetingMessage(currentPlayerIndex);
-
     ShowMessage(CHARACTER_PORTRAIT, firstTargetMessage, 0, 0, 0, 0, 0);
-    
+
+    int cpuChoice = 0;
+    if (PlayerIsCPU(currentPlayerIndex))
+    {
+        cpuChoice = CPUGetSelfOrSecondPlayer(currentPlayerIndex);
+        SleepProcess(15); //Make the CPU wait so it doesn't go through the selection too fast
+    }    
 	// Get the selection, either from the player or CPU.
     // MP3 built-in function: GetBasicPromptSelection(int strategy, int index)
     // Strategy argument takes an int and behaves as follows:
@@ -214,11 +216,32 @@ int AskPlayerToSelectFirstTarget(int currentPlayerIndex)
 
 int AskPlayerToSelectSecondTarget(int firstTargetPlayerIndex, int currentPlayerIndex)
 {
-    int cpuChoice = CPUGetFirstOr4thPlayer(firstTargetPlayerIndex, currentPlayerIndex);
-    char *firstTargetMessage = GetSecondTargetingMessage(firstTargetPlayerIndex);
+    // Generate options and keep track of them so we can parse the response.
+    // Need to handle this dynamically here because it is dependent on the first
+    int playerIndexTargets[3];
 
+    int playerIndex = 0;
+    for(int arrayIndex = 0; arrayIndex < 3; arrayIndex++)
+    {
+        if(firstTargetPlayerIndex == arrayIndex)
+        {
+            playerIndex++;
+        }
+
+        playerIndexTargets[arrayIndex] = playerIndex;
+
+        playerIndex++;
+    }
+
+    char *firstTargetMessage = GetSecondTargetingMessage(firstTargetPlayerIndex, playerIndexTargets[0], playerIndexTargets[1], playerIndexTargets[2]);
     ShowMessage(CHARACTER_PORTRAIT, firstTargetMessage, 0, 0, 0, 0, 0);
     
+    int cpuChoice = 0;
+    if (PlayerIsCPU(currentPlayerIndex))
+    {
+        cpuChoice = CPUGetFirstOr4thPlayer(firstTargetPlayerIndex, currentPlayerIndex);
+        SleepProcess(15); // Make the CPU wait so it doesn't go through the selection too fast
+    }
 	// Get the selection, either from the player or CPU.
     // MP3 built-in function: GetBasicPromptSelection(int strategy, int index)
     // Strategy argument takes an int and behaves as follows:
@@ -234,7 +257,7 @@ int AskPlayerToSelectSecondTarget(int firstTargetPlayerIndex, int currentPlayerI
 
 
 	// Handle "You Choose" option by randomly selecting a player and ensuring there is no overlap with the first choice.
-	if(secondChoice == 4)
+	if(secondChoice >= 3)
 	{
 		secondChoice = mp3_PickARandomNumberBetween0AndN(3);
 		while (secondChoice == firstTargetPlayerIndex)
@@ -242,6 +265,11 @@ int AskPlayerToSelectSecondTarget(int firstTargetPlayerIndex, int currentPlayerI
 			secondChoice = mp3_PickARandomNumberBetween0AndN(3);
 		}
 	}
+    else // Choice must have been one of the three remaining players (0, 1, or 2)
+    {
+        // So, we can look up which player index that was using the targets array we were already keeping track of.
+        secondChoice = playerIndexTargets[secondChoice];
+    }
 
     return secondChoice;
 }
@@ -251,7 +279,6 @@ int AskPlayerToSelectSecondTarget(int firstTargetPlayerIndex, int currentPlayerI
 //		Else, make them swap 2nd and 4th place instead.
 int CPUGetSelfOrSecondPlayer(int currentPlayerIndex)
 {
-
     if(currentPlayerIndex == 0)
     {
         return 1;
@@ -356,19 +383,35 @@ char* GetRequestToSwapMessage(int currentPlayerIndex)
 	return message;
 }
 
+void PlayMessageBeratingPlayerForNotSwapping()
+{
+    char* message = func_80035934(256);         // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                                // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(message, 256);                        // Second, zero out the memory allocated above so we don't get unexpected behavior.
+
+    mplib_strcpy(message, "\x0B");                              // Start the message
+    mplib_strncat(message, "\x1A\x1A\x1A\x1A"); 	               // Standard padding for portrait
+    mplib_strncat(message, "Ugh");
+    mplib_strncat(message, "\x82");                             // ,
+    mplib_strncat(message, " you goodey two shoes NEVER want to have any fun");
+    mplib_strncat(message, "\xFF");                             // Show prompt to continue arrow
+    mplib_strncat(message, "\x0B");                             // Feed old text away
+    mplib_strncat(message, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait
+    mplib_strncat(message, "Now");
+    mplib_strncat(message, "\x82");                             // ,
+    mplib_strncat(message, " scram");
+    mplib_strncat(message, "\xC2");                             // !
+    mplib_strncat(message, "\xFF");                             // Show prompt to continue arrow
+
+    mp3_ShowMessageWithConfirmation(CHARACTER_PORTRAIT, message);
+}
+
 int GetFirstTargetingMessage()
 {
-
-}
-
-int GetSecondTargetingMessage(int firstTargetPlayerIndex)
-{
-
-}
-
-void PlayMessageConfirmingTargetSelection(int currentPlayerIndex)
-{
-	char* playerCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(currentPlayerIndex);
+    char* firstPlayerCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(0);
+    char* secondPlayerCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(1);
+    char* thirdPlayerCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(2);
+    char* fourthPlayerCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(3);
 
     char* message = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
                                             // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
@@ -376,37 +419,119 @@ void PlayMessageConfirmingTargetSelection(int currentPlayerIndex)
 
     mplib_strcpy(message, "\x0B");                              // Start the message
     mplib_strncat(message, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
-    mplib_strncat(message, "Psst");                 
-    mplib_strncat(message, "\x82");                             // ,
-    mplib_strncat(message, " hey ");                 
-    mplib_strncat(message, "\x06");                             // Begin blue color                 
-    mplib_strncat(message, playerCharacterName);                 
-    mplib_strncat(message, "\x08");                             // Begin white (default) color
-    mplib_strncat(message, "\xC2");                             // !
+    mplib_strncat(message, "Whose turn order are we swapping");
+    mplib_strncat(message, "\xC3");                             // ?
     mplib_strncat(message, "\x0A");                             // Newline
-    mplib_strncat(message, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait
-    mplib_strncat(message, "No one seems to be watching these");
+    mplib_strncat(message, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
+    mplib_strncat(message, "\x0C");                             // Start option
+    mplib_strncat(message, firstPlayerCharacterName);
+    mplib_strncat(message, "\x0D");                             // End option
     mplib_strncat(message, "\x0A");                             // Newline
-    mplib_strncat(message, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait
+    mplib_strncat(message, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
+    mplib_strncat(message, "\x0C");                             // Start option
+    mplib_strncat(message, secondPlayerCharacterName);
+    mplib_strncat(message, "\x0D");                             // End option
+    mplib_strncat(message, "\x0A");                             // Newline
+    mplib_strncat(message, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
+    mplib_strncat(message, "\x0C");                             // Start option
+    mplib_strncat(message, thirdPlayerCharacterName);
+    mplib_strncat(message, "\x0D");                             // End option
+    mplib_strncat(message, "\x0A");                             // Newline
+    mplib_strncat(message, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
+    mplib_strncat(message, "\x0C");                             // Start option
+    mplib_strncat(message, fourthPlayerCharacterName);
+    mplib_strncat(message, "\x0D");                             // End option
+    mplib_strncat(message, "\x0A");                             // Newline
+    mplib_strncat(message, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
+    mplib_strncat(message, "\x0C");                             // Start option
+    mplib_strncat(message, "You Choose");
+    mplib_strncat(message, "\x0D");                             // End option
+	mplib_strncat(message, "\xFF");                             // Show prompt to continue
+
+    return message;
+}
+
+int GetSecondTargetingMessage(int firstTargetPlayerIndex, int firstOptionPlayerIndex, int secondOptionPlayerIndex, int thirdOptionPlayerIndex)
+{
+
+    char* firstTargetCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(firstTargetPlayerIndex);
+
+    char* firstOptionCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(firstOptionPlayerIndex);
+    char* secondOptionCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(secondOptionPlayerIndex);
+    char* thirdOptionCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(thirdOptionPlayerIndex);
+
+    char* message = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(message, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
+
+    mplib_strcpy(message, "\x0B");                              // Start the message
+    mplib_strncat(message, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
+    mplib_strncat(message, "And who are we swapping with");
     mplib_strncat(message, "\x03");                             // Begin red color
-    mplib_strncat(message, "controller ports");
+    mplib_strncat(message, firstTargetCharacterName);
     mplib_strncat(message, "\x08");                             // Begin white (default) color
-    mplib_strncat(message, "\x85\x85\x85");                     // ...
+    mplib_strncat(message, " with");
+    mplib_strncat(message, "\xC3");                             // ?
+    mplib_strncat(message, "\x0A");                             // Newline
+    mplib_strncat(message, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
+    mplib_strncat(message, "\x0C");                             // Start option
+    mplib_strncat(message, firstOptionCharacterName);
+    mplib_strncat(message, "\x0D");                             // End option
+    mplib_strncat(message, "\x0A");                             // Newline
+    mplib_strncat(message, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
+    mplib_strncat(message, "\x0C");                             // Start option
+    mplib_strncat(message, secondOptionCharacterName);
+    mplib_strncat(message, "\x0D");                             // End option
+    mplib_strncat(message, "\x0A");                             // Newline
+    mplib_strncat(message, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
+    mplib_strncat(message, "\x0C");                             // Start option
+    mplib_strncat(message, thirdOptionCharacterName);
+    mplib_strncat(message, "\x0D");                             // End option
+    mplib_strncat(message, "\x0A");                             // Newline
+    mplib_strncat(message, "\x1A\x1A\x1A\x1A\x1A\x1A");         // Little more padding for option indent    
+    mplib_strncat(message, "\x0C");                             // Start option
+    mplib_strncat(message, "You Choose");
+    mplib_strncat(message, "\x0D");                             // End option
+	mplib_strncat(message, "\xFF");                             // Show prompt to continue
+
+    return message;
+
+}
+
+void PlayMessageConfirmingTargetSelection(int firstTargetPlayerIndex, int secondTargetPlayerIndex)
+{
+	char* firstTargetCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(firstTargetPlayerIndex);
+	char* secondTargetCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(secondTargetPlayerIndex);
+
+    char* message = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(message, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
+
+    mplib_strcpy(message, "\x0B");                              // Start the message
+    mplib_strncat(message, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
+    mplib_strncat(message, "All right then");                 
+    mplib_strncat(message, "\x82");                             // ,
+    mplib_strncat(message, " when the coast is clear I");
+	mplib_strncat(message, "\x5C");                             // '
+    mplib_strncat(message, "ll swap ");
+	mplib_strncat(message, "\x0A");                             // Newline
+	mplib_strncat(message, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait
+    mplib_strncat(message, "\x03");                             // Begin red color
+    mplib_strncat(message, firstTargetCharacterName);
+    mplib_strncat(message, "\x08");                             // Begin white (default) color
+    mplib_strncat(message, " and ");                 
+    mplib_strncat(message, "\x03");                             // Begin red color
+    mplib_strncat(message, secondTargetCharacterName);
+    mplib_strncat(message, "\x08");                             // Begin white (default) color
+    mplib_strncat(message, "\x5C");                             // '
+    mplib_strncat(message, "s turn order");
+    mplib_strncat(message, "\x85");                             // .
+    mplib_strncat(message, "\x08");                             // Begin white (default) color
     mplib_strncat(message, "\xFF");                             // Show prompt to continue arrow
     mplib_strncat(message, "\x0B");                             // Feed old text away
     mplib_strncat(message, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait
-    mplib_strncat(message, "Since you were nice enough to");
-    mplib_strncat(message, "\x0A");                             // Newline
-    mplib_strncat(message, "\x1A\x1A\x1A\x1A");                 // Standard padding for portrait
-    mplib_strncat(message, "drop by");
-    mplib_strncat(message, "\x82");                             // ,
-    mplib_strncat(message, " I");
-	mplib_strncat(message, "\x5C");                             // '
-	mplib_strncat(message, "m gonna do you ");
-    mplib_strncat(message, "\x03");                             // Begin red color
-    mplib_strncat(message, "a favor");
-    mplib_strncat(message, "\x08");                             // Begin white (default) color
-    mplib_strncat(message, "\x85\x85\x85");                     // ...
+    mplib_strncat(message, "I love getting up to no good");
+	mplib_strncat(message, "\xC2");                             // !
     mplib_strncat(message, "\xFF");                             // Show prompt to continue arrow
 
     mp3_ShowMessageWithConfirmation(CHARACTER_PORTRAIT, message);

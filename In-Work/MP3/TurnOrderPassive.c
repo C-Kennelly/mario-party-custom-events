@@ -143,7 +143,7 @@ void main()
 	D_800CD0A5 = 0;
 
 	// Do the swap!
-	PlayFlavorMessage(firstPlayerIndex);
+	PlayFlavorMessage(firstPlayerIndex, secondPlayerIndex);
 	SwapPlayerStructs(firstPlayerIndex, secondPlayerIndex);
 	SwapCursedMushroomBits(firstPlayerIndex, secondPlayerIndex);
 
@@ -176,34 +176,39 @@ void SwapCursedMushroomBits(int firstPlayerIndex, int secondPlayerIndex)
 	return;
 }
 
-void PlayFlavorMessage(int benefittingPlayerIndex)
+void PlayFlavorMessage(int firstTargetPlayerIndex, int secondTargetPlayerIndex)
 {
-	char* message = GetMessageConfirmingSwap(benefittingPlayerIndex);
-    mp3_ShowMessageWithConfirmation(CHARACTER_PORTRAIT, message);
-}
-
-char* GetMessageConfirmingSwap(int benefittingPlayerIndex)
-{
-    char* playerCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(benefittingPlayerIndex);
-    char* result = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+    char* firstTargetCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(firstTargetPlayerIndex);
+    char* secondTargetCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(secondTargetPlayerIndex);
+    
+    char* message = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
                                             // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
-    bzero(result, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
+    bzero(message, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
 
-    mplib_strcpy(result, "\x0B");                              // Start the message
-    mplib_strncat(result, "\x1A\x1A\x1A\x1A"); 	               // Standard padding for portrait
-    mplib_strncat(result, "All right");
-    mplib_strncat(result, "\x82");                             // ,
-    mplib_strncat(result, "\x06");                             // Begin blue color                 
-    mplib_strncat(result, playerCharacterName);                 
-    mplib_strncat(result, "\x82");                             // ,
-    mplib_strncat(result, "\x08");                             // Begin white (default) color
-    mplib_strncat(result, " if I just ");
-	mplib_strncat(result, "\x0A");                             // Newline
-	mplib_strncat(result, "\x1A\x1A\x1A\x1A"); 	               // Standard padding for portrait
-    mplib_strncat(result, "swap THIS cord");
-    mplib_strncat(result, "\x85\x85\x85");                     // ...
+    mplib_strcpy(message, "\x0B");                              // Start the message
+    mplib_strncat(message, "\x1A\x1A\x1A\x1A"); 	               // Standard padding for portrait
+    mplib_strncat(message, "Hehehe");
+    mplib_strncat(message, "\x82");                             // ,
+    mplib_strncat(message, " no one seems to be watching ");
+    mplib_strncat(message, "\x03");                             // Begin red color
+    mplib_strncat(message, firstTargetCharacterName);
+    mplib_strncat(message, "\x08");                             // Begin white (default) color
+	mplib_strncat(message, "\x0A");                             // Newline
+	mplib_strncat(message, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
+    mplib_strncat(message, " and ");                 
+    mplib_strncat(message, "\x03");                             // Begin red color
+    mplib_strncat(message, secondTargetCharacterName);
+    mplib_strncat(message, "\x08");								// Begin white (default) color
+    mplib_strncat(message, "\x5C");								// '
+    mplib_strncat(message, "s controller ports");
+    mplib_strncat(message, "\x85");								// .
+    mplib_strncat(message, " I wonder ");
+	mplib_strncat(message, "\x0A");								// Newline
+	mplib_strncat(message, "\x1A\x1A\x1A\x1A");					// Standard padding for portrait
+    mplib_strncat(message, " what happens when I swap THESE cords");
+    mplib_strncat(message, "\x85\x85\x85");						// ...
 
-	return result;
+    mp3_ShowMessageWithConfirmation(CHARACTER_PORTRAIT, message);
 }
 
 
@@ -215,7 +220,7 @@ char* GetMessageConfirmingSwap(int benefittingPlayerIndex)
 //***************************************************************************//
 //***************************************************************************//
 //****************************                  *****************************//
-//*************************      mplib v2.3        **************************//
+//*************************      mplib v2.4        **************************//
 //****************************                  *****************************//
 //***************************************************************************//
 //***************************************************************************//
@@ -368,6 +373,61 @@ int mp3_IsPlayerCertainCharacter(int playerIndex, enum mp3_Character character)
     {
         return 0; 
     }
+}
+
+char* mp3_GetCharacterNameStringFromPlayerIndex(int playerIndex)
+{
+    char* characterName = func_80035934(8);         // malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
+                                                    // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
+    bzero(characterName, 8);                        // Zero out the memory allocated above so we don't get unexpected behavior.
+    
+    int characterInt = -1;     
+
+    struct Player *p = GetPlayerStruct(playerIndex);
+    if(p != NULL)
+    {
+        characterInt = p->character;
+    }
+
+
+    if(characterInt == 0)
+    {
+        mplib_strcpy(characterName, "MARIO");
+    }
+    else if(characterInt == 1)
+    {
+        mplib_strcpy(characterName, "LUIGI");
+    }
+    else if(characterInt == 2)
+    {
+        mplib_strcpy(characterName, "PEACH");
+    }
+    else if(characterInt == 3)
+    {
+        mplib_strcpy(characterName, "YOSHI");
+    }
+    else if(characterInt == 4)
+    {
+        mplib_strcpy(characterName, "WARIO");
+    }
+    else if(characterInt == 5)
+    {
+        mplib_strcpy(characterName, "DK");
+    }
+    else if(characterInt == 6)
+    {
+        mplib_strcpy(characterName, "WALUIGI");
+    }
+    else if(characterInt == 7)
+    {
+        mplib_strcpy(characterName, "DAISY");
+    }
+    else
+    {
+        mplib_strcpy(characterName, "champ");
+    }
+    
+    return characterName;
 }
 
 void mp3_DebugPrintPlayerIndex(int playerIndex)
@@ -524,10 +584,4 @@ void mp3_ReloadCurrentSceneWithTransition(int transitionType)
 	// 11 = Generic
 	// 12 = Boo
 
-//***************************************************************************//
-//***************************************************************************//
-//*************************                  ********************************//
-//**********************      /end mplib       ******************************//
-//************************                  *********************************//
-//***************************************************************************//
 //***************************************************************************//
