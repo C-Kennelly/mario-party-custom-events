@@ -75,6 +75,8 @@ extern u8 D_800CD0A3;	//IsInitialized - 1 == yes.
 extern u8 D_800CD0A4;	//firstPlayerIndex
 extern u8 D_800CD0A5;	//secondPlayerIndex
 
+extern u8 D_800CD0AF;	//slow_dice_flags, bit0 is P1, bit1 is P2, bit2 is P3, bit3 is P4
+
 // The Player struct for Mario Party 3, used for player manipulation.
 // Reference wiki article can be found here:
 // https://github.com/PartyPlanner64/PartyPlanner64/wiki/Player-Structs
@@ -173,6 +175,9 @@ void SwapPlayerStructs(s32 player1Index, s32 player2Index) { //swap player struc
 void SwapCursedMushroomBits(int firstPlayerIndex, int secondPlayerIndex)
 {
 	//TODO - this is stubbed
+	
+	//D_800CD0AF
+
 	return;
 }
 
