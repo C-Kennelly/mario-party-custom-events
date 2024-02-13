@@ -185,28 +185,32 @@ void PlayFlavorMessage(int firstTargetPlayerIndex, int secondTargetPlayerIndex)
                                             // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
     bzero(message, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
 
-    mplib_strcpy(message, "\x0B");                              // Start the message
-    mplib_strncat(message, "\x1A\x1A\x1A\x1A"); 	               // Standard padding for portrait
-    mplib_strncat(message, "Hehehe");
-    mplib_strncat(message, "\x82");                             // ,
-    mplib_strncat(message, " no one seems to be watching ");
-    mplib_strncat(message, "\x03");                             // Begin red color
-    mplib_strncat(message, firstTargetCharacterName);
-    mplib_strncat(message, "\x08");                             // Begin white (default) color
+	mplib_strcpy(message, "\x0B");                              // Start the message
+	mplib_strncat(message, "\x1A\x1A\x1A\x1A"); 	               // Standard padding for portrait
+	mplib_strncat(message, "Hehehe");
+	mplib_strncat(message, "\x82");                             // ,
+	mplib_strncat(message, " no one seems to be watching");
 	mplib_strncat(message, "\x0A");                             // Newline
 	mplib_strncat(message, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
-    mplib_strncat(message, " and ");                 
-    mplib_strncat(message, "\x03");                             // Begin red color
-    mplib_strncat(message, secondTargetCharacterName);
-    mplib_strncat(message, "\x08");								// Begin white (default) color
-    mplib_strncat(message, "\x5C");								// '
-    mplib_strncat(message, "s controller ports");
-    mplib_strncat(message, "\x85");								// .
-    mplib_strncat(message, " I wonder ");
+	mplib_strncat(message, "\x03");                             // Begin red color
+	mplib_strncat(message, firstTargetCharacterName);
+	mplib_strncat(message, "\x08");                             // Begin white (default) color
+	mplib_strncat(message, " and ");                 
+	mplib_strncat(message, "\x03");                             // Begin red color
+	mplib_strncat(message, secondTargetCharacterName);
+	mplib_strncat(message, "\x08");								// Begin white (default) color
+	mplib_strncat(message, "\x5C");								// '
+	mplib_strncat(message, "s controller");
+	mplib_strncat(message, "\x0A");                             // Newline
+	mplib_strncat(message, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
+	mplib_strncat(message, "ports");
+	mplib_strncat(message, "\x85");								// .
+	mplib_strncat(message, " I wonder what happens");
 	mplib_strncat(message, "\x0A");								// Newline
 	mplib_strncat(message, "\x1A\x1A\x1A\x1A");					// Standard padding for portrait
-    mplib_strncat(message, " what happens when I swap THESE cords");
-    mplib_strncat(message, "\x85\x85\x85");						// ...
+	mplib_strncat(message, "when I swap THESE cords");
+	mplib_strncat(message, "\x85\x85\x85");						// ...
+	mplib_strncat(message, "\xFF");								// Show prompt to continue arrow
 
     mp3_ShowMessageWithConfirmation(CHARACTER_PORTRAIT, message);
 }
