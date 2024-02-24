@@ -174,11 +174,63 @@ void SwapPlayerStructs(s32 player1Index, s32 player2Index) { //swap player struc
 
 void SwapCursedMushroomBits(int firstPlayerIndex, int secondPlayerIndex)
 {
-	//TODO - this is stubbed
-	
-	//D_800CD0AF
+    // This function is not tested!
+
+	// 800CD0AF is where the cusred mushroom flags are set. Each bit in the byte corresponds to a player in 0000
+    // They are reverse sorted, so P0 is the rightmost bit and P3 is the leftmost bit.  For example:
+    // 0  (0000) means no player is poisoned
+    // 1  (0001) means P0 is poisoned
+    // 2  (0010) means P1 is poisoned
+    // 4  (0100) means P2 is poisoned
+    // 8  (1000) means P3 is poisoned
+    // 15 (1111) means all 4 players are poisoned
+
+    // In order to do a swap, we need to swap the bits that correspond to the players that are being swapped, and
+    // leave the others alone so as not to interrupt anything.	
+    int firstPlayerIndexBitPosition = ConvertPlayerIndexToCursedMushroomBitPosition(firstPlayerIndex);
+    int secondPlayerIndexBitPosition = ConvertPlayerIndexToCursedMushroomBitPosition(secondPlayerIndex);
+    //
+    D_800CD0AF = SwapBitsForInteger(D_800CD0AF, firstPlayerIndexBitPosition+4, secondPlayerIndexBitPosition);
 
 	return;
+}
+
+// TODO, add both to MPLib 2.5
+int SwapBitsForInteger(int targetInteger, int position1, int position2)
+{
+    // Get the bits at the target position using bit shifting
+    u8 bit1 = (targetInteger >> position1) & 1;
+    u8 bit2 = (targetInteger >> position2) & 1;
+
+    // If the bits already match, we don't need to do anything.
+    // If the bits do NOT match, we just need to toggle each of them to perform the swap
+    if(bit1 != bit2)
+    {
+        targetInteger ^= 1 << position1;
+        targetInteger ^= 1 << position2;
+    }
+
+    return targetInteger;
+}
+
+int ConvertPlayerIndexToCursedMushroomBitPosition(int playerIndex)
+{
+    if(playerIndex == 0)
+    {
+        return 5;
+    }
+    else if(playerIndex == 1)
+    {
+        return 6;
+    }
+    else if(playerIndex == 2)
+    {
+        return 7;
+    }
+    else
+    {
+        return 8;
+    }
 }
 
 void PlayFlavorMessage(int firstTargetPlayerIndex, int secondTargetPlayerIndex)
