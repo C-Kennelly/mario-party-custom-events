@@ -291,11 +291,11 @@ int CPUGetSelfOrSecondPlayer(int currentPlayerIndex)
 
 int CPUGetFirstOr4thPlayer(int otherTarget, int currentPlayerIndex)
 {
-    if(otherTarget == 1)
+    if(otherTarget == 1 && currentPlayerIndex != 1) // We have chosen the 2nd rolling player to swap with the 4th rolling player
     {
-        return 2;
+            return 2;
     }
-    else
+    else // We have chosen ourself as the target who needs to be promoted to first Turn order
     {
         return 0;
     }

@@ -1,163 +1,11 @@
-// NAME: Turn Order Swap Passive
-// GAMES: MP3_USA
-// EXECUTION: Direct
-
-
-//***************************************************************************//
-//******************** Version Info! ****************************************//
-//***************************************************************************//
-//
-// This is version: 1.0
-//
-// There may be an update available at:
-// https://github.com/c-kennelly/mario-party-custom-events
-// You can also report a bug as an issue (and maybe a PR that fixes it?)
-
-
-//***************************************************************************//
-//******************** BOARD RAM WARNING ************************************//
-//***************************************************************************//
-// This board uses the following addresses (board RAM)
-//              D_800CD0A3;   //board_ram12
-//              D_800CD0A4;   //board_ram13
-//              D_800CD0A5;   //board_ram14
-//
-// If any other events on your board use these values, you will get unexpected behavior! 
-//
-// This event uses board RAM to keep track of the players who will be swapping turn orders and
-// allows a passive after-turn event to actually make the swaps.
-
-//***************************************************************************//
-//******************** Event Configuration ***********************************//
-//***************************************************************************//
-
-// This is the portrait of the character giving the messages.
-#define CHARACTER_PORTRAIT 5
-// Want to change the picture?  Find options the PartyPlanner64 wiki:
-// https://github.com/PartyPlanner64/PartyPlanner64/wiki/Displaying-Messages
-
-
-//***************************************************************************//
-//*********************** Description ***************************************//
-//***************************************************************************//
-// This is the After Turn component of the Turn Order Swap event that allows the
-// the triggering player to swap the Turn Orders of any two characters. It does 
-// the swap by completely changing the contents of the Player structs.
-//
-// This is really a two part event, as this component reads the two players that
-// are logged into the board RAM by the other component, and then performs the swap.
-// So this is the component that actually does the work of swapping the turn orders.
-// 
-// Finally, this file is commented to make it as easy as possible for 
-// non-programmers to edit and beginners to pull code samples, so I've 
-// leaned on the verbose side for comments.  If you've a working knowledge 
-// of C, feel free to just jump to main() and see what's going on. 
-
-
-//***************************************************************************//
-//***********************     Changelist      *******************************//
-//***************************************************************************//
-//   Version 1.0 - First version of the event!
-
-
-//***************************************************************************//
-//*************************** Declarations **********************************//
-//***************************************************************************//
-
-// Used for the data types used in the player struct.
-// Header file: http://n64devkit.square7.ch/header/ultra64.htm
-// Ultratypes: http://n64devkit.square7.ch/header/ultratypes.htm
-// For more exploration: http://n64devkit.square7.ch/header/
-#include "ultra64.h"
-
-// Event parameter can disable this:
-extern u8 D_800CD0A3;	//IsInitialized - 1 == yes.
-extern u8 D_800CD0A4;	//firstPlayerIndex
-extern u8 D_800CD0A5;	//secondPlayerIndex
-
-
-//***************************************************************************//
-//*************************** Event Logic ************************************//
-//***************************************************************************//
-
-//This event is intended to run on After Turn timing. It may work on other timings, but is untested.
-void main() 
-{
-	// No swap needed if this bit isn't initialized or the players are the same
-	if((D_800CD0A3 != 1) || (D_800CD0A4 == D_800CD0A5))
-	{
-		return;
-	}
-
-	// Store variables locally and then mark event as uninitialized so we don't enlessly loop on scene reload
-	D_800CD0A3 = 0;
-	int firstPlayerIndex = D_800CD0A4;
-	D_800CD0A4 = 0;
-	int secondPlayerIndex = D_800CD0A5;
-	D_800CD0A5 = 0;
-
-	// Do the swap!
-	PlayFlavorMessage(firstPlayerIndex, secondPlayerIndex);
-	mp3_SwapPlayerStructs(firstPlayerIndex, secondPlayerIndex);
-	mp3_SwapCursedMushroomBits(firstPlayerIndex, secondPlayerIndex);
-
-	// Reloading the scene refreshes the HUD elements as well as prevents a minigame edge case where the
-	// minigame uses the cached turn_color_status data from the HUD instead of the character struct to
-	// determine teams for the minigame.
-	mp3_ReloadCurrentSceneWithTransition(2);
-}
-
-
-
-void PlayFlavorMessage(int firstTargetPlayerIndex, int secondTargetPlayerIndex)
-{
-    char* firstTargetCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(firstTargetPlayerIndex);
-    char* secondTargetCharacterName = mp3_GetCharacterNameStringFromPlayerIndex(secondTargetPlayerIndex);
-    
-    char* message = func_80035934(256);      // First, malloc() to reserve memory from the heap.  Heap is cleared during any MP3 scene 
-                                            // transition, such as a minigame.  Or, you can call free() with func_80035958(ptr)
-    bzero(message, 256);                     // Second, zero out the memory allocated above so we don't get unexpected behavior.
-
-	mplib_strcpy(message, "\x0B");                              // Start the message
-	mplib_strncat(message, "\x1A\x1A\x1A\x1A"); 	               // Standard padding for portrait
-	mplib_strncat(message, "Hehehe");
-	mplib_strncat(message, "\x82");                             // ,
-	mplib_strncat(message, " no one seems to be watching");
-	mplib_strncat(message, "\x0A");                             // Newline
-	mplib_strncat(message, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
-	mplib_strncat(message, "\x03");                             // Begin red color
-	mplib_strncat(message, firstTargetCharacterName);
-	mplib_strncat(message, "\x08");                             // Begin white (default) color
-	mplib_strncat(message, " and ");                 
-	mplib_strncat(message, "\x03");                             // Begin red color
-	mplib_strncat(message, secondTargetCharacterName);
-	mplib_strncat(message, "\x08");								// Begin white (default) color
-	mplib_strncat(message, "\x5C");								// '
-	mplib_strncat(message, "s controller");
-	mplib_strncat(message, "\x0A");                             // Newline
-	mplib_strncat(message, "\x1A\x1A\x1A\x1A"); 	            // Standard padding for portrait
-	mplib_strncat(message, "ports");
-	mplib_strncat(message, "\x85");								// .
-	mplib_strncat(message, " I wonder what happens");
-	mplib_strncat(message, "\x0A");								// Newline
-	mplib_strncat(message, "\x1A\x1A\x1A\x1A");					// Standard padding for portrait
-	mplib_strncat(message, "when I swap THESE cords");
-	mplib_strncat(message, "\x85\x85\x85");						// ...
-	mplib_strncat(message, "\xFF");								// Show prompt to continue arrow
-
-    mp3_ShowMessageWithConfirmation(CHARACTER_PORTRAIT, message);
-}
-
-
-
 // How to use:
 // Copy and paste everything in the library block into the your 
-// bottom of any Mario Party 3 event to get some helpful functions!
+// bottom of any Mario Party 3 event to get some helpful functions!  Requires the contents of mplib.c pasted underneath it.
 
 //***************************************************************************//
 //***************************************************************************//
 //****************************                  *****************************//
-//*************************      mplib v2.5        **************************//
+//*************************      mp3lib v1.0       **************************//
 //****************************                  *****************************//
 //***************************************************************************//
 //***************************************************************************//
@@ -464,7 +312,7 @@ void mp3_SwapPlayerStructs(s32 player1Index, s32 player2Index) { //swap player s
 extern u8 D_800CD0AF;	//Cursed Muschroom bit - slow_dice_flags, bit0 is P1, bit1 is P2, bit2 is P3, bit3 is P4
 void mp3_SwapCursedMushroomBits(int firstPlayerIndex, int secondPlayerIndex)
 {
-	D_800CD0AF = mplib_SwapBitsForInteger(D_800CD0AF, firstPlayerIndex, secondPlayerIndex);
+	D_800CD0AF = SwapBitsForInteger(D_800CD0AF, firstPlayerIndex, secondPlayerIndex);
     //int firstPlayerBit = (D_800CD0AF >> firstPlayerIndex & 1);
     //int secondPlayerBit = (D_800CD0AF >> secondPlayerIndex & 1);
 	//
