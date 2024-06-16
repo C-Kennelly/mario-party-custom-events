@@ -172,11 +172,17 @@ void SwapPlayerStructs(s32 player1Index, s32 player2Index) { //swap player struc
     FreePerm(temp_s0);
 }
 
+//D_800CD0AF holds the cursed mushroom bits for all players.  This function swaps the bits for those two players if they are different.
 void SwapCursedMushroomBits(int firstPlayerIndex, int secondPlayerIndex)
 {
-	//TODO - this is stubbed
-	
-	//D_800CD0AF
+    int firstPlayerBit = (D_800CD0AF >> firstPlayerIndex & 1);
+    int secondPlayerBit = (D_800CD0AF >> secondPlayerIndex & 1);
+
+    if (firstPlayerBit != secondPlayerBit)
+    {
+        D_800CD0AF ^= (1 << firstPlayerIndex);
+        D_800CD0AF ^= (1 << secondPlayerIndex); 
+    }
 
 	return;
 }
