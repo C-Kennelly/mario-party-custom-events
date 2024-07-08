@@ -967,7 +967,7 @@ char* GetNinthQuestion(int* correctAnswerIndexPtr)
 
     char correctAnswer[48] = "Diddy Kong Racing";
     char wrongAnswer1[48] = "Conker\x5Cs Bad Fur Day";
-    char wrongAnswer2[48] = "Conker\x5Cs Pocket Talesg";
+    char wrongAnswer2[48] = "Conker\x5Cs Pocket Tales";
     char wrongAnswer3[48] = "Twelve Tales\x7B Conker 64";
 
     char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
