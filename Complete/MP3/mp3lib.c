@@ -312,17 +312,9 @@ void mp3_SwapPlayerStructs(s32 player1Index, s32 player2Index) { //swap player s
 extern u8 D_800CD0AF;	//Cursed Muschroom bit - slow_dice_flags, bit0 is P1, bit1 is P2, bit2 is P3, bit3 is P4
 void mp3_SwapCursedMushroomBits(int firstPlayerIndex, int secondPlayerIndex)
 {
-	D_800CD0AF = SwapBitsForInteger(D_800CD0AF, firstPlayerIndex, secondPlayerIndex);
-    //int firstPlayerBit = (D_800CD0AF >> firstPlayerIndex & 1);
-    //int secondPlayerBit = (D_800CD0AF >> secondPlayerIndex & 1);
-	//
-    //if (firstPlayerBit != secondPlayerBit)
-    //{
-    //    D_800CD0AF ^= (1 << firstPlayerIndex);
-    //    D_800CD0AF ^= (1 << secondPlayerIndex); 
-    //}
-//
-	//return;
+	D_800CD0AF = mplib_SwapBitsForInteger(D_800CD0AF, firstPlayerIndex, secondPlayerIndex);
+    //TODO - should rename? - we're actually not swapping bits for an integer, we're swapping
+    //bits in a byte from two positions - doesn't matter if it's an int or not.
 }
 
 // Long-form implementation from:
