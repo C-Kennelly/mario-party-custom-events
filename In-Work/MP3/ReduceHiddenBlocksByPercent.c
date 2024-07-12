@@ -74,14 +74,17 @@
 // To get the most out of this event, figure out the rate of Hidden Blocks that
 // are occuring naturally on your intended turn count, and then set the 
 // HIDDEN_BLOCK_REDUCTION_PERCENT to the percent you want to reduce the hidden
-// blocks by. For instance, if you are usually getting 3-4 blocks in a 35 turn game,
-// you could set the HIDDEN_BLOCK_REDUCTION_PERCENT to 33 and expect to get 0-2
+// blocks by. For instance, if you are usually getting ~3 blocks in a 35 turn game,
+// you could set the HIDDEN_BLOCK_REDUCTION_PERCENT to 66 and expect to get ~1
 // blocks per game because hidden blocks would only be possible on 1/3 of the rolls.
 //
-// Finally, you can decide which hidden blocks
+// Finally, you can decide which types of hidden blocks this event affects by setting the corresponding parameter to TRUE.
 // REDUCE_ITEM_BLOCKS - TRUE means the block that contains items (usually, a Skeleton Key) will be affected by this event.
 // REDUCE_COIN_BLOCKS - TRUE means the block that contains coins (usually, 20 coins) will be affected by this event.
 // REDUCE_STAR_BLOCKS - TRUE means the block that contains a star will be affected by this event.
+//
+// Leaving any of these as false will leave those blocks unmodified by this event.
+// For example you might just set REDUCE_STAR_BLOCKS to TRUE and set the HIDDEN_BLOCK_REDUCTION_PERCENT to 100 to disable star blocks only.
 
 //***************************************************************************//
 //***********************     Changelist      *******************************//
@@ -113,29 +116,18 @@ extern s8 D_800CD0A8;   // BoardRAM to store the hidden_block_star value
 
 void main() 
 {   
-    if(USES_BOARD_RAM == 1)
-    {
-        InitializeBoardRAMOnFirstPass();
-    }
-
+    InitializeBoardRAMOnFirstPassIfEnabled();
 
 	if (mp3_ReturnTruePercentOfTime(HIDDEN_BLOCK_REDUCTION_PERCENT))
 	{
-        //Disable the hidden blocks on this turn.
-        if(USES_BOARD_RAM == 1)
-        {
-            StoreHiddenBlocksInBoardRAM();
-        }
-
+        // Logic has hit, blocks will be unreachable this turn if BoardRAM is enabled.
+        StoreHiddenBlocksInBoardRAMIfEnabled();
         MakeHiddenBlocksUnreachable();
 	}
 	else
 	{
-        // If Board RAM is enabled, enable hidden blocks on this turn.
-        if(USES_BOARD_RAM == 1)
-        {
-            RestoreHiddenBlocksFromBoardRAM();
-        }
+        // Logic has skipped, blocks will be reachable this turn if BoardRAM is enabled.
+        RestoreHiddenBlocksFromBoardRAMIfEnabled();
 	}
 }
 
@@ -158,8 +150,13 @@ void MakeHiddenBlocksUnreachable()
     }
 }
 
-void StoreHiddenBlocksInBoardRAM()
+void StoreHiddenBlocksInBoardRAMIfEnabled()
 {
+    if(USES_BOARD_RAM != 1)
+    {
+        return;
+    }
+
     if(REDUCE_ITEM_BLOCKS == 1)
     {
         // Store the item block space in BoardRAM.
@@ -179,8 +176,13 @@ void StoreHiddenBlocksInBoardRAM()
     }
 }
 
-void RestoreHiddenBlocksFromBoardRAM()
+void RestoreHiddenBlocksFromBoardRAMIfEnabled()
 {
+    if(USES_BOARD_RAM != 1)
+    {
+        return;
+    }
+
     if(REDUCE_ITEM_BLOCKS == 1)
     {
         // Restore the item block space value from BoardRAM so it can be found again.
@@ -200,8 +202,13 @@ void RestoreHiddenBlocksFromBoardRAM()
     }
 }
 
-void InitializeBoardRAMOnFirstPass()
+void InitializeBoardRAMOnFirstPassIfEnabled()
 {
+    if(USES_BOARD_RAM != 1)
+    {
+        return;
+    }
+
     if(D_800CC4E5 != 0)
     {
         return;
