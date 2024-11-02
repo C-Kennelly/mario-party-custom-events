@@ -1,12 +1,32 @@
 Upcoming plans for the Character Swap Board
 
-Character Check:
-- Check Character:
-  - Hard Set 1-4, Set By Board
-    - 1 == Plumber, 2 == Princess, 3 == Beast, 4 == Villain
-  - Matching Only, Matching With Fees, All but Matching
-  - Allow, Offer Fee Accept, Offer Fee Decline, Block
-- Set Character Check on Board
+Mechanic: Character Door
+  - Passing event, like a skeleton key door, but it cares about which character you are.
+  - Param - PreferredCharacterCategory: 0 == Plumber, 1 == Princess, 2 == Beast, 3 == Villain
+    - Characters are split into 4 categories, and the approaching character will be judged against this category.
+  - Param - OpenMode: Character Doors can be set in 4 modes: 0 == Matching Only, 1 == Matching with Fees, 2 == All but Matching, 3 == Dynamic
+    - When in Matching Only, only characters matching the PreferredCharacterCategory may pass.  Example, only Mario and Luigi could pass a door with Plumber set.
+      - Flavor message accept/reject
+    - When in Matching with Fees, characters matching the PreferredCharacterCategory may pass for free, and **allied** character categories may pass for the PassingFee.
+      - Flavor message accept for matching.  Fee offer accept/reject for allied characters with standard flavor accept/reject.  Flavor message Reject for enemy characters.
+      - Allies are the "not enemies" category.  Plumbers and Villains are enemies.  Princesses and Beasts are enemies.
+    - When in All but Matching, every character category EXCEPT the PreferredCharacterCategory may pass.  Example, Mario and Luigi would be the only characters that CANNOT pass a door with Plumber set.
+        - Don't do this on the first pass.
+        - When in Dynamic mode, the door lets you through no matter your character if the BoardRAM slot is 0... otherwise, uses the value of the BoardRAM to select one of the other modes.  
+  - Param - PassingFee: When a character wants to pay to pass in MatchingWithFees mode, how much they need to pay.  Default, 10 coins.
+  - Param - ChangeMode: Doors can be set to change their preferred character 0 == NoChange (default),  1 == Randomly, 2 == Sequence, 3 == EveryUse
+    - If set to NoChange, the door is fixed for the entire game.
+    - If set to Randomly, the door randomizes its PreferredCharacterCategory to anything but the current one.
+    - If set to Sequence, the door changes its PreferredCharacterCategory in order (Plumbers -> Princesses -> Beasts -> Villains -> Plumbers)
+      - PreferredCharacterCategory == PreferredCharacterCategory++ % 4
+  - Param - ChangeModeTurns: If the door's ChangeMode is set to Randomly or Sequence, how many pass before a change.
+    - All doors on map write to this value in a shared BoardRAM?
+  - Do we need a BoardRAM selector PER door??
+  
+
+-- TODO
+
+- Set Your Character - Check on Board
   - Landing/Passing or After Turn
     - Landing/Passing: Fee to change
     - After Turn: Change randomly every N Turns
