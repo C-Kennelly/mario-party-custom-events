@@ -2069,7 +2069,16 @@ char* GetFiftyNinthQuestion(int* correctAnswerIndexPtr)
 // Question for index 59
 char* GetSixteithQuestion(int* correctAnswerIndexPtr)
 {
+	char* question = CreateSimpleTwoLineQuestionMessage("What is the \x03STANDARD\x08 difficulty", "in GoldenEye 007");
 
+	char correctAnswer[48] = "Secret Agent";
+	char wrongAnswer1[48] = "Agent";
+	char wrongAnswer2[48] = "00 Agent";
+	char wrongAnswer3[48] = "007";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
 }
 
 
@@ -2080,7 +2089,16 @@ char* GetSixteithQuestion(int* correctAnswerIndexPtr)
 // Question for index 60
 char* GetSixtyFirstQuestion(int* correctAnswerIndexPtr)
 {
+	char* question = CreateSimpleTwoLineQuestionMessage("Which one of these game modes was", "\x03NOT\x08 available in Wave Race 64");
 
+	char correctAnswer[48] = "Grand Prix";
+	char wrongAnswer1[48] = "Championship";
+	char wrongAnswer2[48] = "Time Trials";
+	char wrongAnswer3[48] = "Stunt Mode";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
 }
 
 
@@ -2091,7 +2109,16 @@ char* GetSixtyFirstQuestion(int* correctAnswerIndexPtr)
 // Question for index 61
 char* GetSixtySecondQuestion(int* correctAnswerIndexPtr)
 {
+	char* question = CreateSimpleTwoLineQuestionMessage("Which one of these minigames was", "\x03NOT\x08 available in Pokemon Stadium");
 
+	char correctAnswer[48] = "Eager Eevee";
+	char wrongAnswer1[48] = "Run Rattata Run";
+	char wrongAnswer2[48] = "Ekans Hoop Hurl";
+	char wrongAnswer3[48] = "Clefairy Says";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
 }
 
 
@@ -2102,7 +2129,16 @@ char* GetSixtySecondQuestion(int* correctAnswerIndexPtr)
 // Question for index 62
 char* GetSixtyThirdQuestion(int* correctAnswerIndexPtr)
 {
+	char* question = CreateSimpleTwoLineQuestionMessage("Which one of these minigames was", "\x03NOT\x08 available in Pokemon Stadium 2");
 
+	char correctAnswer[48] = "Rock Harden";
+	char wrongAnswer1[48] = "Clear Cut Challenge";
+	char wrongAnswer2[48] = "Topsy Turvy";
+	char wrongAnswer3[48] = "Egg Emergency";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
 }
 
 
@@ -2113,7 +2149,16 @@ char* GetSixtyThirdQuestion(int* correctAnswerIndexPtr)
 // Question for index 63
 char* GetSixtyFourthQuestion(int* correctAnswerIndexPtr)
 {
+	char* question = CreateSimpleTwoLineQuestionMessage("Which one of these game modes was", "\x03NOT\x08 available in Star Fox 64 multiplayer");
 
+	char correctAnswer[48] = "Land Masters";
+	char wrongAnswer1[48] = "Point Match";
+	char wrongAnswer2[48] = "Battle Royale";
+	char wrongAnswer3[48] = "Time Trial";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
 }
 
 
