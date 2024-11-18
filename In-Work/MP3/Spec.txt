@@ -26,7 +26,7 @@ Mechanic: Character Door
 
 -- TODO
 
-- Set Your Character - Check on Board
+Set Your Character - Check on Board
   - Landing/Passing or After Turn
     - Landing/Passing: Fee to change
     - After Turn: Change randomly every N Turns
@@ -37,3 +37,73 @@ Swap Character
     - Steal Becomes Available With N Turns Remaining 
     - Free, Fee, Decline
     - Select Target Free, Select Target Steal
+
+
+Bonus Star Vendor
+  - The bonus star vendor dispenses a bonus star at the end of the game for meeting a particular condition outside of the standard 3 bonus stars (Coin, Minigame, Happening)
+  - The condition that grants a bonus star to each is changeable mid game by passing the vendor, picking the condition, and paying them a fee.
+  - Once the fee is paid, the vendor will not change the condition for the rest of the game.
+  - There are 4 such vendors on the map - the fee increases on the following schedule for any remaining vendors in order to incentivize players to commit early.
+    - 1st Vendor - 10 coins
+    - 2nd Vendor - 15 coins
+    - 3rd Vendor - 20 coins
+    - 4th Vendor - 30 coins
+  - The vendor should also give 10 coins when they are passed if the player who is currently winning the bonus star race is the one who is passing.
+    - This is to give the player who is indexing into the bonus star a mid-game advantage for pursuing the strategy.
+    - This also serves to alert the party who is currently winning the star.  (Perhaps the text should mention the winner and the condition).
+  - The vendors give out the stars after the last player has gone at the last turn of the game - this prevents the stars from being exposed to Chance time.
+  - In the event of a tie, each players receive a star.
+    - Need custom text for variable wins (1, 2, 3, and all)
+  - Vendors come in one of 4 buckets, with the following 4 events to choose from in each:
+    - Fortune Guy (Plumbers)
+      - Most number of Blue spaces
+      - Least number of Blue spaces
+      - Most number of Item spaces
+    - Misfortune Guy (Villains)
+      - Most number of Red spaces
+      - Least number of Red spaces
+      - Most number of Bowser spaces
+    - Money Guy (Princesses)
+      - Most number of Game Guy spaces (if doing game guy loyalty program, should we track "most coins risked on Game Guy")
+      - Most number of Bank spaces
+      - Most number of Battle spaces
+    - Board-Specific Vendor (Animals)
+      - Most character swaps
+      - Most character doors passed
+      - Most quiz questions answered correctly
+
+    - The character's name who:
+      - (Plumbers | Villains vs. Animals | Princesses)
+        - Wears a hat
+        - Doesn't wear overalls
+      - (Plumbers | Princesses vs. Animals | Villains)
+        - Is friends with toad
+        - Has bad table manners
+      - (Plumbers | Animals  vs. Princess | Villains)
+        - Are good guys.
+        - Loves gold jewelery
+      (Plumbers)
+        - Are brothers.
+        - Are not licensed to work on pipes.
+      (Villains)
+        - Name starts with W.
+        - Does not wear the color purple.
+      (Princesses)
+        - Is royalty.
+        - Does not wear a dress.
+      (Animals)
+        - Loves brightly colored fruit.
+        - Sleeps inside.
+
+
+      - Most number of Chance Time spaces
+      - Visits to Boo (must track individually)
+
+    -- Last 5 turns, have last place select a Bonus Star
+
+- Pass a bank rather than land on
+
+- Visits to Skeleton key door 
+- Most visits to Item Shops
+- Most times rounding the board (what does this mean for certain board designs?)
+
