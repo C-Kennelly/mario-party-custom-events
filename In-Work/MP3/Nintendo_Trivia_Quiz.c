@@ -989,7 +989,7 @@ char* GetFifthQuestion(int* correctAnswerIndexPtr)
 // Question for index 5
 char* GetSixthQuestion(int* correctAnswerIndexPtr)
 {
-    char* question = CreateSimpleOneLineQuestionMessage("What does Peach make Mario in Mario 64");
+    char* question = CreateSimpleOneLineQuestionMessage("What does Peach make Mario");
 
     char correctAnswer[48] = "Cake";
     char wrongAnswer1[48] = "Mushrooms";
@@ -1849,13 +1849,12 @@ char* GetFourtyEighthQuestion(int* correctAnswerIndexPtr)
 // Question for index 48
 char* GetFourtyNinthQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games sold", "the \x03MOST\x08 copies");
 
-
-	char correctAnswer[48] = "Pokemon Stadium 2";
+	char correctAnswer[48] = "Pokemon Stadium";
 	char wrongAnswer1[48] = "Donkey Kong 64";
-	char wrongAnswer2[48] = "Perfect Dark";
-	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+	char wrongAnswer2[48] = "Diddy Kong Racing";
+	char wrongAnswer3[48] = "Star Fox 64";
 
 	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -1870,13 +1869,12 @@ char* GetFourtyNinthQuestion(int* correctAnswerIndexPtr)
 // Question for index 49
 char* GetFifteithQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games sold", "the \x03MOST\x08 copies");
 
-
-	char correctAnswer[48] = "Pokemon Stadium 2";
-	char wrongAnswer1[48] = "Donkey Kong 64";
-	char wrongAnswer2[48] = "Perfect Dark";
-	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+	char correctAnswer[48] = "Mario Kart 64";
+	char wrongAnswer1[48] = "GoldenEye 007";
+	char wrongAnswer2[48] = "The Legend of Zelda\x7B Ocarina of Time";
+	char wrongAnswer3[48] = "Super Smash Bros";
 
 	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -1891,13 +1889,12 @@ char* GetFifteithQuestion(int* correctAnswerIndexPtr)
 // Question for index 50
 char* GetFiftyFirstQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games sold", "the \x03MOST\x08 copies");
 
-
-	char correctAnswer[48] = "Pokemon Stadium 2";
-	char wrongAnswer1[48] = "Donkey Kong 64";
-	char wrongAnswer2[48] = "Perfect Dark";
-	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+	char correctAnswer[48] = "Banjo Kazooie";
+	char wrongAnswer1[48] = "Pokemon Snap";
+	char wrongAnswer2[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+	char wrongAnswer3[48] = "Pokemon Stadium";
 
 	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -1912,13 +1909,12 @@ char* GetFiftyFirstQuestion(int* correctAnswerIndexPtr)
 // Question for index 51
 char* GetFiftySecondQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games sold", "the \x03MOST\x08 copies");
 
-
-	char correctAnswer[48] = "Pokemon Stadium 2";
-	char wrongAnswer1[48] = "Donkey Kong 64";
-	char wrongAnswer2[48] = "Perfect Dark";
-	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+	char correctAnswer[48] = "Mario Party";
+	char wrongAnswer1[48] = "Mario Party 2";
+	char wrongAnswer2[48] = "Mario Party 3";
+	char wrongAnswer3[48] = "Mario Tennis";
 
 	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -1933,13 +1929,12 @@ char* GetFiftySecondQuestion(int* correctAnswerIndexPtr)
 // Question for index 52
 char* GetFiftyThirdQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games sold", "the \x03MOST\x08 copies");
 
-
-	char correctAnswer[48] = "Pokemon Stadium 2";
-	char wrongAnswer1[48] = "Donkey Kong 64";
-	char wrongAnswer2[48] = "Perfect Dark";
-	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+	char correctAnswer[48] = "Star Wars Episode 1\x7B Racer";
+	char wrongAnswer1[48] = "Wave Race 64";
+	char wrongAnswer2[48] = "Yoshi\x5Cs Story";
+	char wrongAnswer3[48] = "Perfect Dark";
 
 	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -1954,13 +1949,12 @@ char* GetFiftyThirdQuestion(int* correctAnswerIndexPtr)
 // Question for index 53
 char* GetFiftyFourthQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games sold", "the \x03MOST\x08 copies");
 
-
-	char correctAnswer[48] = "Pokemon Stadium 2";
-	char wrongAnswer1[48] = "Donkey Kong 64";
-	char wrongAnswer2[48] = "Perfect Dark";
-	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+	char correctAnswer[48] = "Excitebike 64";
+	char wrongAnswer1[48] = "Kirby 64\x7B The Crystal Shards";
+	char wrongAnswer2[48] = "Mario Party 3";
+	char wrongAnswer3[48] = "Tony Hawk\x5Cs Pro Skater";
 
 	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -1975,13 +1969,12 @@ char* GetFiftyFourthQuestion(int* correctAnswerIndexPtr)
 // Question for index 54
 char* GetFiftyFifthQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games sold", "the \x03MOST\x08 copies");
 
-
-	char correctAnswer[48] = "Pokemon Stadium 2";
-	char wrongAnswer1[48] = "Donkey Kong 64";
-	char wrongAnswer2[48] = "Perfect Dark";
-	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+	char correctAnswer[48] = "Mario Golf";
+	char wrongAnswer1[48] = "Paper Mario";
+	char wrongAnswer2[48] = "F-Zero X";
+	char wrongAnswer3[48] = "Bomberman 64";
 
 	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -1996,13 +1989,12 @@ char* GetFiftyFifthQuestion(int* correctAnswerIndexPtr)
 // Question for index 55
 char* GetFiftySixthQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+	char* question = CreateSimpleTwoLineQuestionMessage("Besides Mario titles\x82 which N64 series", "sold the \x03MOST\x08 copies");
 
-
-	char correctAnswer[48] = "Pokemon Stadium 2";
-	char wrongAnswer1[48] = "Donkey Kong 64";
-	char wrongAnswer2[48] = "Perfect Dark";
-	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+	char correctAnswer[48] = "Pokemon";
+	char wrongAnswer1[48] = "The Legend of Zelda";
+	char wrongAnswer2[48] = "Donkey Kong";
+	char wrongAnswer3[48] = "Star Wars";
 
 	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -2017,17 +2009,16 @@ char* GetFiftySixthQuestion(int* correctAnswerIndexPtr)
 // Question for index 56
 char* GetFiftySeventhQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+    char* question = CreateSimpleTwoLineQuestionMessage("Which third party \x03DEVELOPER\x08 had the most N64", "games that sold more than one million units");
 
+    char correctAnswer[48] = "Rare";
+    char wrongAnswer1[48] = "AKI Corporation";
+    char wrongAnswer2[48] = "Iquana Entertainment";
+    char wrongAnswer3[48] = "LucasArts";
 
-	char correctAnswer[48] = "Pokemon Stadium 2";
-	char wrongAnswer1[48] = "Donkey Kong 64";
-	char wrongAnswer2[48] = "Perfect Dark";
-	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
-
-	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-
-	return result;
+    char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+   
+    return result;
 }
 
 
@@ -2038,17 +2029,16 @@ char* GetFiftySeventhQuestion(int* correctAnswerIndexPtr)
 // Question for index 57
 char* GetFiftyEighthQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+    char* question = CreateSimpleTwoLineQuestionMessage("Which third party \PUBLISHER\x08 had the most N64", "games that sold more than one million units");
 
+    char correctAnswer[48] = "THQ";
+    char wrongAnswer1[48] = "AKI Corporation";
+    char wrongAnswer2[48] = "Acclaim Entertainment";
+    char wrongAnswer3[48] = "Activision";
 
-	char correctAnswer[48] = "Pokemon Stadium 2";
-	char wrongAnswer1[48] = "Donkey Kong 64";
-	char wrongAnswer2[48] = "Perfect Dark";
-	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
-
-	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-
-	return result;
+    char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+   
+    return result;
 }
 
 
@@ -2059,13 +2049,12 @@ char* GetFiftyEighthQuestion(int* correctAnswerIndexPtr)
 // Question for index 58
 char* GetFiftyNinthQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games were", "\x03NOT\x08 published by Rare");
 
-
-	char correctAnswer[48] = "Pokemon Stadium 2";
-	char wrongAnswer1[48] = "Donkey Kong 64";
+	char correctAnswer[48] = "Donkey Kong 64";
+	char wrongAnswer1[48] = "Diddy Kong Racing";
 	char wrongAnswer2[48] = "Perfect Dark";
-	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+	char wrongAnswer3[48] = "Jet Force Gemini";
 
 	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
 
@@ -2080,17 +2069,7 @@ char* GetFiftyNinthQuestion(int* correctAnswerIndexPtr)
 // Question for index 59
 char* GetSixteithQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
 
-
-	char correctAnswer[48] = "Pokemon Stadium 2";
-	char wrongAnswer1[48] = "Donkey Kong 64";
-	char wrongAnswer2[48] = "Perfect Dark";
-	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
-
-	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-
-	return result;
 }
 
 
@@ -2101,17 +2080,7 @@ char* GetSixteithQuestion(int* correctAnswerIndexPtr)
 // Question for index 60
 char* GetSixtyFirstQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
 
-
-	char correctAnswer[48] = "Pokemon Stadium 2";
-	char wrongAnswer1[48] = "Donkey Kong 64";
-	char wrongAnswer2[48] = "Perfect Dark";
-	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
-
-	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-
-	return result;
 }
 
 
@@ -2122,17 +2091,7 @@ char* GetSixtyFirstQuestion(int* correctAnswerIndexPtr)
 // Question for index 61
 char* GetSixtySecondQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
 
-
-	char correctAnswer[48] = "Pokemon Stadium 2";
-	char wrongAnswer1[48] = "Donkey Kong 64";
-	char wrongAnswer2[48] = "Perfect Dark";
-	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
-
-	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-
-	return result;
 }
 
 
@@ -2143,17 +2102,7 @@ char* GetSixtySecondQuestion(int* correctAnswerIndexPtr)
 // Question for index 62
 char* GetSixtyThirdQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
 
-
-	char correctAnswer[48] = "Pokemon Stadium 2";
-	char wrongAnswer1[48] = "Donkey Kong 64";
-	char wrongAnswer2[48] = "Perfect Dark";
-	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
-
-	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-
-	return result;
 }
 
 
@@ -2164,17 +2113,7 @@ char* GetSixtyThirdQuestion(int* correctAnswerIndexPtr)
 // Question for index 63
 char* GetSixtyFourthQuestion(int* correctAnswerIndexPtr)
 {
-	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
 
-
-	char correctAnswer[48] = "Pokemon Stadium 2";
-	char wrongAnswer1[48] = "Donkey Kong 64";
-	char wrongAnswer2[48] = "Perfect Dark";
-	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
-
-	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
-
-	return result;
 }
 
 
