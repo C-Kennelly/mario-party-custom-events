@@ -69,8 +69,8 @@
 //
 //                                 Features:
 //
-//  ***** 48 Questions ****
-// There are 48 default questions in the question bank, all based on N64-era 
+//  ***** 64 Questions ****
+// There are 64 default questions in the question bank, all based on N64-era 
 // Nintendo trivia.  You can customize the entire question bank.
 //
 // ***** Get coins for correct answers ****
@@ -92,7 +92,7 @@
 // ***** No repeats until all questions have been asked ****
 // The v1.1 update ensured that you'll see all the questions in the question bank
 // before the quiz asks a repeat question.  The quiz starts on a different random question
-// each game, and then asks the questions in sequence.  If the quiz has exactly 48 active questions
+// each game, and then asks the questions in sequence.  If the quiz has exactly 64 active questions
 // the sequence the questions are asked in will also change game to game.  v1.15 allows you to disable
 // this behavior in case you want to prioritize another event that uses the same addresses.
 // 
@@ -133,7 +133,7 @@
 //***************************************************************************//
 
 // How many questions should the quiz use?
-#define ACTIVE_QUESTIONS 48
+#define ACTIVE_QUESTIONS 64
 
 // The character portrait of the character who is giving the quiz.
 #define QUIZ_GIVER_PORTRAIT 3
@@ -607,7 +607,7 @@ char* GetMessageforWrongAnswer()
 
 
 /******** How to Configure Questions ***********/
-// 1. This quiz has 48 questions slots, all customizable.
+// 1. This quiz has 64 questions slots, all customizable.
 //     
 // 2. You can control how many questions are active by editing
 //    the definition "ACTIVE QUESTIONS" at the top of the file.
@@ -618,16 +618,16 @@ char* GetMessageforWrongAnswer()
 // 3. Questions get used **in order**, up to whatever number is
 //    defined by ACTIVE QUESTIONS at the top of the file.  So if
 //    you limited ACTIVE_QUESTIONS to 20, then questions 1-20 would
-//    be active, and questions 21-48 would be inactive.
+//    be active, and questions 21-64 would be inactive.
 // 
-// 4. To customize one of the 48 questions, simply edit the
+// 4. To customize one of the 64 questions, simply edit the
 //    corresponding message and ensure the answers are assigned
 //    correctly.  You don't have to do anything else.
 //
-// 5. If you want to increase array sizes for answers, go for it; 
-//    just know the quiz has only been tested with the default sizes.
+// 5. If you want to increase array sizes for answers to support more characters, 
+//    go for it; just know the quiz has only been tested with the default sizes.
 //    
-// 6. If 48 questions aren't enough for you, you're a monster.
+// 6. If 64 questions aren't enough for you, you're a monster.
 //    But it can be done.  You'll have to define the new question 
 //    AND edit the switch(case) in "GetQuestionByNumber()" to make 
 //    sure the question finder can randomly pick your question.  
@@ -791,6 +791,54 @@ char* GetQuestionByNumber(int question, int* correctAnswerPtr)
             break;
         case (47):
             result = GetFourtyEighthQuestion(correctAnswerPtr);
+            break;
+        case (48):
+            result = GetFourtyNinthQuestion(correctAnswerPtr);
+            break;
+        case (49):
+            result = GetFifteithQuestion(correctAnswerPtr);
+            break;
+        case (50):
+            result = GetFiftyFirstQuestion(correctAnswerPtr);
+            break;
+        case (51):
+            result = GetFiftySecondQuestion(correctAnswerPtr);
+            break;
+        case (52):
+            result = GetFiftyThirdQuestion(correctAnswerPtr);
+            break;
+        case (53):
+            result = GetFiftyFourthQuestion(correctAnswerPtr);
+            break;
+        case (54):
+            result = GetFiftyFifthQuestion(correctAnswerPtr);
+            break;
+        case (55):
+            result = GetFiftySixthQuestion(correctAnswerPtr);
+            break;
+        case (56):
+            result = GetFiftySeventhQuestion(correctAnswerPtr);
+            break;
+        case (57):
+            result = GetFiftyEighthQuestion(correctAnswerPtr);
+            break;
+        case (58):
+            result = GetFiftyNinthQuestion(correctAnswerPtr);
+            break;
+        case (59):
+            result = GetSixteithQuestion(correctAnswerPtr);
+            break;
+        case (60):
+            result = GetSixtyFirstQuestion(correctAnswerPtr);
+            break;
+        case (61):
+            result = GetSixtySecondQuestion(correctAnswerPtr);
+            break;
+        case (62):
+            result = GetSixtyThirdQuestion(correctAnswerPtr);
+            break;
+        case (63):
+            result = GetSixtyFourthQuestion(correctAnswerPtr);
             break;
         default:
            result = GetFirstQuestion(correctAnswerPtr);
@@ -1794,6 +1842,342 @@ char* GetFourtyEighthQuestion(int* correctAnswerIndexPtr)
 }
 
 
+//***************************************************************************//
+//****************************Question***************************************//
+//***************************************************************************//
+
+// Question for index 48
+char* GetFourtyNinthQuestion(int* correctAnswerIndexPtr)
+{
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+
+
+	char correctAnswer[48] = "Pokemon Stadium 2";
+	char wrongAnswer1[48] = "Donkey Kong 64";
+	char wrongAnswer2[48] = "Perfect Dark";
+	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
+}
+
+
+//***************************************************************************//
+//****************************Question***************************************//
+//***************************************************************************//
+
+// Question for index 49
+char* GetFifteithQuestion(int* correctAnswerIndexPtr)
+{
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+
+
+	char correctAnswer[48] = "Pokemon Stadium 2";
+	char wrongAnswer1[48] = "Donkey Kong 64";
+	char wrongAnswer2[48] = "Perfect Dark";
+	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
+}
+
+
+//***************************************************************************//
+//****************************Question***************************************//
+//***************************************************************************//
+
+// Question for index 50
+char* GetFiftyFirstQuestion(int* correctAnswerIndexPtr)
+{
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+
+
+	char correctAnswer[48] = "Pokemon Stadium 2";
+	char wrongAnswer1[48] = "Donkey Kong 64";
+	char wrongAnswer2[48] = "Perfect Dark";
+	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
+}
+
+
+//***************************************************************************//
+//****************************Question***************************************//
+//***************************************************************************//
+
+// Question for index 51
+char* GetFiftySecondQuestion(int* correctAnswerIndexPtr)
+{
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+
+
+	char correctAnswer[48] = "Pokemon Stadium 2";
+	char wrongAnswer1[48] = "Donkey Kong 64";
+	char wrongAnswer2[48] = "Perfect Dark";
+	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
+}
+
+
+//***************************************************************************//
+//****************************Question***************************************//
+//***************************************************************************//
+
+// Question for index 52
+char* GetFiftyThirdQuestion(int* correctAnswerIndexPtr)
+{
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+
+
+	char correctAnswer[48] = "Pokemon Stadium 2";
+	char wrongAnswer1[48] = "Donkey Kong 64";
+	char wrongAnswer2[48] = "Perfect Dark";
+	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
+}
+
+
+//***************************************************************************//
+//****************************Question***************************************//
+//***************************************************************************//
+
+// Question for index 53
+char* GetFiftyFourthQuestion(int* correctAnswerIndexPtr)
+{
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+
+
+	char correctAnswer[48] = "Pokemon Stadium 2";
+	char wrongAnswer1[48] = "Donkey Kong 64";
+	char wrongAnswer2[48] = "Perfect Dark";
+	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
+}
+
+
+//***************************************************************************//
+//****************************Question***************************************//
+//***************************************************************************//
+
+// Question for index 54
+char* GetFiftyFifthQuestion(int* correctAnswerIndexPtr)
+{
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+
+
+	char correctAnswer[48] = "Pokemon Stadium 2";
+	char wrongAnswer1[48] = "Donkey Kong 64";
+	char wrongAnswer2[48] = "Perfect Dark";
+	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
+}
+
+
+//***************************************************************************//
+//****************************Question***************************************//
+//***************************************************************************//
+
+// Question for index 55
+char* GetFiftySixthQuestion(int* correctAnswerIndexPtr)
+{
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+
+
+	char correctAnswer[48] = "Pokemon Stadium 2";
+	char wrongAnswer1[48] = "Donkey Kong 64";
+	char wrongAnswer2[48] = "Perfect Dark";
+	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
+}
+
+
+//***************************************************************************//
+//****************************Question***************************************//
+//***************************************************************************//
+
+// Question for index 56
+char* GetFiftySeventhQuestion(int* correctAnswerIndexPtr)
+{
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+
+
+	char correctAnswer[48] = "Pokemon Stadium 2";
+	char wrongAnswer1[48] = "Donkey Kong 64";
+	char wrongAnswer2[48] = "Perfect Dark";
+	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
+}
+
+
+//***************************************************************************//
+//****************************Question***************************************//
+//***************************************************************************//
+
+// Question for index 57
+char* GetFiftyEighthQuestion(int* correctAnswerIndexPtr)
+{
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+
+
+	char correctAnswer[48] = "Pokemon Stadium 2";
+	char wrongAnswer1[48] = "Donkey Kong 64";
+	char wrongAnswer2[48] = "Perfect Dark";
+	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
+}
+
+
+//***************************************************************************//
+//****************************Question***************************************//
+//***************************************************************************//
+
+// Question for index 58
+char* GetFiftyNinthQuestion(int* correctAnswerIndexPtr)
+{
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+
+
+	char correctAnswer[48] = "Pokemon Stadium 2";
+	char wrongAnswer1[48] = "Donkey Kong 64";
+	char wrongAnswer2[48] = "Perfect Dark";
+	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
+}
+
+
+//***************************************************************************//
+//****************************Question***************************************//
+//***************************************************************************//
+
+// Question for index 59
+char* GetSixteithQuestion(int* correctAnswerIndexPtr)
+{
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+
+
+	char correctAnswer[48] = "Pokemon Stadium 2";
+	char wrongAnswer1[48] = "Donkey Kong 64";
+	char wrongAnswer2[48] = "Perfect Dark";
+	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
+}
+
+
+//***************************************************************************//
+//****************************Question***************************************//
+//***************************************************************************//
+
+// Question for index 60
+char* GetSixtyFirstQuestion(int* correctAnswerIndexPtr)
+{
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+
+
+	char correctAnswer[48] = "Pokemon Stadium 2";
+	char wrongAnswer1[48] = "Donkey Kong 64";
+	char wrongAnswer2[48] = "Perfect Dark";
+	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
+}
+
+
+//***************************************************************************//
+//****************************Question***************************************//
+//***************************************************************************//
+
+// Question for index 61
+char* GetSixtySecondQuestion(int* correctAnswerIndexPtr)
+{
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+
+
+	char correctAnswer[48] = "Pokemon Stadium 2";
+	char wrongAnswer1[48] = "Donkey Kong 64";
+	char wrongAnswer2[48] = "Perfect Dark";
+	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
+}
+
+
+//***************************************************************************//
+//****************************Question***************************************//
+//***************************************************************************//
+
+// Question for index 62
+char* GetSixtyThirdQuestion(int* correctAnswerIndexPtr)
+{
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+
+
+	char correctAnswer[48] = "Pokemon Stadium 2";
+	char wrongAnswer1[48] = "Donkey Kong 64";
+	char wrongAnswer2[48] = "Perfect Dark";
+	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
+}
+
+
+//***************************************************************************//
+//****************************Question***************************************//
+//***************************************************************************//
+
+// Question for index 63
+char* GetSixtyFourthQuestion(int* correctAnswerIndexPtr)
+{
+	char* question = CreateSimpleTwoLineQuestionMessage("Which of these Nintendo 64 games did", "\x03NOT\x08 require the Expansion Pack");
+
+
+	char correctAnswer[48] = "Pokemon Stadium 2";
+	char wrongAnswer1[48] = "Donkey Kong 64";
+	char wrongAnswer2[48] = "Perfect Dark";
+	char wrongAnswer3[48] = "The Legend of Zelda\x7B Majora\x5Cs Mask";
+
+	char *result = GenerateMessageForQuestionWithFourOptions(question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, correctAnswerIndexPtr);
+
+	return result;
+}
+
+
 
 //***************************************************************************//
 //***************************************************************************//
@@ -1889,6 +2273,8 @@ char* GenerateMessageForQuestionWithFourOptions(char* question, char* correctAns
 
     return result;
 }
+
+
 
 // Generate a random number for each option.  Sort the numbers in ascending order.
 // When the correct answer gets assigned, keep track of the index it was set to.
