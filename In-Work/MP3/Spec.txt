@@ -22,21 +22,49 @@ Mechanic: Character Door
   - Param - ChangeModeTurns: If the door's ChangeMode is set to Randomly or Sequence, how many pass before a change.
     - All doors on map write to this value in a shared BoardRAM?
   - Do we need a BoardRAM selector PER door??
+    - Need to be able to query this for AI logic on character swap
   
 
--- TODO
-
 Set Your Character - Check on Board
+  - Character
   - Landing/Passing or After Turn
     - Landing/Passing: Fee to change
-    - After Turn: Change randomly every N Turns
+    - After Turn: Every N Turns
 
 Swap Character
-  - Swap Character
-    - Open Only, Steal, Combined
-    - Steal Becomes Available With N Turns Remaining 
-    - Free, Fee, Decline
-    - Select Target Free, Select Target Steal
+  - The Swap Character event will allow players to change their active character out for another one.
+  - When the event fires, it will proceed according to its [Swap Mode].  
+  - Example, if Mario lands on the space, and Daisy, DK, and Yoshi are still playing:
+    - [Swap Mode]: (0 - Swap Only, 1 - Steal Only, 2 - Shuffle Only, 3 - No Swap, 4 - No Steal, 5- No Shuffle, 6 - All, 7 - Forced Shuffle)
+      - [Swap Only] will only let the player change to a character NOT played by another player, so Mario can only pick from Luigi, Peach, Wario, and Waluigi.
+        - Needs a [You Choose] option
+        - The AI ideally need to read the board index, find the closest character door in front of them, and pick a character that matches the board (or decline if one doesn't).
+          - Or maybe they just pick "You Choose"
+      - [Steal Only] will only let the player SWAP with another layer, so Mario could only choose to pick from Daisy, DK, and Yoshi.  When he does, he'll swap characters with that player and they will become Mario.
+        - The AI ideally need to read the board index, find the closest character door in front of them, and steal a character that matches (or decline if one doesn't)
+          - Or maybe just calculate the ideal character by which character door is closest to the star and ahead of it.
+        - Needs a [You Choose] option
+      - [Shuffle Only] randomly assigns everyone a character.  Everyone is guaranteed a new character, but not necessarily an unused one.
+        - The AI should always choose shuffle, unless they are already the ideal 
+      - [No Swap] The host will offer the choice between Steal or Shuffle, but not Swap
+      - [No Steal] The host will offer the choice between Swap or Shuffle, but not Steal
+      - [No Shuffle] The host will offer the choice between Swap or Steal, but not Shuffle
+      - [All] The host will offer a choice between Swap, Steal, or Shuffle.
+      - [Forced Shuffle] - the host offers no choice or fee and runs [Shuffle]
+  - The event can optionally charge a fee for the actions of the player according to the [Fee Type] and in the [Fee Amount]
+    - [Fee Type]: 0 - Victim Fee, 1 - Steal Fee, 2 - Shuffle Fee, 3 - All Fee, 3 - No Fee, 
+        - [Victim Fee] - If stealing, the victim can choose to pay coins equal to the [Fee Amount] to block the steal.  Swapping is free, and you can't block a shuffle.  Default 10.
+        - [Steal Fee] - If stealing, the player must pay coins equal to the [Fee Amount] to steal only.  Swapping is free.
+        - [Shuffle Fee] - The player must pay coins equal to the [Fee Amount] to shuffle. Stealing and Swapping are free.
+        - [All Fee] - The player must pay coins equal to the [Fee Amount] to do anything.
+        - [No Fee] - Fee logic is skipped for both Swap and Steal
+    - [Fee Amount] - The amount of coins charged according the rules of the [Fee Type].
+    - [Space Logic]: 0 - Landing/Passing, 1 - End of Turn 4th Place Choice, 2 - End of Turn Random, 
+    
+    Need a way to limit access
+    - [Place Availability]: 0 - No Restriction, 1 - 4th place only, 2 - Not 1st place
+    - [Turn Availability]: 0 - No Restriction, 
+      - 
 
 
 Bonus Star Vendor

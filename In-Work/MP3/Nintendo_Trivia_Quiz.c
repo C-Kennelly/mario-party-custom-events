@@ -16,15 +16,15 @@
 #endif
 
 #ifndef EASY_CPU_ACCURACY_PERCENT
-#define EASY_CPU_ACCURACY_PERCENT 100
+#define EASY_CPU_ACCURACY_PERCENT 25
 #endif
 
 #ifndef NORMAL_CPU_ACCURACY_PERCENT
-#define NORMAL_CPU_ACCURACY_PERCENT 100
+#define NORMAL_CPU_ACCURACY_PERCENT 50
 #endif
 
 #ifndef HARD_CPU_ACCURACY_PERCENT
-#define HARD_CPU_ACCURACY_PERCENT 100
+#define HARD_CPU_ACCURACY_PERCENT 75
 #endif
 
 //***************************************************************************//
@@ -50,7 +50,7 @@
 //***************************************************************************//
 
 
-// This is version: 1.1
+// This is version: 1.2
 //
 // There may be an update available at:
 // https://github.com/c-kennelly/mario-party-custom-events
@@ -106,6 +106,7 @@
 //***************************************************************************//
 //***********************     Changelist      *******************************//
 //***************************************************************************//
+//   Version 1.2    - Brought number of questions up to 64 for release.
 //   Version 1.15   - Added ability to disable the event's use of Board RAM. 
 //                    Reorganized comments a bit.
 //   Version 1.1    - Questions no longer repeat unless all questions have been asked!
@@ -115,7 +116,7 @@
 //***************************************************************************//
 //******************** Where to Customize ***********************************//
 //***************************************************************************//
-// Jump to "Quiz Configuration" (up above) to change the number of active questions 
+// Jump to "Quiz Configuration" to change the number of active questions 
 // in the quiz bank, or the character who is giving the quiz the questions.
 //
 // Jump to "Message Configuration" to customize messages such as the greeting
