@@ -15,5 +15,4 @@ These events are done and can be used as templates.  They definitely work on an 
   - PlayJoyAnimation - plays the joy animation
   - ReduceHiddenBlocksByPercent - Decreases the occurrence of hidden blocks
   - Nintendo Trivia Quiz - Answer questions from 64 question quiz about nintendo history for coins
-  - Turn Order Swap - Change what order players take turns in during the game.
-  -  
+  - Turn Order Swap - Change what order players take turns in during the game. 
