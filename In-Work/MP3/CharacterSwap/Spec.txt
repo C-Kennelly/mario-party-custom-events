@@ -63,8 +63,8 @@ Swap Character
     
     Need a way to limit access
     - [Place Availability]: 0 - No Restriction, 1 - 4th place only, 2 - Not 1st place
-    - [Turn Availability]: 0 - No Restriction, 
-      - 
+    - [Turn Availability]: 0 - No Restriction, Turn Cooldown, Turn Multiple, Last 5 Turns
+    - [Turn Availability Number]:  
 
 
 Bonus Star Vendor
