@@ -108,7 +108,7 @@ Bonus Star Vendor
   - The vendors give out the stars after the last player has gone at the last turn of the game - this prevents the stars from being exposed to Chance time.
   - In the event of a tie, each players receive a star.
     - Need custom text for variable wins (1, 2, 3, and all)
-  - Vendors come in one of 4 buckets, with the following 4 events to choose from in each:
+  - Vendors come in one of 4 buckets, with the following 3 bonus stars to choose from in each:
     - Fortune Guy (Plumbers)
       - Most number of Blue spaces
       - Least number of Blue spaces
