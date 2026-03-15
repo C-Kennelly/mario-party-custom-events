@@ -22,3 +22,7 @@ Complete/*.code-workspace
 vs-highlighting/*
 # Local History for Visual Studio Code
 .history/
+
+# Agent and human documentation
+agents.md
+humans.md
