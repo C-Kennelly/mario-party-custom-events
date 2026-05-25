@@ -34,24 +34,24 @@ Since we cannot link external libraries, use this copy-paste approach:
 
 **Example Integration Pattern:**
 ```c
-// At bottom of your event file:
+// At bottom of your event file - copy the mplib v2.3 header and only the functions you use:
 //***************************************************************************//
-//************************ mp3lib Functions *******************************//
+//*************************      mplib v2.3        **************************//
 //***************************************************************************//
-// NOTE - this instance of mp3lib is pared down just to the functions used
 
-// Copy only the functions you actually use:
-int GetCurrentPlayerIndex() { /* implementation */ }
-void AdjustPlayerCoinsGradual(int playerIndex, int coinAmount) { /* implementation */ }
-struct Player * GetPlayerStruct(s32 playerIndex) { /* implementation */ }
+void mp3_DebugMessage(char* message) { ... }
+void mp3_ShowMessageWithConfirmation(int portrait, char* message) { ... }
+char* mplib_strcpy(char* destination, const char* source) { ... }
 ```
+
+⚠️ **NEVER implement game symbols as inline functions.** Functions like `GetCurrentPlayerIndex()`, `GetPlayerStruct()`, `ShowMessage()`, `AdjustPlayerCoinsGradual()` etc. are resolved from the MP3 symbols table at link time — defining them yourself will produce incorrect behavior. Only `mplib_*` and `mp3_*` helper functions from `mp3lib.c` should be copied in.
 
 ## Development Workflow
 
 ### 1. Start New Event
-```bash
+```powershell
 # Copy template to In-Work directory
-cp Complete/MP3/Templates/mp3_Event_Template.c In-Work/MP3/MyNewEvent.c
+Copy-Item Complete/MP3/Templates/mp3_Event_Template.c In-Work/MP3/MyNewEvent.c
 ```
 
 ### 2. Configure Event Header
@@ -70,7 +70,32 @@ Update the required PartyPlanner64 headers:
 - Call game functions directly: `func_80123456()` 
 - Access RAM locations: `D_80123456`
 
-### 4. Testing & Finalization
+### 4. Compile Test with CLI
+Before loading into PartyPlanner64, verify compilation using the PartyPlanner64 CLI.
+
+The CLI lives in the PartyPlanner64 repository. On this machine it is expected at:
+```
+C:/dev/c/PartyPlanner64/apps/cli/dist/out.js
+```
+If that path does not exist, ask the user where PartyPlanner64 is located before proceeding.
+
+```powershell
+node C:/dev/c/PartyPlanner64/apps/cli/dist/out.js test-event `
+  --source-file In-Work/MP3/MyEvent/MyEvent.c `
+  --game MP3 `
+  --verbose
+```
+Output is JSON. A passing event looks like:
+```json
+{"status":"SUCCESS","file":"...","timestamp":"..."}
+```
+A failing event includes an error message:
+```json
+{"status":"FAILURE","file":"...","error":{"message":"...","type":"CompilationError"}}
+```
+**Always fix compilation errors before loading into PartyPlanner64.**
+
+### 5. Testing & Finalization
 - Test thoroughly in PartyPlanner64
 - Copy needed `mp3lib.c` functions into event file
 - Remove unused functions to save space
@@ -79,27 +104,45 @@ Update the required PartyPlanner64 headers:
 ## Available Resources
 
 ### Community Symbols Table
-**URL**: https://github.com/PartyPlanner64/symbols/blob/master/MarioParty3U.sym
 
-This contains discovered function addresses and RAM locations you can use:
-```c
-// Examples from symbols table:
-extern void func_800F2304(s32, s32, s32);  // Animation function
-extern void SleepProcess(s32);              // Process sleep
-extern struct Player *GetPlayerStruct(s32); // Get player data
+The symbols table is the authoritative source for game function addresses and RAM locations. **Always verify a symbol exists in the correct game's symbol file before using it** — symbols are not shared across games and addresses differ between versions.
+
+**Symbol files are at**: https://github.com/PartyPlanner64/symbols
+
+The filename convention is `MarioParty{N}{Region}.sym`. To determine which file to use, read the `// GAMES:` directive at the top of the event file:
+
+| `// GAMES:` directive | Symbol File | URL |
+|-----------------------|-------------|-----|
+| `MP1_USA` | `MarioParty1U.sym` | https://github.com/PartyPlanner64/symbols/blob/master/MarioParty1U.sym |
+| `MP2_USA` | `MarioParty2U.sym` | https://github.com/PartyPlanner64/symbols/blob/master/MarioParty2U.sym |
+| `MP3_USA` | `MarioParty3U.sym` | https://github.com/PartyPlanner64/symbols/blob/master/MarioParty3U.sym |
+
+> Japan (`J`) and Europe (`E`) variants exist but have different addresses. Always match the region suffix in the directive (`_USA` → `U`) to the symbol file region letter.
+
+**How to verify a symbol:** Search the `.sym` file for the function or RAM address name. Each line has the format:
 ```
+<address>,<type>,<name>,<description>
+```
+For example:
+```
+800F2130,code,GetCurrentPlayerIndex
+800F213C,code,GetPlayerStruct,A0=player_index pass -1 to get current player's struct
+800EC8EC,code,ShowMessage,A0=character_index,A1=string index/pointer,...
+```
+If a name does not appear in the symbol file for the correct game version, do not use it.
 
 ### Key mp3lib.c Functions
-Most commonly used library functions:
+These are helper functions defined in `Complete/MP3/Templates/mp3lib.c` that you copy into your event file. **Do not confuse these with game symbols** — game symbols like `GetCurrentPlayerIndex()`, `GetPlayerStruct()`, `ShowMessage()`, and `AdjustPlayerCoinsGradual()` are called directly without any definition in the event file.
 
-**Player Management:**
-- `GetCurrentPlayerIndex()` - Get the active player (0-3)  
-- `AdjustPlayerCoinsGradual(playerIndex, amount)` - Animate coin changes
+**Player Helpers (mp3lib):**
 - `mp3_SwapPlayerStructs(p1, p2)` - Swap two players' complete data
+- `mp3_IsPlayerCertainCharacter(playerIndex, character)` - Check a player's character
+- `mp3_GetCharacterNameStringFromPlayerIndex(playerIndex)` - Get character name string
 
 **Debugging:**
-- `mp3_DebugMessage(char* message)` - Display debug text
-- `mp3_DebugPlayerIndex(playerIndex)` - Show player index
+- `mp3_DebugMessage(char* message)` - Display debug text (no confirmation)
+- `mp3_DebugMessageWithConfirmation(char* message)` - Display debug text and wait
+- `mp3_DebugPrintPlayerIndex(playerIndex)` - Show player index as a message
 
 **Scene Control:**
 - `mp3_ReloadCurrentSceneWithTransition(transitionType)` - Reload with fade effect
@@ -115,7 +158,7 @@ struct Player {
     s8 unk0;
     s8 cpu_difficulty;
     s8 controller;
-    u8 character;           // Character ID (0-7)
+    u8 character;           // Character ID: Mario=0,Luigi=1,Peach=2,Yoshi=3,Wario=4,DK=5,Waluigi=6,Daisy=7
     u8 flags;               // Bit 0: CPU player flag
     s8 pad0[5];             // Reserved space
     s16 coins;              // Current coin count (offset 10)
@@ -125,9 +168,32 @@ struct Player {
     u8 cur_space_index;     // Current space in chain (offset 16)
     u8 next_chain_index;    // Next chain destination (offset 17)
     u8 next_space_index;    // Next space destination (offset 18)
-    // ... additional navigation fields
-};
+    u8 unk1_chain_index;    // Offset 19
+    u8 unk1_space_index;    // Offset 20
+    u8 reverse_chain_index; // Offset 21
+    u8 reverse_space_index; // Offset 22
+    u8 flags2;              // Offset 23
+    u8 items[3];            // Offset 24
+    u8 bowser_suit_flag;    // Offset 27
+    u8 turn_color_status;   // Offset 28
+    s8 pad1[7];             // Offsets 29-35
+    void *obj;              // Offset 36: struct object pointer
+    s16 minigame_star;      // Offset 40
+    s16 coin_star;          // Offset 42
+    s8 happening_space_count; // Offset 44
+    s8 red_space_count;
+    s8 blue_space_count;
+    s8 chance_space_count;
+    s8 bowser_space_count;  // Offset 48
+    s8 battle_space_count;
+    s8 item_space_count;
+    s8 bank_space_count;
+    s8 game_guy_space_count; // Offset 52
+    char unk_35[3];         // Padding to reach sizeof == 56 — DO NOT OMIT
+}; // sizeof == 56
 ```
+
+⚠️ The trailing `char unk_35[3]` padding is required. Omitting it makes the struct 53 bytes instead of 56, which corrupts `GetPlayerStruct` for player indices 1–3.
 
 ## Board RAM Management
 
@@ -236,6 +302,33 @@ void main() {
 
 ## Testing & Debugging
 
+### Compile Testing with the PartyPlanner64 CLI
+The PartyPlanner64 CLI at `C:/dev/c/PartyPlanner64/apps/cli/dist/out.js` (in the separate PartyPlanner64 repository — ask the user for the path if it does not exist) provides a `test-event` command that compiles a `.c` event file and reports success or failure without needing to open the UI.
+
+```powershell
+# Basic usage
+node C:/dev/c/PartyPlanner64/apps/cli/dist/out.js test-event --source-file <path-to-event.c> --game MP3
+
+# With verbose output (shows game version and parameter info)
+node C:/dev/c/PartyPlanner64/apps/cli/dist/out.js test-event --source-file <path-to-event.c> --game MP3 --verbose
+```
+
+**Arguments:**
+- `--source-file` (required): Absolute or relative path to the `.c` event file
+- `--game` (optional): Game version to target. Accepts `MP1`, `MP2`, `MP3` (or `_USA` suffix). Defaults to the first game listed in the event's `// GAMES:` header.
+- `--verbose` (optional): Prints the target game and detected parameters before the result JSON.
+
+**Output format** (always JSON on stdout):
+```json
+// Success
+{"status":"SUCCESS","file":"path/to/event.c","timestamp":"2026-01-01T00:00:00.000Z"}
+
+// Failure
+{"status":"FAILURE","file":"path/to/event.c","timestamp":"...","error":{"message":"Line 42: ...","type":"CompilationError"}}
+```
+
+Run this after every edit. Fix all `FAILURE` results before loading into PartyPlanner64.
+
 ### PartyPlanner64 Integration
 1. Import your `.c` file into PartyPlanner64
 2. Place event on a board space
@@ -259,8 +352,6 @@ void main() {
 ### Sharing Events
 Events can be shared as:
 - Individual `.c` files for import into PartyPlanner64
-- Embedded in board `.json` files for complete board packages
-- Uploaded to Mario Party Legacy forums or GitHub repositories
 
 ## Resources
 

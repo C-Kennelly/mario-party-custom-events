@@ -40,6 +40,52 @@
 
 #include "ultra64.h"
 
+// Player struct definition for reference
+// Reference wiki article can be found here:
+// https://github.com/PartyPlanner64/PartyPlanner64/wiki/Player-Structs
+struct Player {
+    s8 unk0;
+    s8 cpu_difficulty;
+    s8 controller;
+    u8 character;
+    u8 flags;               // Miscellaneous flags. "1" is CPU player
+    s8 pad0[5];             // Skip undocumented offset 5-9
+    s16 coins;              // Offset 10: Current coin count.
+    s16 minigame_coins;     // Offset 12: Coins obtained during a Mini-Game.
+    s8 stars;               // Offset 14
+    
+    u8 cur_chain_index;     // Offset 15
+    u8 cur_space_index;     // Offset 16
+    u8 next_chain_index;    // Offset 17
+    u8 next_space_index;    // Offset 18
+    u8 unk1_chain_index;    // Offset 19
+    u8 unk1_space_index;    // Offset 20
+    u8 reverse_chain_index; // Offset 21
+    u8 reverse_space_index; // Offset 22
+
+    u8 flags2;              // Offset 23
+    u8 items[3];            // Offset 24
+    u8 bowser_suit_flag;    // Offset 27
+    u8 turn_color_status;   // Offset 28
+
+    s8 pad1[7];             // Offsets: 29 - 35
+
+    void *obj;              // Offset 36:  struct object pointer
+    s16 minigame_star;      // Offset 40
+    s16 coin_star;          // Offset 42
+    s8 happening_space_count; // Offset 44
+    s8 red_space_count;     
+    s8 blue_space_count;
+    s8 chance_space_count;
+    s8 bowser_space_count;  // Offset 48
+    s8 battle_space_count;
+    s8 item_space_count;
+    s8 bank_space_count;
+    s8 game_guy_space_count; //Offset  52
+
+    char unk_35[3]; 		//likely padding
+}; // sizeof == 56
+
 // External declarations for future BoardRAM usage
 extern u8 D_800CD0A0;  // board_ram9 - Could store door state
 extern u8 D_800CD0A1;  // board_ram10 - Could store preferred category
@@ -60,7 +106,7 @@ extern u8 D_800CD0A2;  // board_ram11 - Could store change counter
 // Function prototypes (for future expansion)
 int GetCharacterCategory(int characterId);
 int IsPassageAllowed(int currentCategory, int preferredCategory, int openMode);
-void ProcessMatchingOnlyMode(int currentPlayer, int currentCategory, int preferredCategory);
+void ProcessPassageMode(int currentPlayer, int currentCategory, int preferredCategory, int openMode);
 void ProcessMatchingWithFeesMode(int currentPlayer, int currentCategory, int preferredCategory);
 void ShowFlavorText(int preferredCategory, int isAllowed);
 
@@ -73,13 +119,13 @@ void main() {
     int currentCategory = GetCharacterCategory(characterId);
     int preferredCategory = PREFERRED_CHARACTER_CATEGORY;
     
-    // For now, only implement Matching Only mode
-    if (OPEN_MODE == MODE_MATCHING_ONLY) {
-        ProcessMatchingOnlyMode(currentPlayer, currentCategory, preferredCategory);
+    // Dispatch to passage logic - modes 1 and 3 fall back to passage logic for now
+    if (OPEN_MODE == MODE_MATCHING_WITH_FEES) {
+        // TODO: Implement full Matching with Fees mode (ally/enemy/fee logic)
+        mp3_DebugMessage("Matching with Fees mode not yet implemented");
+        ProcessPassageMode(currentPlayer, currentCategory, preferredCategory, MODE_MATCHING_ONLY);
     } else {
-        // Placeholder for future modes - for now, default to matching only
-        mp3_DebugMessage("Advanced modes not yet implemented");
-        ProcessMatchingOnlyMode(currentPlayer, currentCategory, preferredCategory);
+        ProcessPassageMode(currentPlayer, currentCategory, preferredCategory, OPEN_MODE);
     }
     
     // TODO: Implement change mode logic here
@@ -93,13 +139,13 @@ int GetCharacterCategory(int characterId) {
         case 1: // Luigi
             return CATEGORY_PLUMBER;
         case 2: // Peach
-        case 3: // Daisy
+        case 7: // Daisy
             return CATEGORY_PRINCESS;
-        case 4: // Yoshi
+        case 3: // Yoshi
         case 5: // DK
             return CATEGORY_BEAST;
-        case 6: // Wario
-        case 7: // Waluigi
+        case 4: // Wario
+        case 6: // Waluigi
             return CATEGORY_VILLAIN;
         default:
             return CATEGORY_PLUMBER; // Fallback
@@ -124,9 +170,9 @@ int IsPassageAllowed(int currentCategory, int preferredCategory, int openMode) {
     }
 }
 
-// Handle Matching Only mode behavior
-void ProcessMatchingOnlyMode(int currentPlayer, int currentCategory, int preferredCategory) {
-    int isAllowed = IsPassageAllowed(currentCategory, preferredCategory, MODE_MATCHING_ONLY);
+// Handle passage logic for modes 0 (Matching Only), 2 (All but Matching), and 3 (Dynamic)
+void ProcessPassageMode(int currentPlayer, int currentCategory, int preferredCategory, int openMode) {
+    int isAllowed = IsPassageAllowed(currentCategory, preferredCategory, openMode);
     
     // Show appropriate flavor text
     ShowFlavorText(preferredCategory, isAllowed);
@@ -143,6 +189,7 @@ void ProcessMatchingOnlyMode(int currentPlayer, int currentCategory, int preferr
 }
 
 // Placeholder for Matching with Fees mode (future implementation)
+// Enemy pairs (per spec): Plumbers vs. Villains, Princesses vs. Beasts. Allies = everyone else.
 void ProcessMatchingWithFeesMode(int currentPlayer, int currentCategory, int preferredCategory) {
     // TODO: Implement ally/enemy logic
     // TODO: Implement fee payment system
@@ -242,21 +289,28 @@ void ShowFlavorText(int preferredCategory, int isAllowed) {
 }
 
 //***************************************************************************//
-//************************ mp3lib Functions *******************************//
 //***************************************************************************//
-// NOTE - this instance of mp3lib is pared down just to the functions used
+//****************************                  *****************************//
+//*************************      mplib v2.3        **************************//
+//****************************                  *****************************//
+//***************************************************************************//
+//***************************************************************************//
+//***      Some helper functions to make up for lack of stdlib.io; and    ***//
+//***     to hide the complexity of some Mario Party-specific functions   ***//
+//***************************************************************************//
+//***************************************************************************//
+// Paste this at the bottom of an event file to get access to helpful functions during development!
+// Then, when you are ready to ship, delete the functions you don't use to save space and remove clutter.
+//
+// Get the latest version or submit changes at: 
+// https://github.com/C-Kennelly/mario-party-custom-events
+//***************************************************************************//
+//
+// Looking for another function?  
+// Have you checked the PartyPlanner64 symbols table yet?
+// https://github.com/PartyPlanner64/symbols/blob/master/MarioParty3U.sym
+//***************************************************************************//
 
-// These core functions are not in mp3lib.c but are available from symbols table
-int GetCurrentPlayerIndex() {
-    // Returns the index of the player whose turn it currently is
-    return *(int*)0x800F32D4; // Current player index from symbols table
-}
-
-struct Player * GetPlayerStruct(s32 playerIndex) {
-    // Returns a pointer to the Player struct for the given player index (0-3)
-    struct Player* players = (struct Player*)0x800F6C84; // Player array base address
-    return &players[playerIndex];
-}
 
 // Prints a message in game with the Millenium Star portrait.
 // Does not wait for player confirmation.
@@ -347,21 +401,3 @@ char* mplib_strncat(char* destination, const char* source)
     // destination is returned by standard strncat()
     return destination;
 }
-
-// Player struct definition for reference
-struct Player {
-    s8 unk0;
-    s8 cpu_difficulty;
-    s8 controller;
-    u8 character;           // Character ID (0-7) - offset 3
-    u8 flags;               // Bit 0: CPU player flag
-    s8 pad0[5];             // Reserved space
-    s16 coins;              // Current coin count - offset 10
-    s16 minigame_coins;     // Mini-game coins - offset 12
-    s8 stars;               // Star count - offset 14
-    u8 cur_chain_index;     // Current board path chain - offset 15
-    u8 cur_space_index;     // Current space in chain - offset 16
-    u8 next_chain_index;    // Next chain destination - offset 17
-    u8 next_space_index;    // Next space destination - offset 18
-    // ... additional navigation fields
-};
